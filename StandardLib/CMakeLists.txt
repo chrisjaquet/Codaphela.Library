@@ -1,0 +1,161 @@
+SET(LIB_NAME StandardLib)
+SET(HEADER_FILES
+					AbstractClass.h
+					Action.h
+					Actions.h
+					Array.h
+					ArrayCommonObject.h
+					ArrayCommonUnknown.h
+					ArrayType.h
+					ArrayUnknown.h
+					Base.h
+					BaseObject.h
+					Channel.h
+					ChannelAccessor.h
+					ChannelPadder.h
+					Channels.h
+					ChannelsAccessor.h
+					ChannelsAccessorAccessBitty.h
+					ChannelsAccessorByteAligned.h
+					ChannelsAccessorChannelBitty.h
+					ChannelsAccessorContiguous.h
+					ChannelsAccessorCreator.h
+					ChannelsAccessorTypeConvert.h
+					ChannelsAccessorWorstCase.h
+					ChannelsCopier.h
+					ChannelsHelper.h
+					ClassFunctionsCall.h
+					ClassStorage.h
+					Collection.h
+					ConcreteClass.h			
+					ConstructorUnknown.h
+					DependentObjects.h
+					HollowObject.h
+					IndexedObjects.h
+					Iterables.h
+					Listener.h
+					ListenerCall.h
+					MapCommon.h
+					MapStringUnknown.h
+					MapTypeUnknown.h
+					MathFunction.h
+					Named.h
+					NamedIndexedBlock.h
+					NamedIndexedData.h
+					NamedIndexedObjects.h
+					NamedIndexes.h
+					NamedIndexesBlock.h
+					NamedIndexesBlocks.h
+					NamedIndexesBlocksLoader.h
+					NamedObject.h
+					Object.h
+					ObjectGraphWriter.h
+					ObjectReader.h
+					Objects.h
+					ObjectSource.h
+					ObjectSourceFiles.h
+					ObjectSourceIndexedData.h
+					ObjectsSource.h
+					ObjectWriter.h
+					ObjectWriterChunked.h
+					ObjectWriterDest.h
+					ObjectWriterIndexed.h
+					ObjectWriterSimple.h
+					Parameters.h
+					Pointer.h
+					PointerObject.h
+					PreClass.h
+					Root.h
+					Set.h
+					SetType.h
+					SetUnknown.h
+					SingleChannelAccessor.h
+					StandardHeader.h
+					TimerAlarm.h
+					TimerListener.h
+					TrackerTemplate.h
+					Unknown.h
+					Unknowns.h		
+				)
+
+SET(SOURCE_FILES 
+					AbstractClass.cpp
+					Action.cpp
+					Actions.cpp
+					Array.cpp
+					ArrayCommonObject.cpp
+					ArrayCommonUnknown.cpp
+					ArrayUnknown.cpp
+					BaseObject.cpp
+					Channel.cpp
+					ChannelAccessor.cpp
+					ChannelPadder.cpp
+					Channels.cpp
+					ChannelsAccessor.cpp
+					ChannelsAccessorAccessBitty.cpp
+					ChannelsAccessorByteAligned.cpp
+					ChannelsAccessorChannelBitty.cpp
+					ChannelsAccessorContiguous.cpp
+					ChannelsAccessorCreator.cpp
+					ChannelsAccessorTypeConvert.cpp
+					ChannelsAccessorWorstCase.cpp
+					ChannelsCopier.cpp
+					ChannelsHelper.cpp
+					ClassFunctionsCall.cpp
+					ClassStorage.cpp
+					Collection.cpp
+					ConcreteClass.cpp
+					ConstructorUnknown.cpp
+					DependentObjects.cpp
+					HollowObject.cpp
+					IndexedObjects.cpp
+					Iterables.cpp
+					ListenerCall.cpp
+					MapCommon.cpp
+					MapStringUnknown.cpp
+					MathFunction.cpp
+					NamedIndexedBlock.cpp
+					NamedIndexedData.cpp
+					NamedIndexedObjects.cpp
+					NamedIndexes.cpp
+					NamedIndexesBlock.cpp
+					NamedIndexesBlocks.cpp
+					NamedIndexesBlocksLoader.cpp
+					NamedObject.cpp
+					Object.cpp
+					ObjectGraphWriter.cpp
+					ObjectReader.cpp
+					Objects.cpp
+					ObjectSource.cpp
+					ObjectsSource.cpp
+					ObjectWriter.cpp
+					ObjectWriterChunked.cpp
+					ObjectWriterDest.cpp
+					ObjectWriterIndexed.cpp
+					ObjectWriterSimple.cpp
+					PointerObject.cpp
+					PreClass.cpp
+					Root.cpp
+					Set.cpp
+					SetUnknown.cpp
+					SingleChannelAccessor.cpp
+					StandardHeader.cpp
+					TimerAlarm.cpp
+					Unknown.cpp
+					Unknowns.cpp
+				)
+
+# Shared Library or Static					
+IF(${CodaphelaLibrary_BUILD_SHARED_LIBRARY})
+	ADD_LIBRARY(${LIB_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
+ELSE()
+	ADD_LIBRARY(${LIB_NAME} ${SOURCE_FILES} ${HEADER_FILES})
+ENDIF()
+
+# Installation
+INSTALL(TARGETS ${LIB_NAME}
+        LIBRARY DESTINATION lib${LIB_ARCH}
+        ARCHIVE DESTINATION lib${LIB_ARCH}
+        RUNTIME DESTINATION bin)
+INSTALL(FILES ${HEADER_FILES}
+        DESTINATION include/${PROJECT_NAME}/${LIB_NAME})

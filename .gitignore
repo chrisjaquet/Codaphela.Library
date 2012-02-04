@@ -20,3 +20,4 @@ SupportLib/Release/*
 TestLib/Release/*
 WindowLib/Release/*
 WorldLib/Release/*
+*.bak
