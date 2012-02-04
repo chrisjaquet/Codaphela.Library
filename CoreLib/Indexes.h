@@ -28,7 +28,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 struct SIndexedLevel
 {
-	(SIndexedLevel*)	apsLevels[256];
+	struct SIndexedLevel*	apsLevels[256];
 
 	void Init(void);
 	BOOL IsEmpty(void);

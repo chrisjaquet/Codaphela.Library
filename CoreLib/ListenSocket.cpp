@@ -20,6 +20,12 @@ along with Codaphela CoreLib.  If not, see <http://www.gnu.org/licenses/>.
 Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/Define.h"
+
+#ifndef WIN32
+#error Cannot use windows sockets on non-windows system.
+#endif // WIN32
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include "BaseLib/Logger.h"
