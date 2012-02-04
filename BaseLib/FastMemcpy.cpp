@@ -21,7 +21,8 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
 #include "FastMemcpy.h"
-
+#include <stdlib.h>
+#include <string.h>
 
 memcpy_fast_func ga_memcpy_fast[65];
 

@@ -33,9 +33,9 @@ Microsoft Windows is Copyright Microsoft Corporation
 void CArrayBit::Init(void)
 {
 	miNumBits = 0;
-	aSmall.ui[0] = 0;
-	aSmall.ui[1] = 0;
-	aSmall.ui[2] = 0;
+	aUnion.aSmall.ui[0] = 0;
+	aUnion.aSmall.ui[1] = 0;
+	aUnion.aSmall.ui[2] = 0;
 }
 
 
@@ -47,7 +47,7 @@ void CArrayBit::Kill(void)
 {
 	if (Large())
 	{
-		free(aLarge.mpvData);
+		free(aUnion.aLarge.mpvData);
 	}
 	Init();
 }
@@ -102,13 +102,13 @@ void CArrayBit::GrowBy(int iNumBits)
 	{
 		pvData = malloc(iNewByteSize);
 		memcpy_fast(pvData, GetData(), iNewByteSize);
-		aLarge.mpvData = pvData;
+		aUnion.aLarge.mpvData = pvData;
 		miNumBits += iNumBits;
 		return;
 	}
 
 	miNumBits += iNumBits;
-	aLarge.mpvData = realloc(aLarge.mpvData, iNewByteSize);
+	aUnion.aLarge.mpvData = realloc(aUnion.aLarge.mpvData, iNewByteSize);
 }
 
 
@@ -241,11 +241,11 @@ void* CArrayBit::GetData(void)
 {
 	if (Large())
 	{
-		return aLarge.mpvData;
+		return aUnion.aLarge.mpvData;
 	}
 	else
 	{
-		return aSmall.ui;
+		return aUnion.aSmall.ui;
 	}
 }
 

@@ -1750,7 +1750,7 @@ void CArrayTemplate<M>::ReInit(int iChunkSize)
 	this->Kill();
 	if (iChunkSize == 0)
 	{
-		Init(miChunkSize);
+		Init(this->miChunkSize);
 	}
 	else
 	{
@@ -1814,7 +1814,7 @@ M* CArrayTemplate<M>::Get(int iIndex)
 template<class M>
 void CArrayTemplate<M>::SetAllocateSize(int iSize)
 {
-	miChunkSize = iSize;
+	this->miChunkSize = iSize;
 }
 
 

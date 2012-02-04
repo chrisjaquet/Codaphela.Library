@@ -23,7 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __FILE_NODE_H__
 #define __FILE_NODE_H__
 #include "AbstractFile.h"
-#include "Chars.h"
+#include "ArrayString.h"
 #include "FileNodeDirectory.h"
 #include "PackFileNode.h"
 

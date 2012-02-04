@@ -26,6 +26,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "PointerRemapper.h"
 #include "ErrorHandler.h"
 
+#include <string.h>
 
 template <class M>
 class CArraySimple

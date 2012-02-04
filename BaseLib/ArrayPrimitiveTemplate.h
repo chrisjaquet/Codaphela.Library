@@ -104,7 +104,7 @@ M CArrayPrimitiveTemplate<M>::SafeGetValue(int iElementPos)
 {
 	if ((iElementPos >= 0) && (iElementPos < this->miUsedElements))
 	{
-		return mpvArray[iElementPos];
+		return this->mpvArray[iElementPos];
 	}
 	return -1;
 }
@@ -117,7 +117,7 @@ M CArrayPrimitiveTemplate<M>::SafeGetValue(int iElementPos)
 template<class M>
 void CArrayPrimitiveTemplate<M>::SetValue(int iElementPos, M iElement)
 {
-	mpvArray[iElementPos] = iElement;
+	this->mpvArray[iElementPos] = iElement;
 }
 
 
@@ -210,7 +210,7 @@ void CArrayPrimitiveTemplate<M>::SetArrayValues(M iStartValue, M iIncrement)
 template<class M>
 void CArrayPrimitiveTemplate<M>::QuickSort(void)
 {
-	CArrayTemplate::QuickSort(&ComparePrimitive<M>);
+	CArrayTemplate<M>::QuickSort(&ComparePrimitive<M>);
 }
 
 
@@ -221,7 +221,7 @@ void CArrayPrimitiveTemplate<M>::QuickSort(void)
 template<class M>
 void CArrayPrimitiveTemplate<M>::BubbleSort(void)
 {
-	CArrayTemplate::BubbleSort(&ComparePrimitive<M>);
+	CArrayTemplate<M>::BubbleSort(&ComparePrimitive<M>);
 }
 
 
@@ -274,8 +274,8 @@ void CArrayPrimitiveTemplate<M>::Swap(int iIndex1, int iIndex2)
 	M*		piElement2;
 	M		iTemp;
 
-	piElement1 = Get(iIndex1);
-	piElement2 = Get(iIndex2);
+	piElement1 = this->Get(iIndex1);
+	piElement2 = this->Get(iIndex2);
 	iTemp = (*piElement1);
 	(*piElement1) = (*piElement2);
 	(*piElement2) = iTemp;

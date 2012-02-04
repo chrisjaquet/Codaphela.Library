@@ -31,7 +31,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 
 class CArrayString;
-class CString  //Make sure nothng has included a 'CString'.  That class is ours.
+class CString  //Make sure nothing has included a 'CString'.  That class is ours.
 {
 public:
 };

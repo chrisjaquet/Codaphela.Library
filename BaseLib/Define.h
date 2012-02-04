@@ -23,18 +23,17 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
 
-
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
+#ifdef _MSC_VER // Using Visual Studio
 
 #ifdef WIN_GNU_32
-#error WIN32 and WIN_GNU_32 cannot both be defined
+#error _MSC_VER and WIN_GNU_32 cannot both be defined
 #endif
 #ifdef LINUX_GNU_32
-#error WIN32 and LINUX_GNU_32 cannot both be defined
+#error _MSC_VER and LINUX_GNU_32 cannot both be defined
 #endif
 
 #ifndef WINVER
@@ -63,21 +62,40 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define OTHER_OS_FILE_SEPARATOR "/"
 #define __ENGINE_DECORATED_FUNCTION__ __FUNCDNAME__
 #define __ENGINE_PRETTY_FUNCTION__ __FUNCTION__
-#endif // WIN32
+#endif // _MSC_VER
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-#ifdef WIN_GNU_32
+#ifdef WIN_GNU_32 // Using MinGW
+
+#ifndef WINVER
+#define WINVER 0x0501
+#endif
+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
+
+#ifndef _WIN32_WINDOWS
+#define _WIN32_WINDOWS 0x0410
+#endif
+
+#ifndef _WIN32_IE
+#define _WIN32_IE 0x0600
+#endif
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+
 typedef int BOOL;
 #define FALSE 0
 #define TRUE 1
 #define engine_stricmp(p,q) strcmpi(p,q)
-#define ENGINE_SIZE_T
+#define ENGINE_SIZE_T size_t
 #define EngineOutput(p)	printf(p)
 //#define MAX_PATH 260
 //#define _IOREAD         0x0001
@@ -99,9 +117,12 @@ typedef int BOOL;
 //
 //
 //////////////////////////////////////////////////////////////////////////
-#ifdef LINUX_GNU_32
+#ifdef LINUX_GNU_32 // Linux GCC
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+
 typedef int BOOL;
 #define FALSE 0
 #define TRUE 1

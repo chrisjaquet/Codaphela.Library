@@ -22,7 +22,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __CONSTRUCTOR_CALL_H__
 #define __CONSTRUCTOR_CALL_H__
-
+#include <stdlib.h>
 
 #define CONSTRUCT(mem, type)	{ type _o_; memcpy(mem, &_o_, sizeof(type)); }
 

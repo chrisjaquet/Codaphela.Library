@@ -21,7 +21,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
 #ifdef LINUX_GNU_32
-#include <stdio.h>
+#include "Define.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -29,7 +29,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <dirent.h>
 #include "FileUtil.h"
 #include "StringHelper.h"
 
