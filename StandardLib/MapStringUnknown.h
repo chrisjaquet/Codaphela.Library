@@ -23,6 +23,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/MapStringTemplate.h"
 #include "MapCommon.h"
 
+extern class CUnkowns gcUnknowns;
 
 class CMapStringUnknown : public CMapCommon
 {

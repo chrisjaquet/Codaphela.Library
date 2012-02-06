@@ -47,7 +47,7 @@ public:
 public:\
 char* ClassName(void)\
 {\
-	return #c##;\
+	return #c;\
 }\
 unsigned int ClassSize(void)\
 {\
