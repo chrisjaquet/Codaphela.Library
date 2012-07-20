@@ -37,7 +37,7 @@ void CIndexedFile::Init(CDurableFileController* pcDurableFileControl, int iFileI
 	miDataSize = iDataSize;
 	miFileNumber = iFileNum;
 
-	mcFile.Init(pcDurableFileControl->mbDurable, mszFileName.Text(), mszRewriteName.Text());
+	mcFile.Init(pcDurableFileControl->IsDurable(), mszFileName.Text(), mszRewriteName.Text());
 	pcDurableFileControl->AddFile(&mcFile);
 	mcFile.Open();
 
@@ -45,7 +45,7 @@ void CIndexedFile::Init(CDurableFileController* pcDurableFileControl, int iFileI
 	miNumDatas = (int)(iFileLengh / iDataSize);
 	mbNew = TRUE;
 
-	if (pcDurableFileControl->mcDurableSet.HasBegun())
+	if (pcDurableFileControl->IsBegun())
 	{
 		mcFile.Begin();
 	}
@@ -56,12 +56,15 @@ void CIndexedFile::Init(CDurableFileController* pcDurableFileControl, int iFileI
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedFile::Kill(void)
+BOOL CIndexedFile::Kill(void)
 {
+	BOOL bResult;
+
 	miNumDatas = 0;
-	mcFile.Close();
+	bResult = mcFile.Close();
 	mszFileName.Kill();
 	mszRewriteName.Kill();
+	return bResult;
 }
 
 
@@ -85,23 +88,7 @@ BOOL CIndexedFile::IsFull(void)
 //////////////////////////////////////////////////////////////////////////
 int CIndexedFile::Write(void* pvData)
 {
-	filePos		iIndex;
-	int			iWritten;
-
-	iIndex = mcFile.Size();
-	if ((iIndex % miDataSize) != 0)
-	{
-		return -1;
-	}
-	iWritten = mcFile.Write(EFSO_END, 0, pvData, miDataSize, 1);
-	miNumDatas++;
-
-	if (iWritten != 1)
-	{
-		return -1;
-	}
-
-	return (int)(iIndex / miDataSize);
+	return Write(pvData, 1);
 }
 
 
@@ -111,18 +98,63 @@ int CIndexedFile::Write(void* pvData)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedFile::Write(int iIndex, void* pvData)
 {
-	int			iWritten;
-	filePos		iFileLengh;
-	filePos		iPosition;
+	return Write(iIndex, pvData, 1);
+}
 
-	iPosition = iIndex*miDataSize;
-	iWritten = mcFile.Write(EFSO_SET, (int)iPosition, pvData, miDataSize, 1);
-	if (iWritten != 1)
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CIndexedFile::Write(void* pvData, int iCount)
+{
+	filePos		iIndex;
+	int			iWritten;
+
+	if (iCount == 0)
 	{
 		return FALSE;
 	}
 
-	if (iIndex > miNumDatas)
+	iIndex = mcFile.Size();
+	if ((iIndex % miDataSize) != 0)
+	{
+		return -1;
+	}
+	iWritten = mcFile.Write(EFSO_END, 0, pvData, miDataSize, iCount);
+	if (iWritten != iCount)
+	{
+		return -1;
+	}
+
+	miNumDatas += iCount;
+	return (int)(iIndex / miDataSize);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CIndexedFile::Write(int iIndex, void* pvData, int iCount)
+{
+	int			iWritten;
+	filePos		iFileLengh;
+	filePos		iPosition;
+
+	if (iCount == 0)
+	{
+		return FALSE;
+	}
+
+	iPosition = iIndex * miDataSize;
+	iWritten = mcFile.Write(EFSO_SET, (int)iPosition, pvData, miDataSize, iCount);
+	if (iWritten != iCount)
+	{
+		return FALSE;
+	}
+
+	if (iIndex + iCount > miNumDatas)
 	{
 		iFileLengh = mcFile.Size();
 		miNumDatas = (int)(iFileLengh / miDataSize);
@@ -137,17 +169,31 @@ BOOL CIndexedFile::Write(int iIndex, void* pvData)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedFile::Read(int iIndex, void* pvData)
 {
+	return Read(iIndex, pvData, 1);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CIndexedFile::Read(int iIndex, void* pvData, int iCount)
+{
 	int				iRead;
 	unsigned int	iPosition;
 
-	if (iIndex > miNumDatas)
+	if (iCount == 0)
+	{
+		return FALSE;
+	}
+	if (iIndex + iCount > miNumDatas)
 	{
 		return FALSE;
 	}
 
 	iPosition = iIndex * miDataSize;
-	iRead = mcFile.Read(EFSO_SET, iPosition, pvData, miDataSize, 1);
-	if (iRead != 1)
+	iRead = mcFile.Read(EFSO_SET, iPosition, pvData, miDataSize, iCount);
+	if (iRead != iCount)
 	{
 		return FALSE;
 	}

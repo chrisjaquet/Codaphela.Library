@@ -78,16 +78,16 @@ void CIndexedFiles::InitIndexedFileDescriptors(void)
 {
 	BOOL	bResult;
 
-	mszIndexName.Init(mpcDurableFileControl->mszWorkingDirectory);
+	mszIndexName.Init(mpcDurableFileControl->GetWorkingDirectory());
 	mszIndexName.Append(FILE_SEPARATOR);
 	mszIndexName.Append("Files.");
 	mszIndexName.Append(mszExtension);
-	mszIndexRewrite.Init(mpcDurableFileControl->mszWorkingDirectory);
+	mszIndexRewrite.Init(mpcDurableFileControl->GetWorkingDirectory());
 	mszIndexRewrite.Append(FILE_SEPARATOR);
 	mszIndexRewrite.Append("_Files.");
 	mszIndexRewrite.Append(mszExtension);
 
-	mcFileDescriptorsFile.Init(mpcDurableFileControl->mbDurable, mszIndexName.Text(), mszIndexRewrite.Text());
+	mcFileDescriptorsFile.Init(mpcDurableFileControl->IsDurable(), mszIndexName.Text(), mszIndexRewrite.Text());
 	mpcDurableFileControl->AddFile(&mcFileDescriptorsFile);
 	bResult = mcFileDescriptorsFile.Open();
 }
@@ -174,14 +174,15 @@ BOOL CIndexedFiles::DataFileName(char* szFile1, char* szFile2, int iDataSize, in
 	CChars	szFileName;
 	CChars	szRewriteName;
 
-	szFileName.Init(mpcDurableFileControl->mszWorkingDirectory);
+	szFileName.Init(mpcDurableFileControl->GetWorkingDirectory());
 	szFileName.Append(FILE_SEPARATOR);
 	szFileName.Append(iDataSize);
 	szFileName.Append("_");
 	szFileName.Append(iFileNum);
 	szFileName.Append(".");
 	szFileName.Append(mszExtension);
-	szRewriteName.Init(mpcDurableFileControl->mszWorkingDirectory);
+
+	szRewriteName.Init(mpcDurableFileControl->GetWorkingDirectory());
 	szRewriteName.Append(FILE_SEPARATOR);
 	szRewriteName.Append("_");
 	szRewriteName.Append(iDataSize);
@@ -211,13 +212,13 @@ BOOL CIndexedFiles::DataFileName(char* szFile1, char* szFile2, int iDataSize, in
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CIndexedFile* CIndexedFiles::GetFileForNewAllocation(int iDataSize)
+CIndexedFile* CIndexedFiles::GetOrCreateFile(int iDataSize)
 {
-	int							i;
-	CIndexedFile*		pcFile;
-	int							iNumFiles;
-	char						szFileName[65536];
-	char						szRewriteName[65536];
+	int				i;
+	CIndexedFile*	pcFile;
+	int				iNumFiles;
+	char			szFileName[65536];
+	char			szRewriteName[65536];
 
 	iNumFiles = 0;
 	for (i = 0; i < mcFiles.NumElements(); i++)

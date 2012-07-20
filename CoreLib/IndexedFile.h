@@ -42,12 +42,15 @@ public:
 	BOOL			mbNew;
 
 	void	Init(CDurableFileController* pcDurableFileControl, int iFileIndex, char* szFileName, char* szRewriteName, int iDataSize, int iFileNum);
-	void	Kill(void);
+	BOOL	Kill(void);
 	void	GetFileName(char* szName);
 	BOOL	IsFull(void);
 	int		Write(void* pvData);
 	BOOL	Write(int iIndex, void* pvData);
+	int		Write(void* pvData, int iCount);
+	BOOL	Write(int iIndex, void* pvData, int iCount);
 	BOOL	Read(int iIndex, void* pvData);
+	BOOL	Read(int iIndex, void* pvData, int iCount);
 
 	void	Dump(void);
 };

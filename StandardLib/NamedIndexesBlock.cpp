@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "CoreLib/IndexedFile.h"
 #include "BaseObject.h"
 #include "NamedIndexedBlock.h"
 #include "NamedIndexesBlock.h"
@@ -29,7 +30,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CNamedIndexesBlock::Init(int iBlockWidth, int iNumBlocks)
 {
-	muiFilePos = -1LL;
+	miDataIndex = -1;
 	mszFirst.Init();
 	mszLast.Init();
 
@@ -45,21 +46,21 @@ void CNamedIndexesBlock::Init(int iBlockWidth, int iNumBlocks)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNamedIndexesBlock::Init(int iBlockWidth, void* pvBlocks, int iNumBlocks, filePos uiFilePos, void* pvCache)
+void CNamedIndexesBlock::Init(int iBlockWidth, void* pvBlocks, int iNumBlocks, int iDataIndex, void* pvCache)
 {
 	CNamedIndexedBlock*	pcBlock;
 	int					i;
 
-	muiFilePos = uiFilePos;
+	miDataIndex = iDataIndex;
 
 	mpvCachePos = pvCache;
 	miBlockWidth = iBlockWidth;
 	miNumBlocks = iNumBlocks;
 	mbDirty = FALSE;
+	miUsedBlocks = iNumBlocks;
 
 	memcpy_fast(mpvCachePos, pvBlocks, miUsedBlocks * miBlockWidth);
 
-	miUsedBlocks = iNumBlocks;
 	for (i = 0; i < iNumBlocks; i++)
 	{
 		pcBlock = GetUnsafe(i);
@@ -142,7 +143,7 @@ BOOL CNamedIndexesBlock::IsFull(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexesBlock::IsInFile(void)
 {
-	return muiFilePos != -1;
+	return miDataIndex != -1;
 }
 
 
@@ -166,8 +167,12 @@ BOOL CNamedIndexesBlock::AddUnsafe(OIndex oi, CChars* szName)
 	CNamedIndexedBlock	sBlock;
 	int					iIndex;
 
-	sBlock.Set(szName->Text(), oi);
+	if (!mpvCachePos)
+	{
+		return FALSE;
+	}
 
+	sBlock.Set(szName->Text(), oi);
 	avFakeBlock.Fake(mpvCachePos, miBlockWidth, miUsedBlocks, miNumBlocks);
 	
 	//It's safe to insert into a faked array because we know there is at least one free element in the chunk
@@ -192,7 +197,7 @@ BOOL CNamedIndexesBlock::AddUnsafe(OIndex oi, CChars* szName)
 	}
 
 	miUsedBlocks++;
-	mbDirty = TRUE;
+	Dirty();
 	return TRUE;
 }
 
@@ -207,12 +212,14 @@ OIndex CNamedIndexesBlock::GetIndex(CChars* szName)
 	CNamedIndexedBlock		sBlock;
 	CNamedIndexedBlock*		psBlock;
 	int						iIndex;
+	BOOL					bResult;
 
 	strcpy(sBlock.Name(), szName->Text());
 
 	avFakeBlock.Fake(mpvCachePos, miBlockWidth, miUsedBlocks, miNumBlocks);
 
-	if (avFakeBlock.FindInSorted(&sBlock, &CompareNamedIndexedBlock, &iIndex))
+	bResult = avFakeBlock.FindInSorted(&sBlock, &CompareNamedIndexedBlock, &iIndex);
+	if (bResult)
 	{
 		if (iIndex != -1)
 		{
@@ -270,11 +277,102 @@ BOOL CNamedIndexesBlock::Remove(CChars* szName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexesBlock::Write(CIndexedFile* pcFile)
+{
+	int		iIndex;
+
+	if (!IsInFile())
+	{
+		iIndex = pcFile->Write(mpvCachePos, miNumBlocks);
+		if (iIndex == -1)
+		{
+			return FALSE;
+		}
+		miDataIndex = iIndex;
+		mbDirty = FALSE;
+		return TRUE;
+	}
+	else
+	{
+		mbDirty = FALSE;
+		return pcFile->Write(miDataIndex, mpvCachePos, miNumBlocks);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexesBlock::Uncache(CIndexedFile* pcFile)
+{
+	BOOL	bResult;
+
+	if (mbDirty)
+	{
+		bResult = Write(pcFile);
+		if (bResult)
+		{
+			mpvCachePos = NULL;
+		}
+		return bResult;
+	}
+	else
+	{
+		mpvCachePos = NULL;
+		return TRUE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexesBlock::Cache(CIndexedFile* pcFile, void* pvCache)
+{
+	BOOL	bResult;
+	void*	pvClear;
+
+	if (IsInFile())
+	{
+		bResult = SetCache(pvCache);
+		bResult &= pcFile->Read(miDataIndex, pvCache, miUsedBlocks);
+
+		if (IsNotFull())
+		{
+			pvClear = RemapSinglePointer(pvCache, miBlockWidth*miUsedBlocks);
+			memset_fast(pvClear, 0, (miNumBlocks - miUsedBlocks) * miBlockWidth);
+		}
+
+		mbDirty = FALSE;
+		return bResult;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexesBlock::IsEmpty(void)
 {
 	return miUsedBlocks == 0;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexesBlock::IsCache(void* pvCachePos)
+{
+	return mpvCachePos == pvCachePos;
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -332,8 +430,70 @@ CNamedIndexedBlock* CNamedIndexesBlock::GetUnsafe(int iIndex)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CNamedIndexesBlock::UsedNames(void)
+void CNamedIndexesBlock::Dump(void)
 {
-	return miUsedBlocks;
+	CArrayBlock				avFakeBlock;
+	CChars					szText;
+
+	if (IsCached())
+	{
+		avFakeBlock.Fake(mpvCachePos, miBlockWidth, miUsedBlocks, miNumBlocks);
+		Dump(&avFakeBlock);
+	}
+	else
+	{
+		szText.Init("--- Block(Not Cached) ---\n");
+		szText.Append("(");
+		szText.Append(mszFirst.Text());
+		szText.Append(") -> (");
+		szText.Append(mszLast.Text());
+		szText.Append(")\n\n");
+		szText.Dump();
+		szText.Kill();
+	}
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CNamedIndexesBlock::Dump(CArrayBlock* pavFakeBlock)
+{
+	int						i;
+	CNamedIndexedBlock*		pvcBlock;
+	CChars					szText;
+
+	szText.Init("--- Block(");
+	szText.Append(pavFakeBlock->NumElements());
+	szText.Append(") ---\n");
+	szText.Append("(");
+	szText.Append(mszFirst.Text());
+	szText.Append(") -> (");
+	szText.Append(mszLast.Text());
+	szText.Append(")\n");
+	for (i = 0; i < pavFakeBlock->NumElements(); i++)
+	{
+		pvcBlock = (CNamedIndexedBlock*)pavFakeBlock->Get(i);
+		
+		szText.Append(pvcBlock->Name());
+		szText.AppendNewLine();
+	}
+	szText.AppendNewLine();
+	szText.Dump();
+	szText.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CNamedIndexesBlock::UsedNames(void) { return miUsedBlocks; }
+int CNamedIndexesBlock::GetBlockWidth(void) { return miBlockWidth; }
+int CNamedIndexesBlock::GetNumBlocks(void) { return miNumBlocks; }
+int CNamedIndexesBlock::GetUsedBlocks(void) { return miUsedBlocks; }
+char* CNamedIndexesBlock::GetFirst(void) { return mszFirst.Text(); }
+char* CNamedIndexesBlock::GetLast(void) { return mszLast.Text(); }
+BOOL CNamedIndexesBlock::IsDirty(void) { return mbDirty; }
 

@@ -28,7 +28,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 class CNamedIndexesBlock
 {
 protected:
-	filePos		muiFilePos;
+	int			miDataIndex;
 	CChars		mszFirst;
 	CChars		mszLast;
 
@@ -40,7 +40,7 @@ protected:
 
 public:
 	void					Init(int iBlockWidth, int iNumBlocks);
-	void					Init(int iBlockWidth, void* pvBlocks, int iNumBlocks, filePos uiFilePos, void* pvCache);
+	void					Init(int iBlockWidth, void* pvBlocks, int iNumBlocks, int iDataIndex, void* pvCache);
 	void					Kill(void);
 
 	BOOL					CouldContain(CChars* szName);
@@ -49,20 +49,36 @@ public:
 	BOOL					IsFull(void);
 	BOOL					IsInFile(void);
 	BOOL					IsEmpty(void);
+	BOOL					IsCache(void* pvCachePos);
+	BOOL					IsDirty(void);
+
+	int						GetUsedByteSize(void);
+	int						GetAllocatedByteSize(void);
 
 	BOOL					AddUnsafe(OIndex oi, CChars* szName);
 	OIndex					GetIndex(CChars* szName);
 	BOOL					SetCache(void* pvCache);
-	int						GetUsedByteSize(void);
-	int						GetAllocatedByteSize(void);
-	CNamedIndexedBlock*		GetUnsafe(int iIndex);
 	BOOL					Remove(CChars* szName);
 	void					Dirty(void);
+	BOOL					Uncache(CIndexedFile* pcFile);
+	BOOL					Cache(CIndexedFile* pcFile, void* pvCache);
 	int						UsedNames(void);
+	int						GetBlockWidth(void);
+	int						GetNumBlocks(void);
+	int						GetUsedBlocks(void);
+	char*					GetFirst(void);
+	char*					GetLast(void);
+	void					Dump(void);
+	void					Dump(CArrayBlock* pavFakeBlock);
+	BOOL					Write(CIndexedFile* pcFile);
+
+private:
+	CNamedIndexedBlock*		GetUnsafe(int iIndex);
 };
 
 
 typedef CArrayTemplate<CNamedIndexesBlock>	CArrayNamedIndexesBlock;
+typedef CArrayTemplate<CNamedIndexesBlock*>	CArrayNamedIndexesBlockPtr;
 
 
 #endif // __NAMED_INDEXES_BLOCK_H__
