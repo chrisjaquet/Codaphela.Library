@@ -53,6 +53,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         NamedIndexesOptimiser.h
                         NamedObject.h
                         Object.h
+                        ObjectConverter.h
                         ObjectGraphWriter.h
                         ObjectReader.h
                         Objects.h
@@ -75,6 +76,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         SetUnknown.h
                         SingleChannelAccessor.h
                         StandardHeader.h
+                        String.h
                         TimerAlarm.h
                         TimerListener.h
                         TrackerTemplate.h
@@ -129,6 +131,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         NamedIndexesOptimiser.cpp
                         NamedObject.cpp
                         Object.cpp
+                        ObjectConverter.cpp
                         ObjectGraphWriter.cpp
                         ObjectReader.cpp
                         Objects.cpp
@@ -146,6 +149,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         SetUnknown.cpp
                         SingleChannelAccessor.cpp
                         StandardHeader.cpp
+                        String.cpp
                         TimerAlarm.cpp
                         Unknown.cpp
                         Unknowns.cpp

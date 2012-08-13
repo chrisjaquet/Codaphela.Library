@@ -1,6 +1,6 @@
 #include "Shape.h"
-#include "CoreLib\FastFunctions.h"
-#include "StandardLib\StandardChunkNames.h"
+#include "CoreLib/FastFunctions.h"
+#include "StandardLib/StandardChunkNames.h"
 
 
 //////////////////////////////////////////////////////////////////////////
