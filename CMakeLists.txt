@@ -65,8 +65,11 @@ ELSE()
 ENDIF()
 
 # Extra Definitions
-IF(${CMAKE_COMPILER_IS_GNUCXX} AND WIN32)
-    ADD_DEFINITIONS(-DWIN_GNU_32)
+IF(WIN32)
+    IF(${CMAKE_COMPILER_IS_GNUCXX})
+        MESSAGE(STATUS "Using the GNUCXX compiler on windows -- adding suitable definition")
+        ADD_DEFINITIONS(-DWIN_GNU_32)
+    ENDIF()
 ENDIF()
 
 OPTION(CodaphelaLibrary_BUILD_SHARED_LIBRARIES "Set this to ON to build shared libraries, rather than static libraries." OFF)
