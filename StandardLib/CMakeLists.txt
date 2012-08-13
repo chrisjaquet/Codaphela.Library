@@ -38,7 +38,6 @@ SET(HEADER_FILES
                     MapCommon.h
                     MapStringUnknown.h
                     MapTypeUnknown.h
-                    MathFunction.h
                     NamedIndexedBlock.h
                     NamedIndexedData.h
                     NamedIndexedObjects.h
@@ -115,7 +114,6 @@ SET(SOURCE_FILES
                     ListenerCall.cpp
                     MapCommon.cpp
                     MapStringUnknown.cpp
-                    MathFunction.cpp
                     NamedIndexedBlock.cpp
                     NamedIndexedData.cpp
                     NamedIndexedObjects.cpp
