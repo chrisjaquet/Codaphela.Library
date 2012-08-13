@@ -292,7 +292,7 @@ void CArrayPrimitiveTemplate<M>::InsertIntoSorted(M iElement, BOOL bOverwriteExi
 	int		iPos;
 	BOOL	bExists;
 
-	bExists = FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
+	bExists = this->FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
 	if (iPos < this->miUsedElements)
 	{
 		if (!bExists)
@@ -328,7 +328,7 @@ BOOL CArrayPrimitiveTemplate<M>::RemoveFromSorted(M iElement)
 	int		iPos;
 	BOOL	bExists;
 
-	bExists = FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
+	bExists = this->FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
 	if (bExists)
 	{
 		this->RemoveAt(iPos, TRUE);

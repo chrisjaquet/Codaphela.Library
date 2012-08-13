@@ -713,7 +713,7 @@ M* CLinkListTemplate<M>::InsertAfterTail(void)
 
 	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	InsertDetachedAfterTail(psData);
+	this->InsertDetachedAfterTail(psData);
 	return psData;
 }
 

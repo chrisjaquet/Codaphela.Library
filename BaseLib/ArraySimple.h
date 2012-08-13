@@ -25,6 +25,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "Define.h"
 #include "PointerRemapper.h"
 #include "ErrorHandler.h"
+#include "FastMemcpy.h"
 
 #include <string.h>
 
@@ -926,7 +927,7 @@ void CArraySimple<M>::BatchInsertElements(int iFirstElementPos, int iNumInBatch,
 		{
 			memcpy(RemapSinglePointer(pcFirst, iTotalStride * (i+1) - iStrideToNextBatch), RemapSinglePointer(pcFirst, iStrideToNextBatch * i), iStrideToNextBatch);
 		}
-	}	
+	}
 }
 
 

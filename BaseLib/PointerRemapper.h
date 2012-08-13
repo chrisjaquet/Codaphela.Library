@@ -23,6 +23,8 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __POINTER_REMAPPER_H__
 #define __POINTER_REMAPPER_H__
 
+#include <stdlib.h>
+
 
 void*	RemapSinglePointer(const void* pvPtr, int iOffest);
 __inline void* RemapSinglePointer(const void* pvPtr, int iOffest)
