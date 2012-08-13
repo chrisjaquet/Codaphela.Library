@@ -23,6 +23,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "ArrayUnknown.h"
 #include "ArrayCommonObject.h"
 #include "PointerObject.h"
+#include "Pointer.h"
 
 
 class CArray : public CArrayCommonObject
