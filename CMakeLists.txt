@@ -70,14 +70,32 @@ IF(WIN32)
         MESSAGE(STATUS "Using the GNUCXX compiler on windows -- adding suitable definition")
         ADD_DEFINITIONS(-DWIN_GNU_32)
     ENDIF()
+    IF(${MSVC})
+        ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+    ENDIF()
 ENDIF()
 
 OPTION(CodaphelaLibrary_BUILD_SHARED_LIBRARIES "Set this to ON to build shared libraries, rather than static libraries." OFF)
+
+IF(NOT ${CodaphelaLibrary_BUILD_SHARED_LIBRARIES})
+    ADD_DEFINITIONS(-D_LIB)
+ENDIF()
 
 # Sub-directories
 ADD_SUBDIRECTORY(BaseLib)
 ADD_SUBDIRECTORY(CoreLib)
 ADD_SUBDIRECTORY(StandardLib)
+ADD_SUBDIRECTORY(CppParserLib)
+ADD_SUBDIRECTORY(DirectXLib)
+ADD_SUBDIRECTORY(GameLib)
+ADD_SUBDIRECTORY(ImageLib)
+ADD_SUBDIRECTORY(InputLib)
+ADD_SUBDIRECTORY(LanguageLib)
+ADD_SUBDIRECTORY(ShapeLib_Old)
+ADD_SUBDIRECTORY(SupportLib)
+ADD_SUBDIRECTORY(TestLib)
+ADD_SUBDIRECTORY(WindowLib)
+ADD_SUBDIRECTORY(WorldLib)
 
 # uninstall target
 CONFIGURE_FILE(
