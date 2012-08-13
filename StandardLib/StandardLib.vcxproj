@@ -82,6 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
+    <ClInclude Include="DependentObjectWriter.h" />
     <ClInclude Include="NamedIndexedBlock.h" />
     <ClInclude Include="NamedIndexedSorterSource.h" />
     <ClInclude Include="NamedIndexesBlocksLoader.h" />
@@ -92,6 +93,7 @@
     <ClInclude Include="NamedIndexesBlocks.h" />
     <ClInclude Include="NamedIndexesFileDumper.h" />
     <ClInclude Include="NamedIndexesOptimiser.h" />
+    <ClInclude Include="ObjectFileGeneral.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Unknown.h" />
@@ -159,6 +161,7 @@
     <ClInclude Include="TrackerTemplate.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DependentObjectWriter.cpp" />
     <ClCompile Include="NamedIndexedBlock.cpp" />
     <ClCompile Include="NamedIndexedData.cpp" />
     <ClCompile Include="NamedIndexedObjects.cpp" />
