@@ -22,7 +22,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __INDEXED_FILES_H__
 #define __INDEXED_FILES_H__
-#include "IndexDescriptor.h"
+#include "IndexedDataDescriptor.h"
 #include "IndexedFile.h"
 #include "BaseLib/ChunkFile.h"
 #include "BaseLib/Chars.h"
@@ -38,23 +38,28 @@ protected:
 	CChars						mszIndexName;
 	CChars						mszIndexRewrite;
 	CChars						mszExtension;
-	CDurableFile				mcFileDescriptorsFile;
+	CDurableFile				mcDurableFile;
 
 public:
 	void						Init(CDurableFileController* pcDurableFileControl, char* szExtension);
 	void						Kill(void);
+	BOOL						Open(void);
+	BOOL						Close(void);
 
 	void						InitIndexedFileDescriptors(void);
-	void						ReadIndexedFileDescriptors(void);
-	void						WriteIndexedFileDescriptors(void);
+	BOOL						ReadIndexedFileDescriptors(void);
+	BOOL						WriteIndexedFileDescriptors(void);
 	BOOL						DataFileName(char* szFile1, char* szFile2, int iDataSize, int iFileNum);
 
 	CIndexedFile* 				GetOrCreateFile(int iDataSize);
 	CIndexedFile* 				GetFile(int iDataSize, int iFileNum);
 	CIndexedFile* 				GetFile(int iFileIndex);
+	int							GetUniqueFileNumber(int iDataSize);
 
 	OIndex						NumInFile(int iDataSize);
 	int							NumFiles(void);
+
+	BOOL						IsDurable(void);
 	
 	void						Dump(void);
 };

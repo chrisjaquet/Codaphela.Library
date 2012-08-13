@@ -24,22 +24,8 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define __PACK_FILES_H__
 #include "AbstractFile.h"
 #include "FileBasic.h"
-#include "FileNames.h"
-#include "PackFileReadArrary.h"
-#include "PackFileNode.h"
-
-
-enum EPackFileMode
-{
-	PFM_Read,
-	PFM_Write,
-};
-
-
-typedef CFileNode<CPackFileNode>				CFileNodePackFileNode;
-typedef CFileNames<CPackFileNode>				CFileNamesPackFileNode;
-typedef CArrayTemplate<CFileNodePackFileNode*>	CArrayPackFileNodePtrs;
-
+#include "PackFilesGeneral.h"
+#include "PackFileIterator.h"
 
 class CPackFile;
 class CPackFiles
@@ -70,6 +56,10 @@ public:
 	BOOL					AddFile(CAbstractFile* pcFile, char* szFileName);
 	BOOL					AddDirectory(char* szDirectory);
 
+	CFileNodePackFileNode*	StartIteration(CPackFileIterator* psIter);
+	CFileNodePackFileNode*	Iterate(CPackFileIterator* psIter);
+	void					StopIteration(CPackFileIterator* psIter);
+
 	void					GetFiles(CArrayPackFileNodePtrs* pcPackFiles);
 	CFileNodePackFileNode*	GetNode(char* szFullName);
 
@@ -82,14 +72,14 @@ protected:
 	BOOL					EndRead(void);
 	BOOL					EndWrite(void);
 	BOOL					Close(CPackFile* pcPackFile);
-	int						Read(CPackFileNode* psPackFile, void* pvBuffer, int iSize, int iCount);
+	filePos					Read(CPackFileNode* psPackFile, void* pvBuffer, filePos iSize, filePos iCount);
 	BOOL					Seek(CPackFileNode* psPackFile, filePos iOffset, int iSeekOrigin);
-	int						Write(CPackFileNode* psPackFile, const void* pvBuffer, int iSize, int iCount);
+	filePos					Write(CPackFileNode* psPackFile, const void* pvBuffer, filePos iSize, filePos iCount);
 	filePos					Tell(CPackFileNode* psPackFile);
 	BOOL					Eof(CPackFileNode* psPackFile);
 	BOOL					Flush(CPackFileNode* psPackFile);
 	CFileNodePackFileNode*	AddFile(char* szFullName);
-	int						PrivateRead(CPackFileNode* psPackFile, void* pvBuffer, int iSize, int iCount);
+	filePos					PrivateRead(CPackFileNode* psPackFile, void* pvBuffer, filePos iSize, filePos iCount);
 	BOOL					PrivateSeek(CPackFileNode* psPackFile, filePos iOffset, int iSeekOrigin);
 	BOOL					ChangeReadFiles(CPackFileNode* psPackFile);
 	char*					ClassName(void);
@@ -102,7 +92,6 @@ protected:
 	int						RecurseGetNumUnwrittenNames(CFileNodePackFileNode*	pcNode);
 	BOOL					WriteUnwrittenNames(void);
 	BOOL					RecurseWriteUnwrittenNames(CFileNodePackFileNode* pcNode, CChars* pszPath);
-	void					RecurseGetFiles(CFileNodePackFileNode* pcNode, CArrayPackFileNodePtrs* pcPackFiles);
 	BOOL					RecurseUnpack(CFileNodePackFileNode* pcNode, char* szDestination);
 };
 

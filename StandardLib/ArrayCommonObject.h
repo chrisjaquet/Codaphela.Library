@@ -21,7 +21,8 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __ARRAY_COMMON_OBJECT_H__
 #define __ARRAY_COMMON_OBJECT_H__
 #include "Collection.h"
-
+#include "PointerObject.h"
+#include "Pointer.h"
 
 class CArrayCommonUnknown;
 class CArrayCommonObject : public CCollection

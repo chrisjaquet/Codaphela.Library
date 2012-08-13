@@ -1,7 +1,7 @@
 #ifndef __PLANE_H__
 #define __PLANE_H__
 #include <d3dx9.h>
-#include "CoreLib\ArrayTemplate.h"
+#include "CoreLib/ArrayTemplate.h"
 
 
 //Remember that a triangle is can be cast to a plane

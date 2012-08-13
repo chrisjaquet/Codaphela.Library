@@ -5,17 +5,17 @@ PROJECT(CodaphelaLibrary)
 
 # Architecture detection
 IF(CYGWIN)
-    OPTION(CodaphelaLibrary_FORCE_CYGWIN "Set this to ON to enable building on Cygwin. This is not guaranteed to work in the slightest," OFF)
-    MARK_AS_ADVANCED(CodaphelaLibrary_FORCE_CYGWIN)
-    IF(${CodaphelaLibrary_FORCE_CYGWIN})
+    OPTION(${PROJECT_NAME}_FORCE_CYGWIN "Set this to ON to enable building on Cygwin. This is not guaranteed to work in the slightest," OFF)
+    MARK_AS_ADVANCED(${PROJECT_NAME}_FORCE_CYGWIN)
+    IF(${${PROJECT_NAME}_FORCE_CYGWIN})
         MESSAGE(WARNING "Cygwin is not a supported build environment -- use at own risk.")
     ELSE()
         MESSAGE(FATAL_ERROR "Cygwin is not a supported build environment.")
     ENDIF()
 ELSEIF(APPLE)
-    OPTION(CodaphelaLibrary_FORCE_APPLE "Set this to ON to enable building on Apple. This is not guaranteed to work in the slightest," OFF)
-    MARK_AS_ADVANCED(CodaphelaLibrary_FORCE_APPLE)
-    IF(${CodaphelaLibrary_FORCE_APPLE})
+    OPTION(${PROJECT_NAME}_FORCE_APPLE "Set this to ON to enable building on Apple. This is not guaranteed to work in the slightest," OFF)
+    MARK_AS_ADVANCED(${PROJECT_NAME}_FORCE_APPLE)
+    IF(${${PROJECT_NAME}_FORCE_APPLE})
         MESSAGE(WARNING "Apple is not a supported build environment -- use at own risk.")
     ELSE()
         MESSAGE(FATAL_ERROR "Apple is not a supported build environment.")
@@ -51,6 +51,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PA
 # Add some custom directories
 
 # Find Required Libraries
+FIND_PACKAGE(DirectX)
 
 # Include Directories
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
@@ -65,20 +66,42 @@ ELSE()
 ENDIF()
 
 # Extra Definitions
-IF(${CMAKE_COMPILER_IS_GNUCXX} AND WIN32)
-    ADD_DEFINITIONS(-DWIN_GNU_32)
+IF(WIN32)
+    IF(${CMAKE_COMPILER_IS_GNUCXX})
+        MESSAGE(STATUS "Using the GNUCXX compiler on windows -- adding suitable definition")
+        ADD_DEFINITIONS(-DWIN_GNU_32)
+    ENDIF()
+    IF(${MSVC})
+        ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+    ENDIF()
 ENDIF()
 
-OPTION(CodaphelaLibrary_BUILD_SHARED_LIBRARIES "Set this to ON to build shared libraries, rather than static libraries." OFF)
+OPTION(${PROJECT_NAME}_BUILD_SHARED_LIBRARIES "Set this to ON to build shared libraries, rather than static libraries." OFF)
+
+IF(NOT ${${PROJECT_NAME}_BUILD_SHARED_LIBRARIES})
+    ADD_DEFINITIONS(-D_LIB)
+ENDIF()
 
 # Sub-directories
 ADD_SUBDIRECTORY(BaseLib)
 ADD_SUBDIRECTORY(CoreLib)
 ADD_SUBDIRECTORY(StandardLib)
+ADD_SUBDIRECTORY(BerkeleyLib)
+ADD_SUBDIRECTORY(CppParserLib)
+ADD_SUBDIRECTORY(DirectXLib)
+ADD_SUBDIRECTORY(GameLib)
+ADD_SUBDIRECTORY(ImageLib)
+ADD_SUBDIRECTORY(InputLib)
+ADD_SUBDIRECTORY(LanguageLib)
+ADD_SUBDIRECTORY(ShapeLib_Old)
+ADD_SUBDIRECTORY(SupportLib)
+ADD_SUBDIRECTORY(TestLib)
+ADD_SUBDIRECTORY(WindowLib)
+ADD_SUBDIRECTORY(WorldLib)
 
 # uninstall target
 CONFIGURE_FILE(
-  "${CodaphelaLibrary_SOURCE_DIR}/CMakeModules/cmake_uninstall.cmake.in"
+  "${${PROJECT_NAME}_SOURCE_DIR}/CMakeModules/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 ADD_CUSTOM_TARGET(uninstall

@@ -21,10 +21,11 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __OBJECTS_H__
 #define __OBJECTS_H__
 #include "CoreLib/IndexedGeneral.h"
-#include "CoreLib/IndexedData.h"
+#include "NamedIndexedData.h"
 #include "NamedIndexedObjects.h"
 #include "Unknowns.h"
 #include "Pointer.h"
+#include "ObjectsSource.h"
 
 
 #define OMalloc(classtype)			(gcObjects.Add<classtype>());
@@ -35,26 +36,28 @@ class CObjects
 {
 protected:
 	CUnknowns*				mpcUnknownsAllocatingFrom;
+
+	CNamedIndexedObjects	mcMemory;  //Objects (BaseObject*) allocated in Unkonws referenced by name and OIndex.  
+	CNamedIndexedData		mcDatabase;  //Objects in the database also referenced by string and OIndex.  
+	
+	CObjectsSource			mcSource;
+
 	OIndex					moiNext;
-
-	//On disk objects.
-
-	//In database objects.
-	CIndexedData			mcData;
-
-	//In memory objects.
-	CNamedIndexedObjects	mcIndexes;
 
 public:
 						void			Init(CUnknowns* pcUnknownsAllocatingFrom, char* szWorkingDirectory);
 						void			Kill(void);
 
-	template<class M>	CPointer<M>		Add(void);
-	template<class M>	CPointer<M>		Add(char* szName);
 
+						CPointerObject	Get(OIndex oi);
+						CPointerObject	Get(char* szName);
 	template<class M> 	CPointer<M>		Get(OIndex oi);
 	template<class M>	CPointer<M>		Get(char* szName);
 
+	template<class M>	CPointer<M>		Add(void);
+	template<class M>	CPointer<M>		Add(char* szName);
+
+						CPointerObject	Null(void);
 	template<class M>	CPointer<M>		Null(void);
 
 protected:
@@ -150,7 +153,6 @@ template<class M>
 CPointer<M> CObjects::Null(void)
 {
 	CPointer<M>		pObject;
-
 	return pObject;
 }
 
@@ -164,7 +166,7 @@ CPointer<M> CObjects::Get(OIndex oi)
 {
 	CBaseObject*	pvObject;
 
-	pvObject = mcIndexes.Get(oi);
+	pvObject = mcMemory.Get(oi);
 	if (pvObject)
 	{
 		CPointer<M>		pObject;
@@ -174,7 +176,7 @@ CPointer<M> CObjects::Get(OIndex oi)
 	}
 	else
 	{
-		return Null();
+		return Null<M>();
 	}
 }
 
@@ -186,16 +188,19 @@ CPointer<M> CObjects::Get(OIndex oi)
 template<class M>
 CPointer<M> CObjects::Get(char* szName)
 {
-	OIndex			oi;
+	CBaseObject*	pvObject;
 
-	oi = mcNames.Get(szName);
-	if (oi != INVALID_OBJECT_IDENTIFIER)
+	pvObject = mcMemory.Get(szName);
+	if (pvObject)
 	{
-		return Get(oi);
+		CPointer<M>		pObject;
+
+		pObject.mpcObject = pvObject;
+		return pObject;
 	}
 	else
 	{
-		return Null();
+		return Null<M>();
 	}
 }
 

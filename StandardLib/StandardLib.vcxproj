@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClInclude Include="Base.h" />
     <ClInclude Include="NamedIndexedBlock.h" />
+    <ClInclude Include="NamedIndexedSorterSource.h" />
     <ClInclude Include="NamedIndexesBlocksLoader.h" />
     <ClInclude Include="NamedIndexedData.h" />
     <ClInclude Include="NamedIndexedObjects.h" />
@@ -90,7 +91,9 @@
     <ClInclude Include="NamedIndexesBlock.h" />
     <ClInclude Include="NamedIndexesBlocks.h" />
     <ClInclude Include="NamedIndexesFileDumper.h" />
+    <ClInclude Include="NamedIndexesOptimiser.h" />
     <ClInclude Include="Parameters.h" />
+    <ClInclude Include="String.h" />
     <ClInclude Include="Unknown.h" />
     <ClInclude Include="SetType.h" />
     <ClInclude Include="SetUnknown.h" />
@@ -113,7 +116,6 @@
     <ClInclude Include="ArrayCommonObject.h" />
     <ClInclude Include="Pointer.h" />
     <ClInclude Include="PointerObject.h" />
-    <ClInclude Include="Named.h" />
     <ClInclude Include="NamedObject.h" />
     <ClInclude Include="DependentObjects.h" />
     <ClInclude Include="ObjectGraphWriter.h" />
@@ -126,8 +128,6 @@
     <ClInclude Include="HollowObject.h" />
     <ClInclude Include="IndexedObjects.h" />
     <ClInclude Include="ObjectSource.h" />
-    <ClInclude Include="ObjectSourceIndexedData.h" />
-    <ClInclude Include="ObjectSourceFiles.h" />
     <ClInclude Include="ObjectsSource.h" />
     <ClInclude Include="Action.h" />
     <ClInclude Include="Actions.h" />
@@ -155,7 +155,6 @@
     <ClInclude Include="ClassStorage.h" />
     <ClInclude Include="ConcreteClass.h" />
     <ClInclude Include="PreClass.h" />
-    <ClInclude Include="MathFunction.h" />
     <ClInclude Include="StandardHeader.h" />
     <ClInclude Include="TrackerTemplate.h" />
   </ItemGroup>
@@ -163,11 +162,14 @@
     <ClCompile Include="NamedIndexedBlock.cpp" />
     <ClCompile Include="NamedIndexedData.cpp" />
     <ClCompile Include="NamedIndexedObjects.cpp" />
+    <ClCompile Include="NamedIndexedSorterSource.cpp" />
     <ClCompile Include="NamedIndexes.cpp" />
     <ClCompile Include="NamedIndexesBlock.cpp" />
     <ClCompile Include="NamedIndexesBlocks.cpp" />
     <ClCompile Include="NamedIndexesBlocksLoader.cpp" />
     <ClCompile Include="NamedIndexesFileDumper.cpp" />
+    <ClCompile Include="NamedIndexesOptimiser.cpp" />
+    <ClCompile Include="String.cpp" />
     <ClCompile Include="Unknown.cpp" />
     <ClCompile Include="SetUnknown.cpp" />
     <ClCompile Include="ArrayUnknown.cpp" />
@@ -223,11 +225,7 @@
     <ClCompile Include="ClassStorage.cpp" />
     <ClCompile Include="ConcreteClass.cpp" />
     <ClCompile Include="PreClass.cpp" />
-    <ClCompile Include="MathFunction.cpp" />
     <ClCompile Include="StandardHeader.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ObjectsSources.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

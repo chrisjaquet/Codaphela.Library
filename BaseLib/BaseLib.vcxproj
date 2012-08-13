@@ -80,6 +80,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BaseFileNode.h" />
     <ClInclude Include="DataMacro.h" />
     <ClInclude Include="ArrayBit.h" />
     <ClInclude Include="ArrayBlock.h" />
@@ -98,12 +99,16 @@
     <ClInclude Include="ArrayTemplate.h" />
     <ClInclude Include="ArrayDenseTemplate.h" />
     <ClInclude Include="ArraySparseTemplate.h" />
+    <ClInclude Include="FileSystemIterator.h" />
+    <ClInclude Include="FileSystemGeneral.h" />
     <ClInclude Include="LinkListBlock.h" />
     <ClInclude Include="LinkListBlockMemoryStack.h" />
     <ClInclude Include="LinkListTemplate.h" />
     <ClInclude Include="LinkListTemplateFreeList.h" />
     <ClInclude Include="LinkListTemplateMemoryStack.h" />
     <ClInclude Include="MemoryCacheAllocation.h" />
+    <ClInclude Include="PackFileIterator.h" />
+    <ClInclude Include="PackFilesGeneral.h" />
     <ClInclude Include="TreeBlock.h" />
     <ClInclude Include="TreeBlockMemoryStack.h" />
     <ClInclude Include="TreeInt.h" />
@@ -231,9 +236,12 @@
     <ClCompile Include="ArrayPointer.cpp" />
     <ClCompile Include="ArraySimpleChar.cpp" />
     <ClCompile Include="ArrayString.cpp" />
+    <ClCompile Include="BaseFileNode.cpp" />
+    <ClCompile Include="FileSystemIterator.cpp" />
     <ClCompile Include="LinkListBlock.cpp" />
     <ClCompile Include="LinkListBlockMemoryStack.cpp" />
     <ClCompile Include="MemoryCacheAllocation.cpp" />
+    <ClCompile Include="PackFileIterator.cpp" />
     <ClCompile Include="TreeBlock.cpp" />
     <ClCompile Include="TreeBlockMemoryStack.cpp" />
     <ClCompile Include="EnumeratorBlock.cpp" />

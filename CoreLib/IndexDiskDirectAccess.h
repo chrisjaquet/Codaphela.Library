@@ -32,14 +32,14 @@ public:
 	void 			Init(CIndexDescriptorsFile* pcDescriptorsFile);
 	void 			Kill(void);
 
-	BOOL 			Get(CIndexDescriptor* pcDescriptor, OIndex oi);
-	BOOL 			Set(CIndexDescriptor* pcDescriptor);
+	BOOL 			Get(CIndexedDataDescriptor* pcDescriptor, OIndex oi);
+	BOOL 			Set(CIndexedDataDescriptor* pcDescriptor);
 	BOOL 			Remove(OIndex oi);
 	long long int	Length(void);
 
 	void 			Load(void);
 	void 			Save(void);
-	void 			UpdateFile(void);
+	BOOL 			UpdateFile(void);
 
 	BOOL			IsDisk(void);
 };

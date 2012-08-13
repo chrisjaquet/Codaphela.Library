@@ -23,16 +23,8 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __FILE_SYSTEM_H__
 #define __FILE_SYSTEM_H__
 #include "AbstractFile.h"
-#include "FileNames.h"
-#include "FileNodeFileSystem.h"
-
-
-typedef CFileNode<CFileNodeSystemFile>			CSystemFileNode;
-typedef CFileNodeDirectory<CFileNodeSystemFile>	CSystemDirectoryNode;
-typedef CFileNames<CFileNodeSystemFile>			CSystemFileNames;
-typedef CArrayTemplate<CFileNodeSystemFile*>	CArraySystemFileNodePtrs;
-typedef CArrayTemplate<CSystemFileNode*>		CArraySystemFilePtrs;
-
+#include "FileSystemGeneral.h"
+#include "FileSystemIterator.h"
 
 
 class CFileSystem
@@ -47,13 +39,15 @@ public:
 
 	char*					GetFileName(char* szFileName);
 	CFileNodeSystemFile*	GetFileNode(char* szName, CChars* pszRemainingName);
-	void					GetFileExtension(CArraySystemFileNodePtrs* paFileNodePtrs, char* szExtension);
 	CChars*					GetFullDirectoryName(void);
-	void					GetFiles(CArraySystemFilePtrs* pcFiles);
+	void					GetFiles(CArraySystemFilePtrs* pcSystemFiles);
+	void					GetFiles(CArraySystemFilePtrs* pcSystemFiles, char* szExtension);
+
+	CSystemFileNode*		StartIteration(CFileSystemIterator* psIter);
+	CSystemFileNode*		Iterate(CFileSystemIterator* psIter);
+	void					StopIteration(CFileSystemIterator* psIter);
 	
 protected:
-	void					RecurseGetFiles(CSystemFileNode* pcNode, CArraySystemFilePtrs* pcPackFiles);
-	void					RecurseGetFileExtension(CArraySystemFileNodePtrs* paFileNodePtrs, char* szExtension, CSystemFileNode* pcDirectoryNode);
 	void					ReadDirectory(void);
 };
 

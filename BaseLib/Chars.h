@@ -31,10 +31,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 
 class CArrayString;
-class CString  //Make sure nothing has included a 'CString'.  That class is ours.
-{
-public:
-};
 
 
 //Fix CChars to not allocate memory for the empty string.
@@ -157,6 +153,7 @@ public:
 	void	Reverse(void);
 	void	Clear(void);
 	int		CountNewLines(void);
+	int		Count(char c);
 	void	LowerCase(void);
 	void	UpperCase(void);
 

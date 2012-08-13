@@ -23,6 +23,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/FileWriter.h"
 #include "BaseLib/MemoryFile.h"
 #include "BaseObject.h"
+#include "PointerObject.h"
 
 
 class CObjectGraphWriter;
@@ -35,16 +36,16 @@ protected:
 	CObjectGraphWriter*		mpcGraphWriter;
 
 public:
-	void	Init(CObjectGraphWriter* pcGraphWriter, CBaseObject* pcObject);
-	void	Kill(void);
-	
-	BOOL	WritePointer(CPointerObject pObject);
-	BOOL	WriteDependent(CBaseObject* pcObject);
-	BOOL	WriteDependent(CPointerObject pObject);
+	void		Init(CObjectGraphWriter* pcGraphWriter, CBaseObject* pcObject);
+	void		Kill(void);
 
-	int		Write(const void* pvSource, int iSize, int iCount);
-	void*	GetData(void);
-	int		GetLength(void);
+	BOOL		WritePointer(CPointerObject pObject);
+	BOOL		WriteDependent(CBaseObject* pcObject);
+	BOOL		WriteDependent(CPointerObject pObject);
+
+	filePos		Write(const void* pvSource, filePos iSize, filePos iCount);
+	void*		GetData(void);
+	int			GetLength(void);
 };
 
 

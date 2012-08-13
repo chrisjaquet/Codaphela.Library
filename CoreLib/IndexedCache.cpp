@@ -24,7 +24,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "BaseLib/PointerRemapper.h"
 #include "BaseLib/FastFunctions.h"
 #include "BaseLib/Chars.h"
-#include "IndexDescriptor.h"
+#include "IndexedDataDescriptor.h"
 #include "IndexedCache.h"
 
 
@@ -72,42 +72,17 @@ BOOL CIndexedCache::PreAllocate(CMemoryCacheAllocation* pcResult)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedCache::Allocate(CIndexDescriptor* pcDesc, void* pvData)
-{
-	void*	pvCache;
-	
-	pvCache = Allocate(pcDesc);
-	if (pvCache)
-	{
-		memcpy_fast(pvCache, pvData, pcDesc->GetDataSize());
-		return TRUE;
-	}
-	else
-	{
-		return FALSE;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void* CIndexedCache::Allocate(CIndexDescriptor* pcDesc)
+BOOL CIndexedCache::Allocate(CIndexedDataDescriptor* pcDesc, CMemoryCacheAllocation* pcResult)
 {
 	void*						pvCache;
 	SIndexedCacheDescriptor*	psCacheDesc;
-	CMemoryCacheAllocation		cPreAllocated;
 
-	cPreAllocated.Init(pcDesc->GetDataSize());
-	mcCache.PreAllocate(&cPreAllocated);
-	pvCache = mcCache.Allocate(&cPreAllocated);
-	cPreAllocated.Kill();
+	pvCache = mcCache.Allocate(pcResult);
 
 	if (!pvCache)
 	{
 		pcDesc->Cache(NULL);
-		return NULL;
+		return FALSE;
 	}
 
 	psCacheDesc = (SIndexedCacheDescriptor*)RemapSinglePointer(pvCache, -(int)(sizeof(SIndexedCacheDescriptor)));
@@ -118,10 +93,10 @@ void* CIndexedCache::Allocate(CIndexDescriptor* pcDesc)
 		psCacheDesc->iFlags |= CACHE_DESCRIPTOR_FLAG_DIRTY;
 	}
 
-	//CIndexDescriptor (pcDesc) adjusted here.
+	//CIndexedDataDescriptor (pcDesc) adjusted here.
 	pcDesc->Cache(pvCache);
 
-	return pvCache;
+	return TRUE;
 }
 
 
@@ -139,7 +114,7 @@ void CIndexedCache::Clear(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedCache::Invalidate(CIndexDescriptor* pcDesc)
+void CIndexedCache::Invalidate(CIndexedDataDescriptor* pcDesc)
 {
 	SIndexedCacheDescriptor*	psCacheDesc;
 
@@ -185,7 +160,7 @@ int CIndexedCache::NumIgnored(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedCache::Update(CIndexDescriptor* pcDesc, void* pvData)
+BOOL CIndexedCache::Update(CIndexedDataDescriptor* pcDesc, void* pvData)
 {
 	SIndexedCacheDescriptor*	psCacheIndex;
 	void*						pvCache;
