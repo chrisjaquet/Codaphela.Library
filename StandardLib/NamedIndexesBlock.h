@@ -28,19 +28,19 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 class CNamedIndexesBlock
 {
 protected:
-	filePos		muiFilePos;
+	filePos		miDataIndex;
 	CChars		mszFirst;
 	CChars		mszLast;
 
 	void*		mpvCachePos;
 	int			miBlockWidth;  //Max name length = miBlockWidth - sizeof(OIndex) - 1 (for trailing 0).
-	int			miNumBlocks;
-	int			miUsedBlocks;
+	filePos		miBlockChunkSize;
+	filePos		miUsedBlocks;
 	BOOL		mbDirty;
 
 public:
-	void					Init(int iBlockWidth, int iNumBlocks);
-	void					Init(int iBlockWidth, void* pvBlocks, int iNumBlocks, filePos uiFilePos, void* pvCache);
+	void					Init(int iBlockWidth, filePos iBlockChunkSize);
+	void					Init(int iBlockWidth, void* pvBlocks, filePos iBlockChunkSize, filePos iDataIndex, void* pvCache);
 	void					Kill(void);
 
 	BOOL					CouldContain(CChars* szName);
@@ -49,20 +49,36 @@ public:
 	BOOL					IsFull(void);
 	BOOL					IsInFile(void);
 	BOOL					IsEmpty(void);
+	BOOL					IsCache(void* pvCachePos);
+	BOOL					IsDirty(void);
+
+	size_t					GetUsedByteSize(void);
+	size_t					GetAllocatedByteSize(void);
 
 	BOOL					AddUnsafe(OIndex oi, CChars* szName);
 	OIndex					GetIndex(CChars* szName);
-	BOOL					SetCache(void* pvCache);
-	int						GetUsedByteSize(void);
-	int						GetAllocatedByteSize(void);
-	CNamedIndexedBlock*		GetUnsafe(int iIndex);
 	BOOL					Remove(CChars* szName);
 	void					Dirty(void);
-	int						UsedNames(void);
+	BOOL					Uncache(CIndexedFile* pcFile);
+	BOOL					Cache(void* pvCache);
+	BOOL					Cache(CIndexedFile* pcFile, void* pvCache);
+	filePos					UsedNames(void);
+	int						GetBlockWidth(void);
+	filePos 				GetNumBlocks(void);
+	filePos 				GetUsedBlocks(void);
+	char*					GetFirst(void);
+	char*					GetLast(void);
+	void					Dump(void);
+	void					Dump(CArrayBlock* pavFakeBlock);
+	filePos					Write(CIndexedFile* pcFile);
+
+private:
+	CNamedIndexedBlock*		GetUnsafe(filePos iIndex);
 };
 
 
 typedef CArrayTemplate<CNamedIndexesBlock>	CArrayNamedIndexesBlock;
+typedef CArrayTemplate<CNamedIndexesBlock*>	CArrayNamedIndexesBlockPtr;
 
 
 #endif // __NAMED_INDEXES_BLOCK_H__

@@ -59,6 +59,7 @@ void CIndexedData::Init(CIndexedConfig* pcConfig)
 
 	InitIndices(pcConfig);
 	mcObjectFiles.Init(&mcDurableFileControl, "DAT");
+	mcObjectFiles.Open();
 
 	if (pcConfig->miObjectsCacheSize != 0)
 	{
@@ -91,6 +92,7 @@ void CIndexedData::Kill(void)
 	}
 	mcIndices.Save();
 
+	mcObjectFiles.Close();
 	DurableEnd();
 	mcDurableFileControl.Kill();
 
@@ -144,7 +146,7 @@ void CIndexedData::InitIndices(CIndexedConfig* pcConfig)
 //////////////////////////////////////////////////////////////////////////
 unsigned int CIndexedData::Flags(OIndex oi)
 {
-	CIndexDescriptor		cDescriptor;
+	CIndexedDataDescriptor		cDescriptor;
 	BOOL						bResult;
 
 	bResult = mcIndices.Get(&cDescriptor, oi);
@@ -170,7 +172,7 @@ BOOL CIndexedData::IsCaching(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::Write(CIndexDescriptor* pcDescriptor, void* pvData, unsigned int uiTimeStamp)
+BOOL CIndexedData::Write(CIndexedDataDescriptor* pcDescriptor, void* pvData, unsigned int uiTimeStamp)
 {
 	BOOL	bWritten;
 	BOOL	bResult;
@@ -199,34 +201,39 @@ BOOL CIndexedData::Write(CIndexDescriptor* pcDescriptor, void* pvData, unsigned 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::CacheRead(CIndexDescriptor* pcDescriptor)
+BOOL CIndexedData::CacheRead(CIndexedDataDescriptor* pcDescriptor)
 {
-	CArrayPointer	apsEvictedIndexedCacheDescriptors;
-	void*			pvData;
-	BOOL			bResult;
+	BOOL					bResult;
+	CMemoryCacheAllocation	cPreAllocated;
 
 	if (mbCaching)
 	{
-		if (mcObjectCache.PreAllocate(pcDescriptor, &apsEvictedIndexedCacheDescriptors))  //PreAllocate ensures there will be enough space in the cache.
+		cPreAllocated.Init(pcDescriptor->GetDataSize());
+		if (mcObjectCache.PreAllocate(&cPreAllocated))  //PreAllocate ensures there will be enough space in the cache.
 		{
-			bResult = WriteEvictedData(&apsEvictedIndexedCacheDescriptors);
-			apsEvictedIndexedCacheDescriptors.Kill();
+			bResult = WriteEvictedData(cPreAllocated.GetEvictedArray());
 			if (!bResult)
 			{
+				cPreAllocated.Kill();
 				return FALSE;
 			}
-			pvData = mcObjectCache.Allocate(pcDescriptor);
-			if (!pvData)
+
+			bResult = mcObjectCache.Allocate(pcDescriptor, &cPreAllocated);
+			if (!bResult)
 			{
+				cPreAllocated.Kill();
 				return FALSE;
 			}
 			
-			bResult = mcObjectFiles.Read(pcDescriptor, pvData);
+			bResult = mcObjectFiles.Read(pcDescriptor, pcDescriptor->GetCache());
 			if (!bResult)
 			{
+				cPreAllocated.Kill();
 				return FALSE;
 			}
-			EvictOverlappingFromCache(&apsEvictedIndexedCacheDescriptors);
+
+			EvictOverlappingFromCache(cPreAllocated.GetEvictedArray());
+			cPreAllocated.Kill();
 			return TRUE;
 		}
 		else
@@ -245,36 +252,44 @@ BOOL CIndexedData::CacheRead(CIndexDescriptor* pcDescriptor)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::CacheWrite(CIndexDescriptor* pcDescriptor, void* pvData, BOOL* pbWritten)
+BOOL CIndexedData::CacheWrite(CIndexedDataDescriptor* pcDescriptor, void* pvData, BOOL* pbWritten)
 {
-	CArrayPointer	apsEvictedIndexedCacheDescriptors;
-	BOOL			bResult;
+	BOOL					bResult;
+	CMemoryCacheAllocation	cPreAllocated;
 
 	if (mbCaching)
 	{
-		if (mcObjectCache.PreAllocate(pcDescriptor, &apsEvictedIndexedCacheDescriptors))  //PreAllocate ensures there will be enough space in the cache.
+		cPreAllocated.Init(pcDescriptor->GetDataSize());
+		if (mcObjectCache.PreAllocate(&cPreAllocated))  //PreAllocate ensures there will be enough space in the cache.
 		{
 			*pbWritten = FALSE;
-			bResult = WriteEvictedData(&apsEvictedIndexedCacheDescriptors);
-			apsEvictedIndexedCacheDescriptors.Kill();
+			bResult = WriteEvictedData(cPreAllocated.GetEvictedArray());
 			if (!bResult)
 			{
+				cPreAllocated.Kill();
 				return FALSE;
 			}
-			bResult = mcObjectCache.Allocate(pcDescriptor, pvData);  //Allocates space in the cache and copies the object.
+
+			bResult = mcObjectCache.Allocate(pcDescriptor, &cPreAllocated);
 			if (!bResult)
 			{
+				cPreAllocated.Kill();
 				return FALSE;
 			}
-			EvictOverlappingFromCache(&apsEvictedIndexedCacheDescriptors);
+
+			memcpy_fast(pcDescriptor->GetCache(), pvData, pcDescriptor->GetDataSize());
+
+			EvictOverlappingFromCache(cPreAllocated.GetEvictedArray());
+			cPreAllocated.Kill();
 			return TRUE;
 		}
 		else
 		{
 			//There wasn't enough space in the cache... the object is written immediately.
 			bResult = WriteData(pcDescriptor, pvData);
-			apsEvictedIndexedCacheDescriptors.Kill();
 			*pbWritten = TRUE;
+
+			cPreAllocated.Kill();
 			return bResult;
 		}
 	}
@@ -290,15 +305,21 @@ BOOL CIndexedData::CacheWrite(CIndexDescriptor* pcDescriptor, void* pvData, BOOL
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedData::EvictFromCache(CIndexDescriptor* pcDescriptor)
+BOOL CIndexedData::EvictFromCache(CIndexedDataDescriptor* pcDescriptor)
 {
-	SIndexedCacheDescriptor* psExisting;
+	SIndexedCacheDescriptor*	psExisting;
+	BOOL						bResult;
 
 	if (pcDescriptor->IsCached())
 	{
 		psExisting = mcObjectCache.GetHeader(pcDescriptor->GetCache());
-		WriteEvictedData(pcDescriptor, psExisting);
+		bResult = WriteEvictedData(pcDescriptor, psExisting);
 		mcObjectCache.Invalidate(psExisting);
+		return bResult;
+	}
+	else
+	{
+		return TRUE;
 	}
 }
 
@@ -307,14 +328,20 @@ void CIndexedData::EvictFromCache(CIndexDescriptor* pcDescriptor)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedData::EvictFromCache(SIndexedCacheDescriptor* psExisting)
+BOOL CIndexedData::EvictFromCache(SIndexedCacheDescriptor* psExisting)
 {
-	CIndexDescriptor	cDescriptor;
-	BOOL				bResult;
+	CIndexedDataDescriptor	cDescriptor;
+	BOOL					bResult;
 
 	bResult = mcIndices.Get(&cDescriptor, psExisting->oi);
+	if (!bResult)
+	{
+		return FALSE;
+	}
+
 	cDescriptor.Cache(NULL);
-	mcIndices.Set(&cDescriptor);
+	bResult = mcIndices.Set(&cDescriptor);
+	return bResult;
 }
 
 
@@ -322,19 +349,22 @@ void CIndexedData::EvictFromCache(SIndexedCacheDescriptor* psExisting)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedData::EvictOverlappingFromCache(CArrayPointer* papsEvictedIndexedCacheDescriptors)
+BOOL CIndexedData::EvictOverlappingFromCache(CArrayPointer* papsEvictedIndexedCacheDescriptors)
 {
 	int							i;
 	SIndexedCacheDescriptor*	psDesc;
 	int							iType;
+	BOOL						bResult;
 
+	bResult = TRUE;
 	for (i = 0; i < papsEvictedIndexedCacheDescriptors->NumElements(); i++)
 	{
 		if (papsEvictedIndexedCacheDescriptors->Get(i, (void**)&psDesc, &iType))
 		{
-			EvictFromCache(psDesc);
+			bResult &= EvictFromCache(psDesc);
 		}
 	}
+	return bResult;
 }
 
 
@@ -342,7 +372,7 @@ void CIndexedData::EvictOverlappingFromCache(CArrayPointer* papsEvictedIndexedCa
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedData::Invalidate(CIndexDescriptor* pcDescriptor)
+void CIndexedData::Invalidate(CIndexedDataDescriptor* pcDescriptor)
 {
 	if (mbCaching)
 	{
@@ -355,7 +385,7 @@ void CIndexedData::Invalidate(CIndexDescriptor* pcDescriptor)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::WriteData(CIndexDescriptor* pcDescriptor, void* pvData)
+BOOL CIndexedData::WriteData(CIndexedDataDescriptor* pcDescriptor, void* pvData)
 {
 	if (pcDescriptor->HasFile())
 	{
@@ -372,14 +402,18 @@ BOOL CIndexedData::WriteData(CIndexDescriptor* pcDescriptor, void* pvData)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedData::WriteEvictedData(CIndexDescriptor* pcDescriptor, SIndexedCacheDescriptor* psCached)
+BOOL CIndexedData::WriteEvictedData(CIndexedDataDescriptor* pcDescriptor, SIndexedCacheDescriptor* psCached)
 {
 	void*				pvData;
 
 	if (psCached->iFlags & CACHE_DESCRIPTOR_FLAG_DIRTY)
 	{
 		pvData = RemapSinglePointer(psCached, sizeof(SIndexedCacheDescriptor));
-		WriteData(pcDescriptor, pvData);
+		return WriteData(pcDescriptor, pvData);
+	}
+	else
+	{
+		return TRUE;
 	}
 }
 
@@ -390,7 +424,7 @@ void CIndexedData::WriteEvictedData(CIndexDescriptor* pcDescriptor, SIndexedCach
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::WriteEvictedData(SIndexedCacheDescriptor* psCached)
 {
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 	BOOL				bResult;
 
 	bResult = mcIndices.Get(&cDescriptor, psCached->oi);
@@ -413,7 +447,7 @@ BOOL CIndexedData::WriteEvictedData(SIndexedCacheDescriptor* psCached)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::ClearDescriptorCache(SIndexedCacheDescriptor* psCached)
 {
-	CIndexDescriptor		cDescriptor;
+	CIndexedDataDescriptor		cDescriptor;
 	BOOL						bResult;
 
 	bResult = mcIndices.Get(&cDescriptor, psCached->oi);
@@ -464,7 +498,7 @@ BOOL CIndexedData::WriteEvictedData(CArrayPointer* papsEvictedIndexedCacheDescri
 unsigned int CIndexedData::Size(OIndex oi)
 {
 	BOOL						bResult;
-	CIndexDescriptor		cDescriptor;
+	CIndexedDataDescriptor		cDescriptor;
 
 	bResult = mcIndices.Get(&cDescriptor, oi);
 	if (bResult)
@@ -481,7 +515,7 @@ unsigned int CIndexedData::Size(OIndex oi)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::Add(OIndex oi, void* pvData, unsigned int iDataSize, unsigned int uiTimeStamp)
 {
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 	BOOL				bResult;
 
 	//It doesn't matter what the result was.
@@ -507,7 +541,7 @@ BOOL CIndexedData::Add(OIndex oi, void* pvData, unsigned int iDataSize, unsigned
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::Set(OIndex oi, void* pvData, unsigned int uiTimeStamp)
 {
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 	BOOL				bResult;
 
 	bResult = GetDescriptor(oi, &cDescriptor);
@@ -543,7 +577,7 @@ BOOL CIndexedData::Set(OIndex oi, void* pvData, unsigned int uiTimeStamp)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::Set(OIndex oi, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp)
 {
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 	BOOL				bResult;
 
 	bResult = GetDescriptor(oi, &cDescriptor);
@@ -590,7 +624,7 @@ BOOL CIndexedData::Set(OIndex oi, void* pvData, unsigned int uiDataSize, unsigne
 BOOL CIndexedData::SetOrAdd(OIndex oi, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp)
 {
 	BOOL				bResult;
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 
 	bResult = GetDescriptor(oi, &cDescriptor);
 	if (bResult)
@@ -608,7 +642,7 @@ BOOL CIndexedData::SetOrAdd(OIndex oi, void* pvData, unsigned int uiDataSize, un
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::CompareDiskToMemory(CIndexDescriptor* pcDescriptor, void* pvData)
+BOOL CIndexedData::CompareDiskToMemory(CIndexedDataDescriptor* pcDescriptor, void* pvData)
 {
 	//This function tells the disk whether it must update itself because the cached value has changed.
 	//It also timestamps the descriptor of the changed data.
@@ -646,7 +680,7 @@ BOOL CIndexedData::CompareDiskToMemory(CIndexDescriptor* pcDescriptor, void* pvD
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::GetDescriptor(OIndex oi, CIndexDescriptor* pcDescriptor)
+BOOL CIndexedData::GetDescriptor(OIndex oi, CIndexedDataDescriptor* pcDescriptor)
 {
 	return mcIndices.Get(pcDescriptor, oi);
 }
@@ -658,7 +692,7 @@ BOOL CIndexedData::GetDescriptor(OIndex oi, CIndexDescriptor* pcDescriptor)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::Get(OIndex oi, void* pvData)
 {
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 	BOOL				bResult;
 
 	bResult = GetDescriptor(oi, &cDescriptor);
@@ -676,7 +710,7 @@ BOOL CIndexedData::Get(OIndex oi, void* pvData)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CIndexedData::GetData(CIndexDescriptor* pcDescriptor, void* pvData)
+BOOL CIndexedData::GetData(CIndexedDataDescriptor* pcDescriptor, void* pvData)
 {
 	BOOL	bResult;
 
@@ -715,7 +749,7 @@ BOOL CIndexedData::GetData(CIndexDescriptor* pcDescriptor, void* pvData)
 //////////////////////////////////////////////////////////////////////////
 BOOL CIndexedData::Remove(OIndex oi)
 {
-	CIndexDescriptor	cDescriptor;
+	CIndexedDataDescriptor	cDescriptor;
 	BOOL				bResult;
 
 	//This is not correct.  Removed objects must be marked as removed until all transactions are finished.
@@ -741,7 +775,7 @@ void CIndexedData::DurableBegin(void)
 {
 	if (mbDurable)
 	{
-		mcDurableFileControl.mcDurableSet.Begin();
+		mcDurableFileControl.Begin();
 	}
 }
 
@@ -754,7 +788,7 @@ void CIndexedData::DurableEnd(void)
 {
 	if (mbDurable)
 	{
-		mcDurableFileControl.mcDurableSet.End();
+		mcDurableFileControl.End();
 	}
 }
 
@@ -772,7 +806,7 @@ BOOL CIndexedData::Flush(void)
 	if (mbCaching)
 	{
 		bAnyFailed = FALSE;
-		psCached = mcObjectCache.GetFirst();
+		psCached = mcObjectCache.StartIteration();
 		while (psCached)
 		{
 			bResult = WriteEvictedData(psCached);
@@ -780,7 +814,7 @@ BOOL CIndexedData::Flush(void)
 			{
 				bAnyFailed = TRUE;
 			}
-			psCached = mcObjectCache.GetNext(psCached);
+			psCached = mcObjectCache.Iterate(psCached);
 		}
 		mcObjectCache.Clear();
 		return bAnyFailed;
@@ -804,7 +838,7 @@ BOOL CIndexedData::Uncache(void)
 	if (mbCaching)
 	{
 		bAnyFailed = FALSE;
-		psCached = mcObjectCache.GetFirst();
+		psCached = mcObjectCache.StartIteration();
 		while (psCached)
 		{
 			bResult = ClearDescriptorCache(psCached);
@@ -812,7 +846,7 @@ BOOL CIndexedData::Uncache(void)
 			{
 				bAnyFailed = TRUE;
 			}
-			psCached = mcObjectCache.GetNext(psCached);
+			psCached = mcObjectCache.Iterate(psCached);
 		}
 		mcObjectCache.Clear();
 		return bAnyFailed;

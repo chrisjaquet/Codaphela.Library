@@ -383,24 +383,25 @@ BOOL CTransientIndexedFile::Set(OIndex oi, void* pvData, unsigned int uiSize)
 BOOL CTransientIndexedFile::Allocate(STransientIndexedPointer* psPointer, int iPointerIndex)
 {
 	SOIndexIndexCacheDescriptor*	psOIndexIndex;
-	CArrayPointer					apcEvicted;
+	CMemoryCacheAllocation			cPreAllocated;
 	int								i;
 	void*							pvData;
 
-	if (!mcCache.PreAllocate(psPointer->sIndexedMemory.uiSize, &apcEvicted))
+	cPreAllocated.Init(psPointer->sIndexedMemory.uiSize);
+	if (!mcCache.PreAllocate(&cPreAllocated))
 	{
+		cPreAllocated.Kill();
 		return FALSE;
 	}
 
-	for (i = 0; i < apcEvicted.NumElements(); i++)
+	for (i = 0; i < cPreAllocated.NumElements(); i++)
 	{
-		psOIndexIndex = (SOIndexIndexCacheDescriptor*)apcEvicted.GetPtr(i);
+		psOIndexIndex = (SOIndexIndexCacheDescriptor*)cPreAllocated.Get(i);
 		pvData = RemapSinglePointer(psOIndexIndex, sizeof(SOIndexIndexCacheDescriptor));
 		Write(psOIndexIndex->sIndex.iIndex, pvData);
 	}
-	apcEvicted.Kill();
 
-	pvData = mcCache.Allocate(psPointer->sIndexedMemory.uiSize);
+	pvData = mcCache.Allocate(&cPreAllocated);
 
 	if (pvData)
 	{
@@ -408,10 +409,12 @@ BOOL CTransientIndexedFile::Allocate(STransientIndexedPointer* psPointer, int iP
 		psOIndexIndex->sIndex.iIndex = iPointerIndex;
 		psOIndexIndex->sIndex.oi = psPointer->sIndexedMemory.oi;
 		psPointer->pvCache = pvData;
+		cPreAllocated.Kill();
 		return TRUE;
 	}
 	else
 	{
+		cPreAllocated.Kill();
 		return FALSE;
 	}
 }
@@ -446,9 +449,9 @@ BOOL CTransientIndexedFile::Read(STransientIndexedPointer* psPointer, int iPoint
 BOOL CTransientIndexedFile::WriteNew(STransientIndexedPointer* psPointer, void* pvData)
 {
 	CTransientIndexedFileDescriptor*	pcFile;
-	int									iIndex;
+	filePos								iIndex;
 
-	pcFile = GetFileForNewAllocation(psPointer->sIndexedMemory.uiSize);
+	pcFile = GetOrCreateFile(psPointer->sIndexedMemory.uiSize);
 
 	iIndex = pcFile->Write(pvData);
 	if (iIndex == -1)
@@ -518,15 +521,25 @@ BOOL CTransientIndexedFile::Write(int iPointerIndex, void* pvData)
 void CTransientIndexedFile::RemapCacheOIndexIndices(int iInsertedIndex)
 {
 	SOIndexIndexCacheDescriptor*	psCache;
+	SOIndexIndexCacheDescriptor*	psInitial;
 
 	psCache = (SOIndexIndexCacheDescriptor*)mcCache.GetFirst();
-	while (psCache)
+	psInitial = psCache;
+	if (psInitial)
 	{
-		if (psCache->sIndex.iIndex >= iInsertedIndex)
+		for (;;)
 		{
-			psCache->sIndex.iIndex++;
+			if (psCache->sIndex.iIndex >= iInsertedIndex)
+			{
+				psCache->sIndex.iIndex++;
+			}
+			psCache = (SOIndexIndexCacheDescriptor*)mcCache.GetNext(psCache);
+
+			if (psCache == psInitial)
+			{
+				break;
+			}
 		}
-		psCache = (SOIndexIndexCacheDescriptor*)mcCache.GetNext(psCache);
 	}
 }
 
@@ -559,7 +572,7 @@ BOOL CTransientIndexedFile::TestOrder(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CTransientIndexedFileDescriptor* CTransientIndexedFile::GetFileForNewAllocation(int iDataSize)
+CTransientIndexedFileDescriptor* CTransientIndexedFile::GetOrCreateFile(int iDataSize)
 {
 	int									i;
 	CTransientIndexedFileDescriptor*	pcFile;

@@ -45,17 +45,16 @@ public:
 	void						Zero(void);
 	void						Kill(void);
 
-	BOOL						PreAllocate(CIndexDescriptor* pcDesc, CArrayPointer* papIndexedCacheDescriptors);
-	BOOL						Allocate(CIndexDescriptor* pcDesc, void* pvData);
-	void*						Allocate(CIndexDescriptor* pcDesc);
+	BOOL						PreAllocate(CMemoryCacheAllocation* pcResult);
+	BOOL						Allocate(CIndexedDataDescriptor* pcDesc, CMemoryCacheAllocation* pcResult);
 	void						Clear(void);
-	void						Invalidate(CIndexDescriptor* pcDesc);
+	void						Invalidate(CIndexedDataDescriptor* pcDesc);
 	void						Invalidate(SIndexedCacheDescriptor* psCacheDesc);
-	BOOL						Update(CIndexDescriptor* pcDesc, void* pvData);
+	BOOL						Update(CIndexedDataDescriptor* pcDesc, void* pvData);
 
 	SIndexedCacheDescriptor*	GetHeader(void* pvData);
-	SIndexedCacheDescriptor*	GetFirst(void);
-	SIndexedCacheDescriptor*	GetNext(SIndexedCacheDescriptor* psCurrent);
+	SIndexedCacheDescriptor*	StartIteration(void);
+	SIndexedCacheDescriptor*	Iterate(SIndexedCacheDescriptor* psCurrent);
 	int							NumCached(void);
 	int							NumIgnored(void);
 

@@ -58,6 +58,26 @@ CBaseObject* CNamedIndexedObjects::Get(OIndex oi)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CBaseObject* CNamedIndexedObjects::Get(char* szName)
+{
+	OIndex	oi;
+
+	oi = mcNames.Get(szName);
+	if (oi != INVALID_O_INDEX)
+	{
+		return Get(oi);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CNamedIndexedObjects::Add(OIndex oi, CBaseObject* pvMemory)
 {
 	mcObjects.Add(oi, pvMemory);
@@ -72,7 +92,6 @@ void CNamedIndexedObjects::Remove(OIndex oi)
 {
 	mcObjects.Remove(oi);
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,3 +124,4 @@ void CNamedIndexedObjects::AddWithIDAndName(CBaseObject* pvObject, OIndex oi, ch
 
 	mcNames.Add(pcNamed->GetOI(), szName);
 }
+

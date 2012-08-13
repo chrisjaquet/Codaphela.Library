@@ -44,6 +44,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(COMMONLIBRARIES);$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(COMMONLIBRARIES);$(IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -51,7 +52,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -59,7 +60,6 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
@@ -80,6 +80,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BaseFileNode.h" />
     <ClInclude Include="DataMacro.h" />
     <ClInclude Include="ArrayBit.h" />
     <ClInclude Include="ArrayBlock.h" />
@@ -98,11 +99,16 @@
     <ClInclude Include="ArrayTemplate.h" />
     <ClInclude Include="ArrayDenseTemplate.h" />
     <ClInclude Include="ArraySparseTemplate.h" />
+    <ClInclude Include="FileSystemIterator.h" />
+    <ClInclude Include="FileSystemGeneral.h" />
     <ClInclude Include="LinkListBlock.h" />
     <ClInclude Include="LinkListBlockMemoryStack.h" />
     <ClInclude Include="LinkListTemplate.h" />
     <ClInclude Include="LinkListTemplateFreeList.h" />
     <ClInclude Include="LinkListTemplateMemoryStack.h" />
+    <ClInclude Include="MemoryCacheAllocation.h" />
+    <ClInclude Include="PackFileIterator.h" />
+    <ClInclude Include="PackFilesGeneral.h" />
     <ClInclude Include="TreeBlock.h" />
     <ClInclude Include="TreeBlockMemoryStack.h" />
     <ClInclude Include="TreeInt.h" />
@@ -230,8 +236,12 @@
     <ClCompile Include="ArrayPointer.cpp" />
     <ClCompile Include="ArraySimpleChar.cpp" />
     <ClCompile Include="ArrayString.cpp" />
+    <ClCompile Include="BaseFileNode.cpp" />
+    <ClCompile Include="FileSystemIterator.cpp" />
     <ClCompile Include="LinkListBlock.cpp" />
     <ClCompile Include="LinkListBlockMemoryStack.cpp" />
+    <ClCompile Include="MemoryCacheAllocation.cpp" />
+    <ClCompile Include="PackFileIterator.cpp" />
     <ClCompile Include="TreeBlock.cpp" />
     <ClCompile Include="TreeBlockMemoryStack.cpp" />
     <ClCompile Include="EnumeratorBlock.cpp" />
@@ -332,8 +342,6 @@
     <None Include="MemoryTodo.txt" />
     <None Include="gpl.txt" />
     <None Include="lgpl.txt" />
-    <None Include="ArraySimple.txt" />
-    <None Include="VTune\BaseLib.vpj" />
     <None Include="Libs.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
