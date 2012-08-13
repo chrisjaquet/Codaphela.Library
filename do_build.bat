@@ -3,7 +3,7 @@
 set INST_DIR="D:\Work\Devel\0Libraries\0PreBuilt"
 
 REM set GENERATOR="MinGW Makefiles"
-set GENERATOR="CodeBlocks - MinGW Makefiles"
+REM set GENERATOR="CodeBlocks - MinGW Makefiles"
 REM set GENERATOR="CodeBlocks - NMake Makefiles" REM FIXME Does not work yet
 REM set GENERATOR="Eclipse CDT4 - MinGW Makefiles"
 REM set GENERATOR="Eclipse CDT4 - NMake Makefiles"
@@ -12,7 +12,7 @@ REM set GENERATOR="Visual Studio 8 2005 Win64"
 REM set GENERATOR="Visual Studio 9 2008"
 REM set GENERATOR="Visual Studio 9 2008 IA64"
 REM set GENERATOR="Visual Studio 9 2008 Win64"
-REM set GENERATOR="Visual Studio 10"
+set GENERATOR="Visual Studio 10"
 REM set GENERATOR="Visual Studio 10 IA64"
 REM set GENERATOR="Visual Studio 10 Win64"
 REM set GENERATOR="Visual Studio 11"
@@ -28,7 +28,7 @@ mkdir %BUILD_DIR%
 cd %BUILD_DIR%
 mkdir Debug
 cd Debug
-SET BUILD_COMMON_STRING=-G %GENERATOR% %CUR_DIR% -DCMAKE_INSTALL_PREFIX=%INST_DIR_UNIX% -DCodaphelaLibrary_BUILD_SHARED_LIBRARY=ON
+SET BUILD_COMMON_STRING=-G %GENERATOR% %CUR_DIR% -DCMAKE_INSTALL_PREFIX=%INST_DIR_UNIX% -DCodaphelaLibrary_BUILD_SHARED_LIBRARY=OFF
 cmake %BUILD_COMMON_STRING% -DCMAKE_BUILD_TYPE="Debug"
 REM mingw32-make install
 REM cd %BUILD_DIR%
