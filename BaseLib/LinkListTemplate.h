@@ -693,7 +693,7 @@ void CLinkListTemplate<M>::Init(void)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-M* __CLinkListTemplate<M>::AllocateDetached(void)
+M* CLinkListTemplate<M>::AllocateDetached(void)
 {
 	SDNode*		psNode;
 

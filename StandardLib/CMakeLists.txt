@@ -27,6 +27,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         ChannelsAccessorWorstCase.h
                         ChannelsCopier.h
                         ChannelsHelper.h
+						ChunkFilenames.h
                         ClassFunctionsCall.h
                         ClassStorage.h
                         Collection.h
@@ -107,6 +108,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         ChannelsAccessorWorstCase.cpp
                         ChannelsCopier.cpp
                         ChannelsHelper.cpp
+						ChunkFilenames.cpp
                         ClassFunctionsCall.cpp
                         ClassStorage.cpp
                         Collection.cpp

@@ -34,7 +34,6 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         CharsIDArray.h
                         ChunkFile.h
                         ChunkFileIndex.h
-                        ChunkFileNames.h
                         ConstructorCall.h
                         CSVFile.h
                         CSVFileEditable.h

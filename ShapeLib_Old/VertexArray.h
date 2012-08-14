@@ -1,8 +1,8 @@
 #ifndef __VERTEX_ARRAY_H__
 #define __VERTEX_ARRAY_H__
 #include <d3dx9.h>
-#include "CoreLib/PackedFloat.h"
-#include "CoreLib/ArrayTemplate.h"
+#include "BaseLib/PackedFloat.h"
+#include "BaseLib/ArrayTemplate.h"
 
 
 struct SSkinnedVector
