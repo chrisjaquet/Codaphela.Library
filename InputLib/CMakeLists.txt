@@ -2,6 +2,14 @@ SET(LIB_NAME InputLib)
 OPTION(${PROJECT_NAME}_BUILD_${LIB_NAME} "Set this to ON to build ${LIB_NAME}." ON)
 
 IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
+
+    # We need DirectX for dinput.h
+    IF(NOT ${DirectX_FOUND})
+        MESSAGE(SEND_ERROR "${LIB_NAME} requires DirectX, but DirectX_FOUND is set to ${DirectX_FOUND}.")
+    ELSE()
+        INCLUDE_DIRECTORIES(${DirectX_INCLUDE_DIR})
+    ENDIF()
+
     SET(HEADER_FILES
                         Input.h
                         InputActions.h
@@ -113,7 +121,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
     ELSE()
         ADD_LIBRARY(${LIB_NAME} ${SOURCE_FILES} ${HEADER_FILES})
     ENDIF()
-    # TARGET_LINK_LIBRARIES(${LIB_NAME} )
+    TARGET_LINK_LIBRARIES(${LIB_NAME} ${DirectX_LIBRARY})
 
     # Installation
     INSTALL(TARGETS ${LIB_NAME}
