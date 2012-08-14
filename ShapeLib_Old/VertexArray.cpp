@@ -24,7 +24,7 @@ void CVertexArray::SetVectorSize(int iNumVectors)
 {
 	maVectorSource.Kill();
 	maVectorSource.Allocate(iNumVectors);
-	if (maVectorTransformed.pvArray == NULL)
+	if (maVectorTransformed.mpvArray == NULL)
 	{
 		maVectorTransformed.Allocate(iNumVectors+1);
 	}
@@ -41,7 +41,7 @@ void CVertexArray::SetMatrixSize(int iNumMatricies)
 void CVertexArray::Set(void)
 {
 	//The size + 1 is to stop directX overwriting memory when it transforms the last vertex in the array.
-	if (maVectorTransformed.pvArray == NULL)
+	if (maVectorTransformed.mpvArray == NULL)
 	{
 		maVectorTransformed.Allocate(maVectorSource.miUsedElements+1);
 	}
