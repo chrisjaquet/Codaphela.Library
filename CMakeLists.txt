@@ -84,7 +84,7 @@ ENDIF()
 
 # Extra Compiler Optins
 IF(${CMAKE_COMPILER_IS_GNUCXX})
-    ADD_DEFINITIONS(-Wall -Wno-write-strings)
+    ADD_DEFINITIONS(-Wall -Wno-write-strings -Wno-unused-but-set-variable)
 ENDIF()
 
 # Sub-directories
