@@ -84,6 +84,7 @@
     <ClInclude Include="Base.h" />
     <ClInclude Include="DependentObjectSerialiser.h" />
     <ClInclude Include="ChunkFileNames.h" />
+    <ClInclude Include="NamedHollowObject.h" />
     <ClInclude Include="NamedIndexedBlock.h" />
     <ClInclude Include="NamedIndexedSorterSource.h" />
     <ClInclude Include="NamedIndexesBlocksLoader.h" />
@@ -95,12 +96,18 @@
     <ClInclude Include="NamedIndexesFileDumper.h" />
     <ClInclude Include="NamedIndexesOptimiser.h" />
     <ClInclude Include="ObjectConverter.h" />
-    <ClInclude Include="ObjectConverterChunked.h" />
+    <ClInclude Include="ObjectConverterNative.h" />
     <ClInclude Include="ObjectConverterText.h" />
     <ClInclude Include="ObjectFileGeneral.h" />
+    <ClInclude Include="ObjectGraphDeserialiser.h" />
     <ClInclude Include="ObjectMultipleSource.h" />
+    <ClInclude Include="ObjectReader.h" />
+    <ClInclude Include="ObjectReaderChunked.h" />
+    <ClInclude Include="ObjectReaderSimple.h" />
     <ClInclude Include="ObjectSingleSource.h" />
     <ClInclude Include="ObjectSourceChunked.h" />
+    <ClInclude Include="ObjectSourceNative.h" />
+    <ClInclude Include="ObjectSourceSimple.h" />
     <ClInclude Include="ObjectSourceText.h" />
     <ClInclude Include="Parameters.h" />
     <ClInclude Include="SerialisedObject.h" />
@@ -172,6 +179,7 @@
   <ItemGroup>
     <ClCompile Include="DependentObjectSerialiser.cpp" />
     <ClCompile Include="ChunkFileNames.cpp" />
+    <ClCompile Include="NamedHollowObject.cpp" />
     <ClCompile Include="NamedIndexedBlock.cpp" />
     <ClCompile Include="NamedIndexedData.cpp" />
     <ClCompile Include="NamedIndexedObjects.cpp" />
@@ -183,11 +191,17 @@
     <ClCompile Include="NamedIndexesFileDumper.cpp" />
     <ClCompile Include="NamedIndexesOptimiser.cpp" />
     <ClCompile Include="ObjectConverter.cpp" />
-    <ClCompile Include="ObjectConverterChunked.cpp" />
+    <ClCompile Include="ObjectConverterNative.cpp" />
     <ClCompile Include="ObjectConverterText.cpp" />
+    <ClCompile Include="ObjectGraphDeserialiser.cpp" />
     <ClCompile Include="ObjectMultipleSource.cpp" />
+    <ClCompile Include="ObjectReader.cpp" />
+    <ClCompile Include="ObjectReaderChunked.cpp" />
+    <ClCompile Include="ObjectReaderSimple.cpp" />
     <ClCompile Include="ObjectSingleSource.cpp" />
     <ClCompile Include="ObjectSourceChunked.cpp" />
+    <ClCompile Include="ObjectSourceNative.cpp" />
+    <ClCompile Include="ObjectSourceSimple.cpp" />
     <ClCompile Include="ObjectSourceText.cpp" />
     <ClCompile Include="ObjectWriter.cpp" />
     <ClCompile Include="SerialisedObject.cpp" />
