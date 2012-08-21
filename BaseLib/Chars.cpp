@@ -583,7 +583,7 @@ void CChars::Append(double d)
 {
 	char sz[32];
 
-	sprintf(sz, "%.8d", d);
+	sprintf(sz, "%.8f", d);
 	Append(sz);
 }
 

@@ -30,7 +30,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 #define HUGE_DESRIPTOR_READ_SIZE	(4 MB)
 
-//  First Level Grouping  ----+-------------------------------------+-----------------------------------+--- ...
+/*  First Level Grouping  ----+-------------------------------------+-----------------------------------+--- ...
 //		Groups of: 12         |                                     |                                   |
 //						      v                                     v                                   v
 //	Second Level Chunks	     0-11                                 12-23                                 .
@@ -47,7 +47,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 //	Number of Second Level Chunks and Number of Third Level Chunks (unrelated).
 //
 //	Technically you don't need the array.  You can just search the 2nd level chunks.
-//  
+*/  
 
 
 struct SIndexedSecondLevelSearch

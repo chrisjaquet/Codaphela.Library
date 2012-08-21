@@ -196,6 +196,8 @@ BOOL WriteImage(CImage* pcImage, char* szFileName, EImageType eType)
 		return (SaveRAD(pcImage, szFileName));
 	case IT_RAW:
 		return (SaveRAW(pcImage, szFileName));
+    default:
+        break;
 	}
 	return FALSE;
 }

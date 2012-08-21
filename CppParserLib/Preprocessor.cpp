@@ -1564,6 +1564,8 @@ SCTokenBlock CPreprocessor::PreprocessTokens(CPPTokenHolder* pcDestTokens, CMemo
 				case PPD_elif:
 					sLine = ProcessHashElif(&cParser, (CPPConditional*)pcDirective, sLine);
 					break;
+                default:
+                    break;
 				}
 			}
 			else
@@ -1588,6 +1590,8 @@ SCTokenBlock CPreprocessor::PreprocessTokens(CPPTokenHolder* pcDestTokens, CMemo
 					case PPD_pragma:
 						bResult = ProcessHashPragma(&cParser);
 						break;
+                    default:
+                        break;
 					}
 				}
 				sLine.iTokenIndex++;

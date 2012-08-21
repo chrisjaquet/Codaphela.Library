@@ -115,6 +115,8 @@ void DumpTokenSingle(void* pi)
 	case ET_Node:
 		EngineOutput("Node");
 		break;
+    default:
+        break;
 	}
 }
 

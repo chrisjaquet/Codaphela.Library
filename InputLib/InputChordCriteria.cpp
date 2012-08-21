@@ -305,6 +305,8 @@ void CGroupInputChordCriteria::ToString(CChars* psz)
 		case BAA_Inactive:
 			puCriteria->cInactive.ToString(psz);
 			break;
+        default:
+            break;
 		}
 	}
 }
@@ -431,6 +433,8 @@ void COrderedInputChordCriteria::ToString(CChars* psz)
 		case BAA_Group:
 			puCriteria->cGroup.ToString(psz);
 			break;
+        default:
+            break;
 		}
 	}
 }

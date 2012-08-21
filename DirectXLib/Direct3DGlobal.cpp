@@ -2222,7 +2222,7 @@ int CD3D::CalculatePositionSize(int iD3DVertexFormat)
 	{
 		return sizeof(float) * 4;
 	}
-	else if (iPosition = D3DFVF_XYZW)
+	else if (iPosition == D3DFVF_XYZW)
 	{
 		return sizeof(float) * 4;
 	}
@@ -2331,7 +2331,7 @@ void CD3D::GetAdaptorCapabilities(int iAD)
 
 	if (acMonitor[iAD].bIndexBuffers)
 	{
-		sprintf(s, "Using index buffers of length [%i]\n", acMonitor[iAD].sD3DCaps.MaxVertexIndex);
+		sprintf(s, "Using index buffers of length [%i]\n", (int)(acMonitor[iAD].sD3DCaps.MaxVertexIndex));
 		gcLogger.Add(s);
 	}
 	else

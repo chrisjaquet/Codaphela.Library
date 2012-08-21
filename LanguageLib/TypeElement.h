@@ -51,6 +51,8 @@ struct STypeElement
 			return "String";
 		case PT_CharType:
 			return"Char";
+        default:
+            break;
 		}
 		return "NULL";
 	}
