@@ -18,17 +18,19 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "NamedObject.h"
+#include "Objects.h"
+#include "ObjectConverter.h"
+#include "ObjectMultipleSource.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNamedObject::Kill(void)
+void CObjectMultipleSource::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
 {
-	mon.Kill();
-	CObject::Kill();
+	CObjectSource::Init(pcConverter, pcFile, szFileName);
+	mcNames.Init(8);
 }
 
 
@@ -36,9 +38,10 @@ void CNamedObject::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-char* CNamedObject::GetName(void)
+void CObjectMultipleSource::Kill(void)
 {
-	return mon.Text();
+	mcNames.Kill();
+	CObjectSource::Kill();
 }
 
 
@@ -46,23 +49,10 @@ char* CNamedObject::GetName(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CNamedObject::IsNamed(void)
+BOOL CObjectMultipleSource::Contains(char* szFullName)
 {
-	return TRUE;
-}
+	int		iIndex;
 
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CNamedObject::InitName(char* szName)
-{
-	mon.Init(szName);
-	if (mon.Length() < MAX_NAMED_OBJECT_NAME_LENGTH)
-	{
-		return TRUE;
-	}
-	mon.SetLength(MAX_NAMED_OBJECT_NAME_LENGTH-1);
-	return FALSE;
+	iIndex = mcNames.FindInSorted(szFullName, FALSE);
+	return iIndex != -1;
 }
-

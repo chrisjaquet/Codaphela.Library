@@ -1,22 +1,22 @@
-#include "ObjectGraphWriter.h"
+#include "ObjectGraphSerialiser.h"
 #include "PointerObject.h"
-#include "DependentObjectWriter.h"
+#include "DependentObjectSerialiser.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CDependentObjectWriter::Init(CObjectGraphWriter* pcGraphWriter, CBaseObject* pcObject)
+void CDependentObjectSerialiser::Init(CObjectGraphSerialiser* pcGraphWriter, CBaseObject* pcObject)
 {
 	mpcGraphWriter = pcGraphWriter;
-	CObjectWriter::Init(pcObject);
+	CObjectSerialiser::Init(pcObject);
 }
 
 
-void CDependentObjectWriter::Kill(void)
+void CDependentObjectSerialiser::Kill(void)
 {
-	CObjectWriter::Kill();
+	CObjectSerialiser::Kill();
 }
 
 
@@ -24,7 +24,7 @@ void CDependentObjectWriter::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDependentObjectWriter::WritePointer(CPointerObject pObject)
+BOOL CDependentObjectSerialiser::WritePointer(CPointerObject pObject)
 {
 	CBaseObject*	pcBaseObject;
 
@@ -37,14 +37,15 @@ BOOL CDependentObjectWriter::WritePointer(CPointerObject pObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDependentObjectWriter::WriteDependent(CBaseObject* pcObject)
+BOOL CDependentObjectSerialiser::WriteDependent(CBaseObject* pcBaseObject)
 {
 	BOOL		bResult;
 
-	bResult = PrivateWritePointer(pcObject);
-	if ((pcObject) && (bResult))
+	bResult = WriteHeader(pcBaseObject);
+	if ((pcBaseObject) && (bResult))
 	{
-		mpcGraphWriter->AddDependent(pcObject);
+		mpcGraphWriter->AddDependent(pcBaseObject);
 	}
 	return bResult;
 }
+

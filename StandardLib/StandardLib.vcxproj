@@ -82,7 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
-    <ClInclude Include="DependentObjectWriter.h" />
+    <ClInclude Include="DependentObjectSerialiser.h" />
     <ClInclude Include="ChunkFileNames.h" />
     <ClInclude Include="NamedIndexedBlock.h" />
     <ClInclude Include="NamedIndexedSorterSource.h" />
@@ -94,8 +94,16 @@
     <ClInclude Include="NamedIndexesBlocks.h" />
     <ClInclude Include="NamedIndexesFileDumper.h" />
     <ClInclude Include="NamedIndexesOptimiser.h" />
+    <ClInclude Include="ObjectConverter.h" />
+    <ClInclude Include="ObjectConverterChunked.h" />
+    <ClInclude Include="ObjectConverterText.h" />
     <ClInclude Include="ObjectFileGeneral.h" />
+    <ClInclude Include="ObjectMultipleSource.h" />
+    <ClInclude Include="ObjectSingleSource.h" />
+    <ClInclude Include="ObjectSourceChunked.h" />
+    <ClInclude Include="ObjectSourceText.h" />
     <ClInclude Include="Parameters.h" />
+    <ClInclude Include="SerialisedObject.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Unknown.h" />
     <ClInclude Include="SetType.h" />
@@ -121,11 +129,11 @@
     <ClInclude Include="PointerObject.h" />
     <ClInclude Include="NamedObject.h" />
     <ClInclude Include="DependentObjects.h" />
-    <ClInclude Include="ObjectGraphWriter.h" />
-    <ClInclude Include="ObjectReader.h" />
-    <ClInclude Include="ObjectWriter.h" />
+    <ClInclude Include="ObjectGraphSerialiser.h" />
+    <ClInclude Include="ObjectDeserialiser.h" />
+    <ClInclude Include="ObjectSerialiser.h" />
     <ClInclude Include="ObjectWriterChunked.h" />
-    <ClInclude Include="ObjectWriterDest.h" />
+    <ClInclude Include="ObjectWriter.h" />
     <ClInclude Include="ObjectWriterIndexed.h" />
     <ClInclude Include="ObjectWriterSimple.h" />
     <ClInclude Include="HollowObject.h" />
@@ -162,7 +170,7 @@
     <ClInclude Include="TrackerTemplate.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DependentObjectWriter.cpp" />
+    <ClCompile Include="DependentObjectSerialiser.cpp" />
     <ClCompile Include="ChunkFileNames.cpp" />
     <ClCompile Include="NamedIndexedBlock.cpp" />
     <ClCompile Include="NamedIndexedData.cpp" />
@@ -174,6 +182,15 @@
     <ClCompile Include="NamedIndexesBlocksLoader.cpp" />
     <ClCompile Include="NamedIndexesFileDumper.cpp" />
     <ClCompile Include="NamedIndexesOptimiser.cpp" />
+    <ClCompile Include="ObjectConverter.cpp" />
+    <ClCompile Include="ObjectConverterChunked.cpp" />
+    <ClCompile Include="ObjectConverterText.cpp" />
+    <ClCompile Include="ObjectMultipleSource.cpp" />
+    <ClCompile Include="ObjectSingleSource.cpp" />
+    <ClCompile Include="ObjectSourceChunked.cpp" />
+    <ClCompile Include="ObjectSourceText.cpp" />
+    <ClCompile Include="ObjectWriter.cpp" />
+    <ClCompile Include="SerialisedObject.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="Unknown.cpp" />
     <ClCompile Include="SetUnknown.cpp" />
@@ -195,11 +212,10 @@
     <ClCompile Include="PointerObject.cpp" />
     <ClCompile Include="NamedObject.cpp" />
     <ClCompile Include="DependentObjects.cpp" />
-    <ClCompile Include="ObjectGraphWriter.cpp" />
-    <ClCompile Include="ObjectReader.cpp" />
-    <ClCompile Include="ObjectWriter.cpp" />
+    <ClCompile Include="ObjectGraphSerialiser.cpp" />
+    <ClCompile Include="ObjectDeserialiser.cpp" />
+    <ClCompile Include="ObjectSerialiser.cpp" />
     <ClCompile Include="ObjectWriterChunked.cpp" />
-    <ClCompile Include="ObjectWriterDest.cpp" />
     <ClCompile Include="ObjectWriterIndexed.cpp" />
     <ClCompile Include="ObjectWriterSimple.cpp" />
     <ClCompile Include="HollowObject.cpp" />

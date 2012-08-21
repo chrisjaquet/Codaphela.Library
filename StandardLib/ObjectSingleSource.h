@@ -18,19 +18,23 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#ifndef __OBJECT_WRITER_DEST_H__
-#define __OBJECT_WRITER_DEST_H__
-#include "CoreLib/IndexedGeneral.h"
-#include "Unknown.h"
+#ifndef __OBJECT_SINGLE_SOURCE_H__
+#define __OBJECT_SINGLE_SOURCE_H__
+#include "ObjectSource.h"
 
 
-class CObjectWriterDest : public CUnknown
+class CObjectSingleSource : public CObjectSource
 {
-BASE_FUNCTIONS(CObjectWriterDest);
+BASE_FUNCTIONS(CObjectSingleSource);
 public:
-	virtual BOOL Write(OIndex oi, char* szObjectName, void* pvObject, int iLength) =0;
+					void			Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName);
+					void			Kill(void);
+
+			virtual CPointerObject	Convert(void);
+					CPointerObject	Convert(char* szFullName);
+					BOOL			Contains(char* szFullName);
 };
 
 
-#endif // __OBJECT_WRITER_DEST_H__
+#endif // __OBJECT_SOURCE_H__
 

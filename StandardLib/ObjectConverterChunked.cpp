@@ -1,19 +1,15 @@
-#include "ObjectWriter.h"
+#include "Unknowns.h"
+#include "Objects.h"
+#include "ObjectSourceChunked.h"
+#include "ObjectConverterChunked.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriter::Init(char* szDirectory, char* szBaseName)
+void CObjectConverterChunked::Init(void)
 {
-	mszDirectory.Init(szDirectory);
-	mszObjectBaseName.Init(szBaseName);
-
-	if (mszObjectBaseName.EndsWith("/"))
-	{
-		mszObjectBaseName.RemoveLastCharacter();
-	}
 }
 
 
@@ -21,12 +17,9 @@ void CObjectWriter::Init(char* szDirectory, char* szBaseName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriter::Kill(void)
+void CObjectConverterChunked::Kill(void)
 {
-	mszDirectory.Kill();
-	mszObjectBaseName.Kill();
-
-	CUnknown::Kill();
+	CObjectConverter::Kill();
 }
 
 
@@ -34,7 +27,17 @@ void CObjectWriter::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriter::Begin(void)
+char* CObjectConverterChunked::GetFileExtension(void)
+{
+	return "DRG";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectConverterChunked::IsFor(CAbstractFile* pcFile)
 {
 	return TRUE;
 }
@@ -44,9 +47,13 @@ BOOL CObjectWriter::Begin(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriter::End(void)
+CObjectSource* CObjectConverterChunked::CreateSource(CAbstractFile* pcFile, char* szFileName)
 {
-	return TRUE;
+	CObjectSourceChunked*	pcSource;
+
+	pcSource = UMalloc(CObjectSourceChunked);
+	pcSource->Init(this, pcFile, szFileName);
+	return pcSource;
 }
 
 
@@ -54,26 +61,8 @@ BOOL CObjectWriter::End(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriter::ObjectStartsWithBase(char* szObjectName)
+CPointerObject CObjectConverterChunked::Convert(CAbstractFile* pcFile, char* szFileName)
 {
-	CChars	szRemainingName;
-
-	szRemainingName.Fake(szObjectName);
-	return szRemainingName.StartsWith(mszObjectBaseName.Text());
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CObjectWriter::RemainingName(CChars* pszRemainingName, char* szObjectName)
-{
-	pszRemainingName->Init(szObjectName);
-	pszRemainingName->RemoveFromStart(mszObjectBaseName.Length());
-	if (pszRemainingName->StartsWith("/"))
-	{
-		pszRemainingName->RemoveCharacter(0);
-	}
+	return ONull;
 }
 

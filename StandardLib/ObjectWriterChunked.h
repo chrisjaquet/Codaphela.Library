@@ -20,22 +20,24 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __OBJECT_WRITER_CHUNKED_H__
 #define __OBJECT_WRITER_CHUNKED_H__
-#include "ObjectWriterDest.h"
+#include "ChunkFileNames.h"
+#include "ObjectWriter.h"
 
 
-class CObjectWriterChunked : public CObjectWriterDest
+class CObjectWriterChunked : public CObjectWriter
 {
 BASE_FUNCTIONS(CObjectWriterChunked);
 protected:
-	CChars				mszDirectory;
-	CChars				mszBaseName;
 	CChunkFileNames		mcChunkFile;
+	CChars				mszFileName;
 
 public:
-	void Init(char* szDirectory, char* szBaseName);
+	void Init(char* szDirectory, char* szBaseName, char* szChunkFileName);
 	void Kill(void);
 
-	BOOL Write(OIndex oi, char* szObjectName, void* pvObject, int iLength);
+	BOOL Begin(void);
+	BOOL Write(CSerialisedObject* pcSerialised);
+	BOOL End(void);
 };
 
 

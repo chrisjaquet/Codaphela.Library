@@ -1,19 +1,13 @@
-#include "ObjectWriter.h"
+#include "SerialisedObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriter::Init(char* szDirectory, char* szBaseName)
+BOOL CSerialisedObject::IsNamed(void)
 {
-	mszDirectory.Init(szDirectory);
-	mszObjectBaseName.Init(szBaseName);
-
-	if (mszObjectBaseName.EndsWith("/"))
-	{
-		mszObjectBaseName.RemoveLastCharacter();
-	}
+	return *((int*)&mszType) == OBJECT_POINTER_NAMED;
 }
 
 
@@ -21,12 +15,9 @@ void CObjectWriter::Init(char* szDirectory, char* szBaseName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriter::Kill(void)
+BOOL CSerialisedObject::IsIndexed(void)
 {
-	mszDirectory.Kill();
-	mszObjectBaseName.Kill();
-
-	CUnknown::Kill();
+	return *((int*)&mszType) == OBJECT_POINTER_ID;
 }
 
 
@@ -34,9 +25,9 @@ void CObjectWriter::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriter::Begin(void)
+BOOL CSerialisedObject::IsVoid(void)
 {
-	return TRUE;
+	return *((int*)&mszType) == OBJECT_POINTER_NULL;
 }
 
 
@@ -44,9 +35,9 @@ BOOL CObjectWriter::Begin(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriter::End(void)
+char* CSerialisedObject::GetName(void)
 {
-	return TRUE;
+	return name.msz;
 }
 
 
@@ -54,12 +45,9 @@ BOOL CObjectWriter::End(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriter::ObjectStartsWithBase(char* szObjectName)
+OIndex CSerialisedObject::GetIndex(void)
 {
-	CChars	szRemainingName;
-
-	szRemainingName.Fake(szObjectName);
-	return szRemainingName.StartsWith(mszObjectBaseName.Text());
+	return moi;
 }
 
 
@@ -67,13 +55,8 @@ BOOL CObjectWriter::ObjectStartsWithBase(char* szObjectName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriter::RemainingName(CChars* pszRemainingName, char* szObjectName)
+int CSerialisedObject::GetLength(void)
 {
-	pszRemainingName->Init(szObjectName);
-	pszRemainingName->RemoveFromStart(mszObjectBaseName.Length());
-	if (pszRemainingName->StartsWith("/"))
-	{
-		pszRemainingName->RemoveCharacter(0);
-	}
+	return miLength;
 }
 

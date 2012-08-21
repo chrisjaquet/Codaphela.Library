@@ -27,13 +27,14 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         ChannelsAccessorWorstCase.h
                         ChannelsCopier.h
                         ChannelsHelper.h
-						ChunkFilenames.h
+                        ChunkFileNames.h
                         ClassFunctionsCall.h
                         ClassStorage.h
                         Collection.h
                         ConcreteClass.h
                         ConstructorUnknown.h
                         DependentObjects.h
+                        DependentObjectSerialiser.h
                         HollowObject.h
                         IndexedObjects.h
                         Iterables.h
@@ -55,16 +56,23 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         NamedObject.h
                         Object.h
                         ObjectConverter.h
-                        ObjectGraphWriter.h
-                        ObjectReader.h
+                        ObjectConverterChunked.h
+                        ObjectConverterText.h
+                        ObjectDeserialiser.h
+                        ObjectFileGeneral.h
+                        ObjectGraphSerialiser.h
+                        ObjectMultipleSource.h
                         Objects.h
+                        ObjectSerialiser.h
+                        ObjectSingleSource.h
                         ObjectSource.h
+                        ObjectSourceChunked.h
                         ObjectSourceFiles.h
                         ObjectSourceIndexedData.h
+                        ObjectSourceText.h
                         ObjectsSource.h
                         ObjectWriter.h
                         ObjectWriterChunked.h
-                        ObjectWriterDest.h
                         ObjectWriterIndexed.h
                         ObjectWriterSimple.h
                         Parameters.h
@@ -72,6 +80,7 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         PointerObject.h
                         PreClass.h
                         Root.h
+                        SerialisedObject.h
                         Set.h
                         SetType.h
                         SetUnknown.h
@@ -108,13 +117,14 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         ChannelsAccessorWorstCase.cpp
                         ChannelsCopier.cpp
                         ChannelsHelper.cpp
-						ChunkFilenames.cpp
+                        ChunkFileNames.cpp
                         ClassFunctionsCall.cpp
                         ClassStorage.cpp
                         Collection.cpp
                         ConcreteClass.cpp
                         ConstructorUnknown.cpp
                         DependentObjects.cpp
+                        DependentObjectSerialiser.cpp
                         HollowObject.cpp
                         IndexedObjects.cpp
                         Iterables.cpp
@@ -134,19 +144,26 @@ IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
                         NamedObject.cpp
                         Object.cpp
                         ObjectConverter.cpp
-                        ObjectGraphWriter.cpp
-                        ObjectReader.cpp
+                        ObjectConverterChunked.cpp
+                        ObjectConverterText.cpp
+                        ObjectDeserialiser.cpp
+                        ObjectGraphSerialiser.cpp
+                        ObjectMultipleSource.cpp
                         Objects.cpp
+                        ObjectSerialiser.cpp
+                        ObjectSingleSource.cpp
                         ObjectSource.cpp
+                        ObjectSourceChunked.cpp
+                        ObjectSourceText.cpp
                         ObjectsSource.cpp
                         ObjectWriter.cpp
                         ObjectWriterChunked.cpp
-                        ObjectWriterDest.cpp
                         ObjectWriterIndexed.cpp
                         ObjectWriterSimple.cpp
                         PointerObject.cpp
                         PreClass.cpp
                         Root.cpp
+                        SerialisedObject.cpp
                         Set.cpp
                         SetUnknown.cpp
                         SingleChannelAccessor.cpp

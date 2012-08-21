@@ -1,5 +1,5 @@
 SET(LIB_NAME ShapeLib)
-OPTION(${PROJECT_NAME}_BUILD_${LIB_NAME} "Set this to ON to build ${LIB_NAME}." ON)
+OPTION(${PROJECT_NAME}_BUILD_${LIB_NAME} "Set this to ON to build ${LIB_NAME}." OFF)
 
 IF(${${PROJECT_NAME}_BUILD_${LIB_NAME}})
 

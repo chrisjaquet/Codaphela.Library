@@ -18,15 +18,16 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "DependentObjectWriter.h"
-#include "ObjectGraphWriter.h"
+#include "DependentObjectSerialiser.h"
+#include "ObjectGraphSerialiser.h"
+#include "SerialisedObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectGraphWriter::Init(CObjectWriterDest* pcWriter)
+void CObjectGraphSerialiser::Init(CObjectWriter* pcWriter)
 {
 	mpcWriter = pcWriter;
 	mcDependentObjects.Init();
@@ -37,7 +38,7 @@ void CObjectGraphWriter::Init(CObjectWriterDest* pcWriter)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectGraphWriter::Kill(void)
+void CObjectGraphSerialiser::Kill(void)
 {
 	mcDependentObjects.Kill();
 }
@@ -47,9 +48,11 @@ void CObjectGraphWriter::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectGraphWriter::Write(CBaseObject* pcObject)
+BOOL CObjectGraphSerialiser::Write(CBaseObject* pcObject)
 {
 	CBaseObject*	pcUnwritten;
+
+	ReturnOnFalse(mpcWriter->Begin());
 
 	AddDependent(pcObject);
 
@@ -65,7 +68,8 @@ BOOL CObjectGraphWriter::Write(CBaseObject* pcObject)
 			break;
 		}
 	}
-	return TRUE;
+
+	return mpcWriter->End();
 }
 
 
@@ -73,36 +77,25 @@ BOOL CObjectGraphWriter::Write(CBaseObject* pcObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectGraphWriter::WriteUnwritten(CBaseObject* pcObject)
+BOOL CObjectGraphSerialiser::WriteUnwritten(CBaseObject* pcObject)
 {
-	CDependentObjectWriter	cWriter;
-	BOOL					bResult;
-	CChars					szName;
-	OIndex					oi;
+	CDependentObjectSerialiser	cWriter;
+	BOOL						bResult;
+	CSerialisedObject*			pcSerialised;
 
 	cWriter.Init(this, pcObject);
-	bResult = pcObject->Save(&cWriter);
-	if (!bResult)
-	{
-		return FALSE;
-	}
-	
-	oi = pcObject->GetOI();
-	
-	if (pcObject->IsNamed())
-	{
-		szName.Init(pcObject->GetName());
-	}
-	else
-	{
-		szName.Init("Unnamed_");
-		szName.Append(oi);
-	}
 
-	ReturnOnFalse(mpcWriter->Write(oi, szName.Text(), cWriter.GetData(), cWriter.GetLength()));
+	bResult = cWriter.Save();
+	ReturnOnFalse(bResult);
+
+	pcSerialised = (CSerialisedObject*)cWriter.GetData();
+
+	bResult = mpcWriter->Write(pcSerialised);
+	ReturnOnFalse(bResult);
+
+	cWriter.Kill();
 
 	MarkWritten(pcObject);
-	szName.Kill();
 	return TRUE;
 }
 
@@ -111,7 +104,7 @@ BOOL CObjectGraphWriter::WriteUnwritten(CBaseObject* pcObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectGraphWriter::AddDependent(CBaseObject* pcObject)
+void CObjectGraphSerialiser::AddDependent(CBaseObject* pcObject)
 {
 	mcDependentObjects.Add(pcObject);
 }
@@ -121,7 +114,8 @@ void CObjectGraphWriter::AddDependent(CBaseObject* pcObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectGraphWriter::MarkWritten(CBaseObject* pcObject)
+void CObjectGraphSerialiser::MarkWritten(CBaseObject* pcObject)
 {
 	mcDependentObjects.Mark(pcObject);
 }
+

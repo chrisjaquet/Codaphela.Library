@@ -34,11 +34,11 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 class CChunkFile : public CFileBasic
 {
-private:
+protected:
 	CChunkStack			mcChunkStack;
 	BOOL				mbLastHashCheck;
 	CMapStringInt		mmsziNames;
-	SChunkFileHeader	msHeader;
+	CChunkFileHeader	msHeader;
 	int					miLastName;
 	
 	BOOL	__PrivateReadChunkBegin(void);
@@ -52,6 +52,7 @@ public:
 	BOOL	ReadClose(void);
 
 	BOOL	WriteOpen(void);
+	BOOL	WriteOpen(int iUserID);
 	BOOL	WriteClose(void);
 
 	int		FindFirstChunkWithName(char* szName);

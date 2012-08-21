@@ -22,6 +22,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/DiskFile.h"
 #include "ChunkFileNames.h"
 #include "ObjectFileGeneral.h"
+#include "SerialisedObject.h"
 #include "ObjectWriterChunked.h"
 
 
@@ -29,27 +30,10 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriterChunked::Init(char* szDirectory, char* szBaseName)
+void CObjectWriterChunked::Init(char* szDirectory, char* szBaseName, char* szChunkFileName)
 {
-	CDiskFile*	pcDiskFile;
-	CFileUtil	cFileUtil;
-	CChars		szFullDirectory;
-
-	mszDirectory.Init(szDirectory);
-	mszBaseName.Init(szBaseName);
-	if (mszBaseName.EndsWith("/"))
-	{
-		mszBaseName.RemoveLastCharacter();
-	}
-
-	szFullDirectory.Init(szDirectory);
-	cFileUtil.AppendToPath(&szFullDirectory, szBaseName);
-
-	pcDiskFile = DiskFile(szFullDirectory.Text());
-	szFullDirectory.Kill();
-
-	mcChunkFile.Init(pcDiskFile);
-	mcChunkFile.WriteOpen();
+	CObjectWriter::Init(szDirectory, szBaseName);
+	mszFileName.Init(szChunkFileName);
 }
 
 
@@ -59,11 +43,8 @@ void CObjectWriterChunked::Init(char* szDirectory, char* szBaseName)
 //////////////////////////////////////////////////////////////////////////
 void CObjectWriterChunked::Kill(void)
 {
-	mcChunkFile.WriteClose();
-	mcChunkFile.Kill();
-
-	mszDirectory.Kill();
-	mszBaseName.Kill();
+	mszFileName.Kill();
+	CObjectWriter::Kill();
 }
 
 
@@ -71,37 +52,76 @@ void CObjectWriterChunked::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriterChunked::Write(OIndex oi, char* szObjectName, void* pvObject, int iLength)
+BOOL CObjectWriterChunked::Begin(void)
 {
-	CChars	szRemainingName;
-	BOOL	bResult;
+	CDiskFile*	pcDiskFile;
+	CFileUtil	cFileUtil;
+	CChars		szFullDirectory;
+	CChars		szFileName;
 
-	szRemainingName.Init(szObjectName);
-	bResult = szRemainingName.StartsWith(mszBaseName.Text());
-	if (!bResult)
+	CObjectWriter::Begin();
+
+	szFullDirectory.Init(mszDirectory);
+	cFileUtil.AppendToPath(&szFullDirectory, mszObjectBaseName.Text());
+	cFileUtil.MakeDir(szFullDirectory.Text());
+	szFileName.Init(szFullDirectory);
+	szFullDirectory.Kill();
+
+	cFileUtil.AppendToPath(&szFileName, mszFileName.Text());
+	szFileName.Append(".");
+	szFileName.Append(OBJECT_FILE_EXTENSION);
+
+	pcDiskFile = DiskFile(szFileName.Text());
+	szFileName.Kill();
+
+	mcChunkFile.Init(pcDiskFile);
+	return mcChunkFile.WriteOpen(CHUNKED_OBJECT_FILE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectWriterChunked::End(void)
+{
+	mcChunkFile.WriteClose();
+	mcChunkFile.Kill();
+
+	return CObjectWriter::End();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectWriterChunked::Write(CSerialisedObject* pcSerialised)
+{
+	CChars	szChunkName;
+	OIndex	oi;
+
+	if (pcSerialised->IsNamed())
 	{
-		szRemainingName.Kill();
+		ReturnOnFalse(ObjectStartsWithBase(pcSerialised->GetName()));
+		RemainingName(&szChunkName, pcSerialised->GetName());
+	}
+	else if (pcSerialised->IsIndexed())
+	{
+		szChunkName.Init("Unnamed/");
+		oi = pcSerialised->GetIndex();
+		szChunkName.AppendHexHiLo(&oi, sizeof(OIndex));
+	}
+	else
+	{
 		return FALSE;
 	}
 
-	szRemainingName.RemoveFromStart(mszBaseName.Length());
-	if (szRemainingName.StartsWith("/"))
-	{
-		szRemainingName.RemoveCharacter(0);
-	}
-
-	ReturnOnFalse(mcChunkFile.WriteChunkBegin(szRemainingName.Text()));
-
-	//Write object identifier.
-	ReturnOnFalse(mcChunkFile.WriteLong(oi));
-	ReturnOnFalse(mcChunkFile.WriteString(szObjectName));
-
-	//Write object stream.
-	ReturnOnFalse(mcChunkFile.WriteData(pvObject, iLength));
-
+	ReturnOnFalse(mcChunkFile.WriteChunkBegin(szChunkName.Text()));
+	ReturnOnFalse(mcChunkFile.WriteData(pcSerialised, pcSerialised->GetLength()));
 	ReturnOnFalse(mcChunkFile.WriteChunkEnd());
 
-	szRemainingName.Kill();
+	szChunkName.Kill();
 	return TRUE;
 }
 

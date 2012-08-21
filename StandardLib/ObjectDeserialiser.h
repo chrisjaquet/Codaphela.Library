@@ -21,11 +21,15 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __OBJECT_READER_H__
 #define __OBJECT_READER_H__
 #include "BaseLib/FileReader.h"
+#include "Pointer.h"
 
 
-class CObjectReader : public CFileReader
+class CObjectDeserialiser : public CFileReader
 {
 public:
+	virtual BOOL ReadPointer(CPointerObject* pObject);
+			BOOL ReadHeader(CBaseObject* pcBaseObject);
+	virtual BOOL ReadDependent(CBaseObject* pcBaseObject);
 };
 
 

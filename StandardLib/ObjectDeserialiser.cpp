@@ -18,17 +18,23 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "NamedObject.h"
+#include "CoreLib/IndexedGeneral.h"
+#include "ObjectFileGeneral.h"
+#include "PointerObject.h"
+#include "ObjectDeserialiser.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNamedObject::Kill(void)
+BOOL CObjectDeserialiser::ReadPointer(CPointerObject* pObject)
 {
-	mon.Kill();
-	CObject::Kill();
+	CBaseObject*	pcBaseObject;
+
+	pObject->Clear();
+	pcBaseObject = &*pObject;
+	return ReadHeader(pcBaseObject);
 }
 
 
@@ -36,33 +42,42 @@ void CNamedObject::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-char* CNamedObject::GetName(void)
+BOOL CObjectDeserialiser::ReadHeader(CBaseObject* pcBaseObject)
 {
-	return mon.Text();
-}
+	OIndex		oi;
+	int			c;
+	CChars		szName;
 
+	ReturnOnFalse(ReadInt(&c));
 
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CNamedObject::IsNamed(void)
-{
-	return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CNamedObject::InitName(char* szName)
-{
-	mon.Init(szName);
-	if (mon.Length() < MAX_NAMED_OBJECT_NAME_LENGTH)
+	if (c == OBJECT_POINTER_NULL)
 	{
 		return TRUE;
 	}
-	mon.SetLength(MAX_NAMED_OBJECT_NAME_LENGTH-1);
-	return FALSE;
+	else if (c == OBJECT_POINTER_ID)
+	{
+		ReturnOnFalse(ReadLong(&oi));
+		return FALSE;
+	}
+	else if (c == OBJECT_POINTER_NAMED)
+	{
+		ReturnOnFalse(ReadString(&szName));
+		szName.Kill();
+		return FALSE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectDeserialiser::ReadDependent(CBaseObject* pcBaseObject)
+{
+	return ReadHeader(pcBaseObject);
 }
 

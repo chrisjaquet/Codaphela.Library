@@ -20,8 +20,8 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "ArrayCommonUnknown.h"
 #include "Pointer.h"
-#include "ObjectWriter.h"
-#include "ObjectReader.h"
+#include "ObjectSerialiser.h"
+#include "ObjectDeserialiser.h"
 #include "ArrayCommonObject.h"
 
 
@@ -52,13 +52,12 @@ void CArrayCommonObject::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CArrayCommonObject::Save(CObjectWriter* pcFile)
+BOOL CArrayCommonObject::Save(CObjectSerialiser* pcFile)
 {
 	int				i;
 	int				iNumElements;
 	CBaseObject*	pcPointedTo;
 
-	ReturnOnFalse(SaveHeader(pcFile));
 	ReturnOnFalse(mcArray.SaveArrayHeader(pcFile));
 
 	ReturnOnFalse(pcFile->WriteBool(mbSubRoot));
@@ -67,7 +66,7 @@ BOOL CArrayCommonObject::Save(CObjectWriter* pcFile)
 	for (i = 0; i < iNumElements; i++)
 	{
 		pcPointedTo = (CBaseObject*)mcArray.UnsafeGet(i);
-		ReturnOnFalse(pcFile->WriteLong(pcPointedTo->GetOI()));
+		ReturnOnFalse(pcFile->WriteDependent(pcPointedTo));
 	}
 	return TRUE;
 }
@@ -77,27 +76,20 @@ BOOL CArrayCommonObject::Save(CObjectWriter* pcFile)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CArrayCommonObject::Load(CObjectReader* pcFile)
+BOOL CArrayCommonObject::Load(CObjectDeserialiser* pcFile)
 {
-	OIndex			oi;
 	int				i;
 	int				iFlags;
 	int				iNumElements;
-	CBaseObject*	pcPointedTo;
 
-	//LoadHeader is already called by whatever allocated this object.
 	//Note: This function has never been called.
-
 	ReturnOnFalse(mcArray.LoadArrayHeader(pcFile, &iFlags, &iNumElements));
 
 	ReturnOnFalse(pcFile->ReadBool(&mbSubRoot));
 
 	for (i = 0; i < iNumElements; i++)
 	{
-		ReturnOnFalse(pcFile->ReadLong(&oi));
-
-		pcPointedTo = (CBaseObject*)mcArray.UnsafeGet(i);
-		pcPointedTo->SetObjectID(oi);
+		ReturnOnFalse(pcFile->ReadDependent(NULL));
 	}
 
 	mcArray.PostLoad(iFlags);

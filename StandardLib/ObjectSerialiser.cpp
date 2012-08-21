@@ -18,19 +18,20 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "Object.h"
-#include "HollowObject.h"
+#include "ObjectFileGeneral.h"
 #include "PointerObject.h"
+#include "ObjectSerialiser.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject::CPointerObject()
+void CObjectSerialiser::Init(CBaseObject* pcObject)
 {
-	mpcObject = NULL;
-	mpcEmbedding = NULL;
+	mpcThis = pcObject;
+	mpcMemory = MemoryFile();
+	mcFile.Init(mpcMemory);
 }
 
 
@@ -38,10 +39,10 @@ CPointerObject::CPointerObject()
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::Clear(void)
+void CObjectSerialiser::Kill(void)
 {
-	mpcObject = NULL;
-	mpcEmbedding = NULL;
+	mpcThis = NULL;
+	mcFile.Kill();
 }
 
 
@@ -49,9 +50,29 @@ void CPointerObject::Clear(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::Init(CObject* pcEmbedding)
+BOOL CObjectSerialiser::Save(void)
 {
-	mpcEmbedding = pcEmbedding;
+	BOOL		bResult;
+	filePos		iLength;
+
+	bResult = mcFile.Open(EFM_Write_Create);
+	ReturnOnFalse(bResult);
+
+	bResult = WriteInt(0);
+	ReturnOnFalse(bResult);
+	bResult = WriteHeader(mpcThis);
+	ReturnOnFalse(bResult);
+	bResult = mpcThis->SaveHeader(this);
+	ReturnOnFalse(bResult);
+	bResult = mpcThis->Save(this);
+	ReturnOnFalse(bResult);
+	iLength = mcFile.GetFileLength();
+	mcFile.Seek(0);
+	bResult = WriteInt((int)iLength);
+	ReturnOnFalse(bResult);
+
+	bResult = mcFile.Close();
+	return bResult;
 }
 
 
@@ -59,27 +80,56 @@ void CPointerObject::Init(CObject* pcEmbedding)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::PointTo(CBaseObject* pcObject)
+BOOL CObjectSerialiser::WritePointer(CPointerObject pObject)
 {
-	if (mpcObject != pcObject)
+	CBaseObject*	pcBaseObject;
+
+	pcBaseObject = &pObject;
+	return WriteHeader(pcBaseObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectSerialiser::WriteDependent(CBaseObject* pcBaseObject)
+{
+	return WriteHeader(pcBaseObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectSerialiser::WriteHeader(CBaseObject* pcObject)
+{
+	OIndex		oi;
+	int			c;
+	char*		szName;
+	
+	if (pcObject)
 	{
-		if (mpcObject)
+		if (!pcObject->IsNamed())
 		{
-			if (mpcEmbedding)
-			{
-				mpcEmbedding->RemoveTo(mpcObject);
-				mpcObject->RemoveEmbeddedFrom(mpcEmbedding);
-			}
+			c = OBJECT_POINTER_ID;
+			WriteInt(c);
+			oi = pcObject->GetOI();
+			return WriteLong(oi);
 		}
-		mpcObject = pcObject;
-		if (mpcObject)
+		else
 		{
-			mpcObject->AddFrom(mpcEmbedding);
-			if (mpcEmbedding)
-			{
-				mpcEmbedding->AddTo(mpcObject);
-			}
+			c = OBJECT_POINTER_NAMED;
+			WriteInt(c);
+			szName = pcObject->GetName();
+			return WriteString(szName);
 		}
+	}
+	else
+	{
+		c = OBJECT_POINTER_NULL;
+		return WriteInt(c);
 	}
 }
 
@@ -88,10 +138,9 @@ void CPointerObject::PointTo(CBaseObject* pcObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::operator = (CBaseObject* ptr)
+filePos CObjectSerialiser::Write(const void* pvSource, filePos iSize, filePos iCount)
 {
-	//This operator override exists only to allow NULL assignment.
-	PointTo(ptr);
+	return mcFile.Write(pvSource, iSize, iCount);
 }
 
 
@@ -99,9 +148,9 @@ void CPointerObject::operator = (CBaseObject* ptr)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::operator = (CPointerObject pcPointer)
+void* CObjectSerialiser::GetData(void)
 {
-	PointTo(pcPointer.mpcObject);
+	return mpcMemory->GetBufferPointer();
 }
 
 
@@ -109,89 +158,8 @@ void CPointerObject::operator = (CPointerObject pcPointer)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CBaseObject* CPointerObject::operator -> ()
+int CObjectSerialiser::GetLength(void)
 {
-	Dehollow();
-	return mpcObject;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-CBaseObject* CPointerObject::operator & ()
-{
-	Dehollow();
-	return mpcObject;
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::operator ! ()
-{
-	return mpcObject == NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::IsNotNull(void)
-{
-	return mpcObject != NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::IsNull(void)
-{
-	return mpcObject == NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-CPointerObject*	CPointerObject::This(void)
-{
-	//This method should only *ever* be used by CObjectDeserialiser
-	return this;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::Dehollow(void)
-{
-	CHollowObject*	pcHollow;
-
-	if(mpcObject)
-	{
-		if (mpcObject->IsHollow())
-		{
-			pcHollow = (CHollowObject*)mpcObject;
-			mpcObject = pcHollow->Load();
-			pcHollow->Kill();
-			if (mpcObject)
-			{
-				return TRUE;
-			}
-			else
-			{
-				return FALSE;
-			}
-		}
-	}
-	return TRUE;
+	return mpcMemory->GetBufferSize();
 }
 

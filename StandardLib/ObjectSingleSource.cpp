@@ -18,20 +18,17 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "BaseLib/FileUtil.h"
-#include "BaseLib/DiskFile.h"
-#include "ObjectFileGeneral.h"
-#include "SerialisedObject.h"
-#include "ObjectWriterSimple.h"
+#include "ObjectConverter.h"
+#include "ObjectSingleSource.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriterSimple::Init(char* szDirectory, char* szBaseName)
+void CObjectSingleSource::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
 {
-	CObjectWriter::Init(szDirectory, szBaseName);
+	CObjectSource::Init(pcConverter, pcFile, szFileName);
 }
 
 
@@ -39,9 +36,9 @@ void CObjectWriterSimple::Init(char* szDirectory, char* szBaseName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriterSimple::Kill(void)
+void CObjectSingleSource::Kill(void)
 {
-	CObjectWriter::Kill();
+	CObjectSource::Kill();
 }
 
 
@@ -49,9 +46,9 @@ void CObjectWriterSimple::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriterSimple::Begin(void)
+BOOL CObjectSingleSource::Contains(char* szFullName)
 {
-	return CObjectWriter::Begin();
+	return mszFileName.Equals(szFullName);
 }
 
 
@@ -59,9 +56,9 @@ BOOL CObjectWriterSimple::Begin(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriterSimple::End(void)
+CPointerObject CObjectSingleSource::Convert(char* szFullName)
 {
-	return CObjectWriter::End();
+	return Convert();
 }
 
 
@@ -69,48 +66,8 @@ BOOL CObjectWriterSimple::End(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriterSimple::Write(CSerialisedObject* pcSerialised)
+CPointerObject CObjectSingleSource::Convert(void)
 {
-	CFileUtil		cFileUtil;
-	CChars			szFileName;
-	CChars			szDirectory;
-	CFileBasic		cFile;
-	CChars			szFullName;
-	char*			szExtension;
-
-	ReturnOnFalse(ObjectStartsWithBase(pcSerialised->GetName()));
-
-	szFileName.Init();
-	szDirectory.Init();
-	cFileUtil.SplitPath(pcSerialised->GetName(), &szFileName, &szDirectory);
-	szFileName.Append(".");
-	szFileName.Append(OBJECT_FILE_EXTENSION);
-
-	szFullName.Init(mszDirectory);
-	szFullName.Append(FILE_SEPARATOR[0]);
-	szFullName.Append(szDirectory);
-	szDirectory.Kill();
-
-	cFileUtil.MakeDir(szFullName.Text());
-
-	szFullName.Append(FILE_SEPARATOR[0]);
-	szFullName.Append(szFileName);
-	szFileName.Kill();
-
-	cFile.Init(DiskFile(szFullName.Text()));
-	szFullName.Kill();
-	cFile.Open(EFM_Write_Create);
-
-	//Write file type identifier.
-	szExtension = OBJECT_FILE_EXTENSION;
-	ReturnOnFalse(cFile.WriteData(szExtension, 4));
-	ReturnOnFalse(cFile.WriteInt(BASIC_OBJECT_FILE));
-
-	//Write object stream.
-	ReturnOnFalse(cFile.WriteData(pcSerialised, pcSerialised->GetLength()));
-
-	cFile.Close();
-	cFile.Kill();
-	return TRUE;
+	return mpcConverter->Convert(mpcFile, mszFileName.Text());
 }
 

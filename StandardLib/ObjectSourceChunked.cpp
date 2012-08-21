@@ -1,16 +1,15 @@
-#include "ObjectDeserialiser.h"
-#include "ObjectSerialiser.h"
-#include "String.h"
+#include "Objects.h"
+#include "ObjectSourceChunked.h"
+#include "ObjectConverterText.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CString::Kill(void)
+void CObjectSourceChunked::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
 {
-	CChars::Kill();
-	CObject::Kill();
+	CObjectMultipleSource::Init(pcConverter, pcFile, szFileName);
 }
 
 
@@ -18,9 +17,9 @@ void CString::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CString::Save(CObjectSerialiser* pcFile)
+void CObjectSourceChunked::Kill(void)
 {
-	return pcFile->WriteString(this);
+	CObjectMultipleSource::Kill();
 }
 
 
@@ -28,8 +27,8 @@ BOOL CString::Save(CObjectSerialiser* pcFile)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CString::Load(CObjectDeserialiser* pcFile)
+CPointerObject CObjectSourceChunked::Convert(char* szFullName)
 {
-	return pcFile->ReadString(this);
+	return ONull;
 }
 

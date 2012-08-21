@@ -18,35 +18,32 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#ifndef __OBJET_WRITER_H__
-#define __OBJET_WRITER_H__
-#include "BaseLib/FileWriter.h"
-#include "BaseLib/MemoryFile.h"
-#include "BaseObject.h"
-#include "PointerObject.h"
+#ifndef __OBJECT_WRITER_H__
+#define __OBJECT_WRITER_H__
+#include "CoreLib/IndexedGeneral.h"
+#include "Unknown.h"
 
 
-class CObjectWriter : public CFileWriter
+class CSerialisedObject;
+class CObjectWriter : public CUnknown
 {
+BASE_FUNCTIONS(CObjectWriter);
 protected:
-	CBaseObject*			mpcThis;
-	CMemoryFile*			mpcMemory;
-	CFileBasic				mcFile;
+	CChars				mszDirectory;
+	CChars				mszObjectBaseName;
 
 public:
-			void		Init(CBaseObject* pcObject);
-	virtual void		Kill(void);
-	
-	virtual BOOL		WritePointer(CPointerObject pObject);
+			void Init(char* szDirectory, char* szBaseName);
+			void Kill(void);
 
-			void*		GetData(void);
-			int			GetLength(void);
+	virtual BOOL Begin(void);
+	virtual BOOL Write(CSerialisedObject* pcSerialised) =0;
+	virtual BOOL End(void);
 
-protected:
-			BOOL		PrivateWritePointer(CBaseObject* pcObject);
-			filePos		Write(const void* pvSource, filePos iSize, filePos iCount);
+			BOOL ObjectStartsWithBase(char* szObjectName);
+			void RemainingName(CChars* pszRemainingName, char* szObjectName);
 };
 
 
-#endif // __OBJET_WRITER_H__
+#endif // __OBJECT_WRITER_H__
 
