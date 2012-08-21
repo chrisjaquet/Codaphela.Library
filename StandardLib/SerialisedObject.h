@@ -19,7 +19,7 @@ protected:
 			char	msz[4];
 		} name;
 		OIndex	moi;
-	};
+	} aUnion;
 
 public:
 	BOOL	IsNamed(void);

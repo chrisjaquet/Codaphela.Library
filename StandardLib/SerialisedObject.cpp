@@ -37,7 +37,7 @@ BOOL CSerialisedObject::IsVoid(void)
 //////////////////////////////////////////////////////////////////////////
 char* CSerialisedObject::GetName(void)
 {
-	return name.msz;
+	return aUnion.name.msz;
 }
 
 
@@ -47,7 +47,7 @@ char* CSerialisedObject::GetName(void)
 //////////////////////////////////////////////////////////////////////////
 OIndex CSerialisedObject::GetIndex(void)
 {
-	return moi;
+	return aUnion.moi;
 }
 
 

@@ -76,7 +76,7 @@ void CComponentPointers::Add(CComponent* pcComponent)
 //////////////////////////////////////////////////////////////////////////
 void CComponentPointers::Remove(CComponent* pcComponent, BOOL bKillComponent)
 {
-	DEBUG_LOG_P(pcComponent->ClassName())
+	DEBUG_LOG_P(pcComponent->ClassName());
 
 	mcComponents.Remove(pcComponent);
 	if (bKillComponent)

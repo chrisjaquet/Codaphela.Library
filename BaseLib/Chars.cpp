@@ -425,6 +425,43 @@ void CChars::Append(char* sz, int iLen)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CChars::Append(const char* sz)
+{
+	int		iLen;
+	char*	pcPosition;
+
+	if (sz)
+	{
+		iLen = (int)strlen(sz);
+		pcPosition = PrivateGrow(iLen);
+		strcpy(pcPosition, sz);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CChars::Append(const char* sz, int iLen)
+{
+	char*	pcPosition;
+	char*	pcZero;
+
+	if (sz)
+	{
+		pcPosition = PrivateGrow(iLen);
+		memcpy(pcPosition, sz, iLen);
+		pcZero = mcText.Tail();
+		*pcZero = 0;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CChars::Append(char c)
 {
 	char* pcReplace;
@@ -2022,7 +2059,7 @@ void CChars::AppendData2(char* szData, int iDataLength, int iMaxLength)
 	int				iLength;
 	unsigned char	c;
 	BOOL			bLastReadable;
-	
+
 	if (iDataLength > iMaxLength)
 	{
 		iLength = iMaxLength;

@@ -23,6 +23,7 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #ifndef __INTERPOLATOR_ARRAY_H__
 #define __INTERPOLATOR_ARRAY_H__
 
+#include <stdlib.h>
 
 //This looks really dodgy and I think all it was for was interpolating colours.
 
@@ -111,11 +112,11 @@ void CInertpolatorArrayTemplate<T>::Kill(void)
 	}
 	if (mpaEndArray != NULL)
 	{
-		free(mpaEndArray)
+		free(mpaEndArray);
 	}
 	if (mpaOutputArray != NULL)
 	{
-		free(mpaOutputArray)
+		free(mpaOutputArray);
 	}
 	mpaStartArray = NULL;
 	mpaEndArray = NULL;
@@ -130,7 +131,7 @@ void CInertpolatorArrayTemplate<T>::Kill(void)
 template<class T>
 void CInertpolatorArrayTemplate<T>::SetStartElement(int iElementNum, T fValue)
 {
-	mpaStartArray[iElementNum] = T;
+	mpaStartArray[iElementNum] = fValue;
 }
 
 
@@ -152,7 +153,7 @@ void CInertpolatorArrayTemplate<T>::SetStartArray(T* pafArray)  //Uses a memcpy 
 template<class T>
 void CInertpolatorArrayTemplate<T>::SetEndElement(int iElementNum, T fValue)
 {
-	mpaEndArray[iElementNum] = T;
+	mpaEndArray[iElementNum] = fValue;
 }
 
 

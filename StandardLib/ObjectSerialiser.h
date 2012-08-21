@@ -23,6 +23,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/FileWriter.h"
 #include "BaseLib/MemoryFile.h"
 #include "BaseObject.h"
+#include "PointerObject.h"
 
 
 class CObjectSerialiser : public CFileWriter
@@ -36,7 +37,7 @@ public:
 			void			Init(CBaseObject* pcObject);
 	virtual void			Kill(void);
 			BOOL			Save(void);
-	
+
 	virtual BOOL			WritePointer(CPointerObject pObject);
 			BOOL			WriteHeader(CBaseObject* pcBaseObject);
 	virtual BOOL			WriteDependent(CBaseObject* pcBaseObject);

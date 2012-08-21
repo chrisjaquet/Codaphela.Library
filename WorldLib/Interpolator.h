@@ -23,6 +23,9 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #ifndef __INTERPOLATOR_H__
 #define __INTERPOLATOR_H__
 
+#ifndef M_PI
+#   include <math.h>
+#endif
 
 template<class M>
 class CInterpolator
@@ -71,7 +74,7 @@ float CInterpolator<M>::GetTrigonometricAdjustedPos(float fPos)
 {
 	float	f1;
 
-	f1 = sinf((fPos * PI) + (PI/2.0f));
+	f1 = sinf((fPos * M_PI) + (M_PI/2.0f));
 	f1 = (1.0f - ((f1 + 1.0f) / 2.0f));
 	return f1;
 }

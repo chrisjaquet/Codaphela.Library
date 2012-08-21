@@ -730,7 +730,7 @@ M* CLinkListTemplate<M>::InsertBeforeHead(void)
 
 	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	InsertDetachedBeforeHead(psData);
+	this->InsertDetachedBeforeHead(psData);
 	return psData;
 }
 
@@ -764,7 +764,7 @@ M* CLinkListTemplate<M>::InsertAfterNode(M* psPos)
 
 	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	InsertDetachedAfterNode(psData, psPos);
+	this->InsertDetachedAfterNode(psData, psPos);
 	return psData;
 }
 
@@ -777,7 +777,7 @@ template<class M>
 M* CLinkListTemplate<M>::Add(void)
 {
 	//This included to make swapping between arrays and lists easier.
-	return InsertAfterTail();
+	return this->InsertAfterTail();
 }
 
 

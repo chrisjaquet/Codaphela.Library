@@ -46,7 +46,8 @@ void CWidget::Init(CViewport* pcViewport, BOOL bDefaultBorder, BOOL bDefaultBack
 		mpcBackground = GetFactory()->CreateBlock();
 
 		mpcFill = GetFactory()->CreateFillContainer();
-		mpcFill->SetInsets(&GetBorderWidths());
+		SInsets t = GetBorderWidths();
+		mpcFill->SetInsets(&t);
 		mpcFill->AddComponent(mpcBackground);
 		AddComponent(mpcFill);
 	}

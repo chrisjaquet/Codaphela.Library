@@ -110,6 +110,18 @@ typedef int BOOL;
 #define OTHER_OS_FILE_SEPARATOR "/"
 #define __ENGINE_FUNCTION__ __FUNCTION__
 #define __ENGINE_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
+
+// Microsoft SAL (source-code annotation language) definitions (needed by XInput.h)
+#ifndef __in
+#define __in
+#endif
+#ifndef __out
+#define __out
+#endif
+#ifndef __reserved
+#define __reserved
+#endif
+
 #endif // WIN_GNU_32
 
 
