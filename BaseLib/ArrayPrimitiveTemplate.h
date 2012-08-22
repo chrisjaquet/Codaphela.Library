@@ -169,6 +169,62 @@ void CArrayPrimitiveTemplate<M>::AddList(M iStop, ...)
 	va_end(vaMarker);
 }
 
+#if(defined(WIN_GNU_32) || defined(LINUX_GNU_32))
+// Specialisations for vararg compatibility on GCC
+// FIXME Do we need to handle unsigned char, short and float separately as well?
+//
+// char -> int
+template<>
+void CArrayPrimitiveTemplate<char>::AddList(char iStop, ...)
+{
+	va_list		vaMarker;
+	char		iValue;
+
+	va_start(vaMarker, iStop);
+	iValue = (char) (va_arg(vaMarker, int) );
+	while(iValue != iStop)
+	{
+		Add(iValue);
+		iValue = (char)va_arg(vaMarker, int);
+	}
+	va_end(vaMarker);
+}
+
+// short -> int
+template<>
+void CArrayPrimitiveTemplate<short>::AddList(short iStop, ...)
+{
+	va_list		vaMarker;
+	short		iValue;
+
+	va_start(vaMarker, iStop);
+	iValue = (short) (va_arg(vaMarker, int) );
+	while(iValue != iStop)
+	{
+		Add(iValue);
+		iValue = (short)va_arg(vaMarker, int);
+	}
+	va_end(vaMarker);
+}
+
+// float -> double
+template<>
+void CArrayPrimitiveTemplate<float>::AddList(float iStop, ...)
+{
+	va_list		vaMarker;
+	float 		iValue;
+
+	va_start(vaMarker, iStop);
+	iValue = (float) (va_arg(vaMarker, double) );
+	while(iValue != iStop)
+	{
+		Add(iValue);
+		iValue = (float)va_arg(vaMarker, double);
+	}
+	va_end(vaMarker);
+}
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////
 //																		//
