@@ -105,7 +105,9 @@ typedef int BOOL;
 //#define _IOERR          0x0020
 //#define _IOSTRG         0x0040
 //#define _IORW           0x0080
-#define INT_MAX         0x7fffffff
+#ifndef INT_MAX
+#   define INT_MAX         0x7fffffff
+#endif
 #define FILE_SEPARATOR "\\"
 #define OTHER_OS_FILE_SEPARATOR "/"
 #define __ENGINE_FUNCTION__ __FUNCTION__

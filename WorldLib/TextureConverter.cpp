@@ -150,7 +150,7 @@ BOOL CTextureConverter::Convert(CGraphicsTexture** ppcGraphicsTexture, CImage* p
 	if (!pcImage)
 	{
 		gcUserError.Set("Can't convert NULL Image.");
-		return NULL;
+		return FALSE;
 	}
 
 	d3dFormat = gcD3D.acMonitor[gcD3D.iCurrMon].iTextureFormat;

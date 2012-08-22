@@ -631,7 +631,7 @@ void CPreprocessor::LogBlocks(CChars* pszBlocksLog)
 	else
 	{
 		mbLogInlucdes = FALSE;
-		mbLogBlocks = NULL;
+		mbLogBlocks = FALSE;
 	}
 }
 

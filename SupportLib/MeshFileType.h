@@ -25,11 +25,11 @@ zlib is Copyright Jean-loup Gailly and Mark Adler
 #define __MESH_FILE_TYPE_H__
 
 
-typedef enum EMeshType
+typedef enum EMeshType_enum
 {
 	MT_Unknown,
 	MT_OBJ,  // Wavefront 
-};
+} EMeshType;
 
 
 EMeshType GuessMeshType(char *szFilename);
