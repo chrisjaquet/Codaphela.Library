@@ -23,11 +23,13 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "BaseLib/Define.h"
 
 #ifndef WIN32
-#error Cannot use windows sockets on non-windows system.
+#warning Sockets for non-windows systems need to be implemented.
 #endif // WIN32
 
+#ifdef WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#endif // WIN32
 #include "BaseLib/Logger.h"
 #include "ConnectSocket.h"
 
@@ -60,6 +62,7 @@ void CConnectSocket::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CConnectSocket::Connect(void)
 {
+#ifdef WIN32
 	addrinfo*	sResult;
 	addrinfo*	ptr;
 	addrinfo	hints;
@@ -111,5 +114,9 @@ BOOL CConnectSocket::Connect(void)
 	}
 
 	return TRUE;
+#else
+#warning This function needs to be implemented for non-windows systems
+	return FALSE;
+#endif // WIN32
 }
 

@@ -23,11 +23,13 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "BaseLib/Define.h"
 
 #ifndef WIN32
-#error Cannot use windows sockets on non-windows system.
+#warning Sockets for non-windows systems need to be implemented.
 #endif // WIN32
 
+#ifdef WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#endif // WIN32
 #include "BaseLib/Logger.h"
 #include "ListenSocket.h"
 
@@ -38,6 +40,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 //////////////////////////////////////////////////////////////////////////
 BOOL CListenSocket::Init(int iPort)
 {
+#ifdef WIN32
 	int			iResult;
 	addrinfo*	psResult;
 	addrinfo	psHints;
@@ -84,6 +87,10 @@ BOOL CListenSocket::Init(int iPort)
 
 	freeaddrinfo(psResult);
 	return TRUE;
+#else
+#warning This function needs to be implemented for non-windows systems.
+	return FALSE;
+#endif // WIN32
 }
 
 
@@ -93,6 +100,7 @@ BOOL CListenSocket::Init(int iPort)
 //////////////////////////////////////////////////////////////////////////
 void CListenSocket::Kill(void)
 {
+#ifdef WIN32
 	int		iResult;
 
 	if (mListenSocket != INVALID_SOCKET)
@@ -113,6 +121,10 @@ void CListenSocket::Kill(void)
 	}
 
 	CSocket::Kill();
+#else
+#warning This function needs to be implemented for non-windows systems.
+    return FALSE;
+#endif // WIN32
 }
 
 
@@ -122,6 +134,7 @@ void CListenSocket::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CListenSocket::Listen(void)
 {
+#ifdef WIN32
 	int		iResult;
 
 	iResult = listen(mListenSocket, SOMAXCONN);
@@ -147,5 +160,9 @@ BOOL CListenSocket::Listen(void)
 	mbListening = TRUE;
 
 	return TRUE;
+#else
+#warning This function needs to be implemented for non-windows systems.
+    return FALSE;
+#endif // WIN32
 }
 

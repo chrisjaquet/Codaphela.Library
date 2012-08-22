@@ -8,8 +8,9 @@ GENERATOR="Eclipse CDT4 - Unix Makefiles"
 
 echo Generator is ${GENERATOR}
 
-CUR_DIR=${PWD}
-BUILD_DIR=${CUR_DIR}/../build/Codaphela.Library
+CUR_DIR="${PWD}"
+GEN_DIR="`echo ${GENERATOR}|sed 's/ //g'`"
+BUILD_DIR="${CUR_DIR}/../build/Codaphela.Library/${GEN_DIR}"
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 mkdir -p Debug
