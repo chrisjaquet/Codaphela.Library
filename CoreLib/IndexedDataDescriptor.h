@@ -20,10 +20,11 @@ along with Codaphela CoreLib.  If not, see <http://www.gnu.org/licenses/>.
 Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
-#ifndef __INDEX_DESCRIPTOR_H__
-#define __INDEX_DESCRIPTOR_H__
+#ifndef __INDEXED_DATA_DESCRIPTOR_H__
+#define __INDEXED_DATA_DESCRIPTOR_H__
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/Define.h"
+#include "BaseLib/AbstractFile.h"
 #include "IndexedGeneral.h"
 
 
@@ -35,7 +36,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define INDEXED_DESCRIPTOR_MASK		0xc0000000
 
 
-class CIndexDescriptor
+class CIndexedDataDescriptor
 {
 private:
 	OIndex			moi;
@@ -44,7 +45,7 @@ private:
 	unsigned int	msFlags;  //These include the user flags.
 
 	int				miFileIndex;  //Which file.
-	int				miIndexInFile;  //Where in the file.
+	filePos			miIndexInFile;  //Where in the file.
 
 	void*			mpvCache;  //Null if object is not cached.
 	unsigned int	muiTimeStamp;
@@ -63,15 +64,15 @@ public:
 	BOOL			IsCached(void);
 	void*			GetCache(void);
 	void			TimeStamp(unsigned int uiTimeStamp);
-	void			File(int iFileIndex, int iIndexInFile);
+	void			File(int iFileIndex, filePos iIndexInFile);
 	int				GetFileIndex(void);
-	int				GetIndexInFile(void);
+	filePos			GetIndexInFile(void);
 	unsigned int	GetTimeStamp(void);
 };
 
-typedef CArrayTemplate<CIndexDescriptor> CArrayIndexDescriptor;
+typedef CArrayTemplate<CIndexedDataDescriptor> CArrayIndexDescriptor;
 
 
-#endif // __INDEX_DESCRIPTOR_H__
+#endif // __INDEXED_DATA_DESCRIPTOR_H__
 
 

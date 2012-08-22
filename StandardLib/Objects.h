@@ -21,7 +21,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __OBJECTS_H__
 #define __OBJECTS_H__
 #include "CoreLib/IndexedGeneral.h"
-#include "CoreLib/IndexedData.h"
+#include "NamedIndexedData.h"
 #include "NamedIndexedObjects.h"
 #include "Unknowns.h"
 #include "Pointer.h"
@@ -35,15 +35,13 @@ class CObjects
 {
 protected:
 	CUnknowns*				mpcUnknownsAllocatingFrom;
+	CNamedIndexedObjects	mcIndexes;  //Objects (BaseObject*) allocated in Unkonws referenced by name and OIndex.  
+
+	CNamedIndexedData		mcDatabase;  //Objects in the database also referenced by string and OIndex.  
+
+	//CFileSystemData			mcFileSystem;  //Objects on the file system in .DRG files referenced only by name.
+
 	OIndex					moiNext;
-
-	//On disk objects.
-
-	//In database objects.
-	CIndexedData			mcData;
-
-	//In memory objects.
-	CNamedIndexedObjects	mcIndexes;
 
 public:
 						void			Init(CUnknowns* pcUnknownsAllocatingFrom, char* szWorkingDirectory);
@@ -151,6 +149,7 @@ CPointer<M> CObjects::Null(void)
 {
 	CPointer<M>		pObject;
 
+	//This looks dodgy, rather define a singleton null object.
 	return pObject;
 }
 
@@ -188,7 +187,7 @@ CPointer<M> CObjects::Get(char* szName)
 {
 	OIndex			oi;
 
-	oi = mcNames.Get(szName);
+	oi = mcIndexes.Get(szName);
 	if (oi != INVALID_OBJECT_IDENTIFIER)
 	{
 		return Get(oi);

@@ -1,6 +1,7 @@
 #include "BaseLib/PointerFunctions.h"
 #include "CoreLib/IndexedFiles.h"
 #include "NamedIndexesBlocks.h"
+#include "NamedIndexes.h"
 #include "NamedIndexesBlocksLoader.h"
 
 
@@ -8,16 +9,26 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNamedIndexesBlocksLoader::Init(CNamedIndexesBlocks* pcBlocks)
+void CNamedIndexesBlocksLoader::Init(CNamedIndexesBlocks* pcBlocks, int iFileNumber)
 {
-	mpcFile = pcBlocks->mpcFiles->GetFile(pcBlocks->miBlockWidth, pcBlocks->miFileNumber);
+	if (iFileNumber != -1)
+	{
+		mpcFile = pcBlocks->mpcNamedIndexes->GetFile(pcBlocks->miBlockWidth, iFileNumber);
+	}
+	else
+	{
+		mpcFile = NULL;
+	}
+
 	if (!mpcFile)
 	{
 		mpvTemp = NULL;
 		mpvBlock = NULL;
+		miLength = 0;
 		return;
 	}
 
+	pcBlocks->SetFileNumber(iFileNumber);
 	miNumBlocksInFile = mpcFile->miNumDatas;
 	mpcBlocks = pcBlocks;
 
@@ -25,19 +36,21 @@ void CNamedIndexesBlocksLoader::Init(CNamedIndexesBlocks* pcBlocks)
 	{
 		mpvTemp = NULL;
 		mpvBlock = NULL;
+		miLength = 0;
 		return;
 	}
 	
 	miBlockWidth = pcBlocks->miBlockWidth;
 	miLength = miNumBlocksInFile * miBlockWidth;
-	miNewNumBlocks = mpcBlocks->miNewNumBlocks;
-	miTempSize = ((10 MB) / (miNewNumBlocks * miBlockWidth)) * miNewNumBlocks * miBlockWidth;
+	miBlockChunkSize = mpcBlocks->miBlockChunkSize;
+	miTempSize = ((10 MB) / (miBlockChunkSize * miBlockWidth)) * miBlockChunkSize * miBlockWidth;
 	if (miLength <= miTempSize)
 	{
 		miTempSize = miLength;
 	}
+
 	mpvTemp = malloc((int)miTempSize);
-	mpvBlock = malloc(miNewNumBlocks * miBlockWidth);
+	mpvBlock = malloc((size_t)(miBlockChunkSize * miBlockWidth));
 }
 
 
@@ -59,17 +72,18 @@ void CNamedIndexesBlocksLoader::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexesBlocksLoader::Load(void)
 {
-	int						iRemaining;
-	int						iChunk;
-	int						iNames;
-	int						iModulous;
+	filePos					iRemaining;
+	filePos					iChunk;
+	filePos					iNames;
+	filePos					iModulous;
 	int						i;
 	CNamedIndexedBlock*		psName;
-	filePos					ulliPos;
-	int						iOffset;
-	int						iChunks;
+	filePos					iPos;
+	filePos					iOffset;
+	filePos					iChunks;
+	filePos					iDataIndex;
 
-	ulliPos = 0LL;
+	iPos = 0LL;
 	iRemaining = miLength;
 	miCurrent = 0;
 	mbBlockSorted = TRUE;
@@ -101,8 +115,8 @@ BOOL CNamedIndexesBlocksLoader::Load(void)
 			return FALSE;
 		}
 
-		iChunks = iNames / miNewNumBlocks;
-		iModulous = iNames % miNewNumBlocks;
+		iChunks = iNames / miBlockChunkSize;
+		iModulous = iNames % miBlockChunkSize;
 		if (iModulous != 0)
 		{
 			return FALSE;
@@ -110,12 +124,13 @@ BOOL CNamedIndexesBlocksLoader::Load(void)
 
 		for (i = 0; i < iChunks; i++)
 		{
-			iOffset = miBlockWidth * i * miNewNumBlocks;
-			psName = (CNamedIndexedBlock*)RemapSinglePointer(mpvTemp, iOffset);
-			mpcBlocks->AddNewBlock(miBlockWidth, psName, miNewNumBlocks, ulliPos + iOffset);
+			iOffset = miBlockWidth * i * miBlockChunkSize;
+			psName = (CNamedIndexedBlock*)RemapSinglePointer(mpvTemp, (size_t)iOffset);
+			iDataIndex = (iPos + iOffset) / miBlockWidth;
+			mpcBlocks->AddNewBlock(miBlockWidth, psName, miBlockChunkSize, iDataIndex);
 		}
 
-		ulliPos += iChunk;
+		iPos += iChunk;
 		iRemaining -= iChunk;
 	}
 

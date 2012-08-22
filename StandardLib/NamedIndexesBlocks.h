@@ -26,38 +26,51 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 class CMemoryCache;
 class CIndexedFiles;
+class CNamedIndexes;
 class CNamedIndexesBlocks
 {
 friend class CNamedIndexesBlocksLoader;
 protected:
 	CArrayNamedIndexesBlock		macBlocks;
-	int							miBlockWidth;  //same as miDataSize in CIndexedFile
+	int							miBlockWidth;  //Same as miDataSize in CIndexedFile.  Sort of the maximum length of the string.
 	int							miMinNameLength;
 	int							miMaxNameLength;
-	int							miNewNumBlocks;
-	CMemoryCache*				mpcCache;
-	CIndexedFiles*				mpcFiles;
+	int							miBlockChunkSize;  //The number of strings per block.
 	int							miFileNumber;
+	CNamedIndexes*				mpcNamedIndexes;
 	
 public:
-	void	Init(int iBlockSize, int iMinNameLength, int iMaxNameLength, int iNewNumBlocks, CMemoryCache* pcCache, CIndexedFiles* pcFiles);
-	void	Kill(void);
-	BOOL	Load(void);
+	void					Init(int iBlockSize, int iMinNameLength, int iMaxNameLength, int iBlockChunkSize, CNamedIndexes* pcNamedIndexes);
+	void					Kill(void);
+	BOOL					Load(int iFileNumber);
+	BOOL					Save(void);
 
-	BOOL	FitsLength(int iNameLength);
+	BOOL					FitsLength(int iNameLength);
 
-	BOOL	Add(OIndex oi, CChars* szName, BOOL bFailOnExisting);
-	OIndex	GetIndex(CChars* szName);
-	BOOL	Remove(CChars* szName);
+	BOOL					Add(OIndex oi, CChars* szName, BOOL bFailOnExisting);
+	OIndex					GetIndex(CChars* szName);
+	BOOL					Remove(CChars* szName);
 
-	BOOL	Flush(void);
-	BOOL	Cache(CNamedIndexesBlock* pcBlock);
-	BOOL	AddNewBlock(int iBlockWidth, void* pvBlocks, int iNumBlocks, filePos uiFilePos);
-	int		NumNames(void);
+	BOOL					Flush(void);
+	BOOL					Cache(CNamedIndexesBlock* pcBlock);
+	BOOL					AddNewBlock(int iBlockWidth, void* pvBlocks, filePos iBlockChunkSize, filePos iDataIndex);
+	filePos					NumNames(void);
+	void					GetPotentialContainingBlocks(CChars* szName, CArrayNamedIndexesBlockPtr* pcDest);
+	void					SortBlockPtrsCachedFirst(CArrayNamedIndexesBlockPtr* pcDest);
+	int						GetCacheDescriptorSize(void);
+	int						GetDataSize(void);
+	int						GetFileNumber(void);
+	void					SetFileNumber(int iFileNumber);
+	CNamedIndexesBlock*		GetBlock(void* pvCacheMem);
+	CNamedIndexesBlock*		GetBlock(int iIndex);
+	int						GetNumBlocks(void);
+	int						GetMaxNameLength(void);
 	
 protected:
-	void*					AllocateInCache(int iSize);
+	int						FindLastCachedBlock(CArrayNamedIndexesBlockPtr* pcDest, int iEnd);
+	int						FindFirstUncachedBlock(CArrayNamedIndexesBlockPtr* pcDest, int iStart);
 };
+
 
 typedef CArrayTemplate<CNamedIndexesBlocks> CArrayNamedIndexesBlocks;
  

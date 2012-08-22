@@ -37,13 +37,13 @@ Microsoft Windows is Copyright Microsoft Corporation
 //
 //
 //////////////////////////////////////////////////////////////////////////
-char* CFileUtil::CurrentDirectory(CChars* szDest)
+void CFileUtil::CurrentDirectory(CChars* szDest)
 {
 	char	szTemp[MAX_PATH];
 
 	getcwd(szTemp, MAX_PATH);
 	szDest->Append(szTemp);
-	return szDest->Text();
+	//return szDest->Text();
 }
 
 
@@ -255,109 +255,109 @@ char CFileUtil::GetDriveLetter(char* szPathName)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////
+////
+////////////////////////////////////////////////////////////////////////////
+//TRISTATE CFileFinder::FindFiles(char* szInDirectory, BOOL bDirs, char* szInName, char* szExtension)
+//{
+//	DIR*                pDIR;
+//	struct dirent*      pDirEnt;
+//	char				szFindName[MAX_PATH];
+//	char				szTemp[MAX_PATH];
+//	BOOL				bValid;
+//	char				szDirectory[MAX_PATH];
+//	char				szFile[MAX_PATH];
+//	char*				szFileExtension;
+//	int                 iStatus;
+//	struct stat         sBuffer;
+//	BOOL                bDir;
+//	CFileUtil           cFileUtil;
 //
+//	if (!cFileUtil.FullPath(szDirectory, szInDirectory, MAX_PATH))
+//	{
+//		return TRIERROR;
+//	}
 //
-//////////////////////////////////////////////////////////////////////////
-TRISTATE CFileFinder::FindFiles(char* szInDirectory, BOOL bDirs, char* szInName, char* szExtension)
-{
-	DIR*                pDIR;
-	struct dirent*      pDirEnt;
-	char				szFindName[MAX_PATH];
-	char				szTemp[MAX_PATH];
-	BOOL				bValid;
-	char				szDirectory[MAX_PATH];
-	char				szFile[MAX_PATH];
-	char*				szFileExtension;
-	int                 iStatus;
-	struct stat         sBuffer;
-	BOOL                bDir;
-	CFileUtil           cFileUtil;
-
-	if (!cFileUtil.FullPath(szDirectory, szInDirectory, MAX_PATH))
-	{
-		return TRIERROR;
-	}
-
-	pDIR = opendir(szDirectory);
-
-	if (pDIR == NULL)
-	{
-		return TRITRUE;
-	}
-
-	pDirEnt = readdir(pDIR);
-	while (pDirEnt != NULL)
-	{
-		bValid = TRUE;
-
-		sprintf(szTemp, "%s%s%s", szDirectory, FILE_SEPARATOR, pDirEnt->d_name);
-		iStatus = stat(szTemp, &sBuffer);
-		if (iStatus == -1)
-		{
-			printf("%s: %s\n", strerror(errno), szTemp);
-			return TRIERROR;
-		}
-		bDir = S_ISDIR(sBuffer.st_mode);
-		if (bDir) //Directory
-		{
-			if (bDirs)
-			{
-				if (szInName != NULL)
-				{
-					strcpy(szFile, pDirEnt->d_name);
-					RemoveExtension(szFile);
-					if (StrIStr(szFile, szInName) == NULL)
-					{
-						bValid = FALSE;
-					}
-				}
-				else
-				{
-					bValid = FALSE;
-				}
-			}
-		}
-		else
-		{
-			if (!bDirs)
-			{
-				if (szExtension != NULL)
-				{
-					szFileExtension = FindExtension(pDirEnt->d_name);
-					szFileExtension++;
-					if (StrICmp(szFileExtension, szExtension) != 0)
-					{
-						bValid = FALSE;
-					}
-				}
-				if (szInName != NULL)
-				{
-					strcpy(szFile, pDirEnt->d_name);
-					RemoveExtension(szFile);
-					if (StrIStr(szFile, szInName) == NULL)
-					{
-						bValid = FALSE;
-					}
-				}
-			}
-			else
-			{
-				bValid = FALSE;
-			}
-		}
-
-		if (bValid)
-		{
-			mcFiles.Add(szTemp, 0);
-		}
-
-		pDirEnt = readdir(pDIR);
-	}
-
-	closedir(pDIR);
-	return TRITRUE;
-}
+//	pDIR = opendir(szDirectory);
+//
+//	if (pDIR == NULL)
+//	{
+//		return TRITRUE;
+//	}
+//
+//	pDirEnt = readdir(pDIR);
+//	while (pDirEnt != NULL)
+//	{
+//		bValid = TRUE;
+//
+//		sprintf(szTemp, "%s%s%s", szDirectory, FILE_SEPARATOR, pDirEnt->d_name);
+//		iStatus = stat(szTemp, &sBuffer);
+//		if (iStatus == -1)
+//		{
+//			printf("%s: %s\n", strerror(errno), szTemp);
+//			return TRIERROR;
+//		}
+//		bDir = S_ISDIR(sBuffer.st_mode);
+//		if (bDir) //Directory
+//		{
+//			if (bDirs)
+//			{
+//				if (szInName != NULL)
+//				{
+//					strcpy(szFile, pDirEnt->d_name);
+//					RemoveExtension(szFile);
+//					if (StrIStr(szFile, szInName) == NULL)
+//					{
+//						bValid = FALSE;
+//					}
+//				}
+//				else
+//				{
+//					bValid = FALSE;
+//				}
+//			}
+//		}
+//		else
+//		{
+//			if (!bDirs)
+//			{
+//				if (szExtension != NULL)
+//				{
+//					szFileExtension = FindExtension(pDirEnt->d_name);
+//					szFileExtension++;
+//					if (StrICmp(szFileExtension, szExtension) != 0)
+//					{
+//						bValid = FALSE;
+//					}
+//				}
+//				if (szInName != NULL)
+//				{
+//					strcpy(szFile, pDirEnt->d_name);
+//					RemoveExtension(szFile);
+//					if (StrIStr(szFile, szInName) == NULL)
+//					{
+//						bValid = FALSE;
+//					}
+//				}
+//			}
+//			else
+//			{
+//				bValid = FALSE;
+//			}
+//		}
+//
+//		if (bValid)
+//		{
+//			mcFiles.Add(szTemp, 0);
+//		}
+//
+//		pDirEnt = readdir(pDIR);
+//	}
+//
+//	closedir(pDIR);
+//	return TRITRUE;
+//}
 
 
 #endif //LINUX_GNU_32

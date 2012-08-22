@@ -33,6 +33,7 @@ void CTransientIndexedFileDescriptor::Init(int iFileIndex, char* szFileName, int
 	int		iFileLengh;
 
 	miFileIndex = iFileIndex;
+
 	mszFileName.Init(szFileName);
 	miDataSize = iDataSize;
 	miFileNumber = iFileNum;
@@ -79,10 +80,10 @@ BOOL CTransientIndexedFileDescriptor::IsFull(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CTransientIndexedFileDescriptor::Write(void* pvData)
+filePos CTransientIndexedFileDescriptor::Write(void* pvData)
 {
-	filePos	iIndex;
-	int		iWritten;
+	filePos		iIndex;
+	filePos		iWritten;
 
 	iIndex = mcFile.GetFileSize();
 	if ((iIndex % miDataSize) != 0)
@@ -97,7 +98,7 @@ int CTransientIndexedFileDescriptor::Write(void* pvData)
 		return -1;
 	}
 
-	return (int)(iIndex / miDataSize);
+	return iIndex / miDataSize;
 }
 
 
@@ -105,11 +106,11 @@ int CTransientIndexedFileDescriptor::Write(void* pvData)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTransientIndexedFileDescriptor::Write(int iIndex, void* pvData)
+BOOL CTransientIndexedFileDescriptor::Write(filePos iIndex, void* pvData)
 {
-	int				iWritten;
+	filePos			iWritten;
 	filePos			iFileLengh;
-	unsigned int	iPosition;
+	filePos			iPosition;
 
 	iPosition = iIndex * miDataSize;
 	mcFile.Seek(iPosition);
@@ -132,17 +133,17 @@ BOOL CTransientIndexedFileDescriptor::Write(int iIndex, void* pvData)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CTransientIndexedFileDescriptor::Read(int iIndex, void* pvData)
+BOOL CTransientIndexedFileDescriptor::Read(filePos iIndex, void* pvData)
 {
-	int				iRead;
-	unsigned int	iPosition;
+	filePos		iRead;
+	filePos		iPosition;
 
 	if (iIndex > miNumDatas)
 	{
 		return FALSE;
 	}
 
-	iPosition = iIndex*miDataSize;
+	iPosition = iIndex * miDataSize;
 	mcFile.Seek(iPosition);
 	iRead = mcFile.Read(pvData, miDataSize, 1);
 	if (iRead != 1)

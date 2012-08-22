@@ -20,7 +20,6 @@ SET(HEADER_FILES
 					FunctionCaller.h
 					GuidClass.h
 					IndexAccess.h
-					IndexDescriptor.h
 					IndexDescriptorsFile.h
 					IndexDiskDirectAccess.h
 					IndexedCache.h
@@ -109,7 +108,6 @@ SET(SOURCE_FILES
 					FunctionCaller.cpp
 					GuidClass.cpp
 					IndexAccess.cpp
-					IndexDescriptor.cpp
 					IndexDescriptorsFile.cpp
 					IndexDiskDirectAccess.cpp
 					IndexedCache.cpp

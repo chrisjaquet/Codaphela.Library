@@ -13,17 +13,17 @@ protected:
 	void*					mpvTemp;
 	void*					mpvBlock;
 	CIndexedFile*			mpcFile;
-	int						miNumBlocksInFile;
-	int						miLength;
-	int						miTempSize;
+	filePos					miNumBlocksInFile;
+	filePos					miLength;
+	filePos					miTempSize;
 	int						miBlockWidth;
-	int						miMaxNames;
-	int						miNewNumBlocks;
-	int						miCurrent;
+	filePos					miMaxNames;
+	filePos					miBlockChunkSize;
+	filePos					miCurrent;
 	BOOL					mbBlockSorted;
 
 public:
-	void	Init(CNamedIndexesBlocks* pcBlocks);
+	void	Init(CNamedIndexesBlocks* pcBlocks, int iFileNumber);
 	void	Kill(void);
 
 	BOOL	Load(void);

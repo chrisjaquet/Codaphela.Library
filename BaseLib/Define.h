@@ -127,7 +127,7 @@ typedef int BOOL;
 #define FALSE 0
 #define TRUE 1
 #define engine_stricmp(p,q) strcmpi(p,q)
-#define ENGINE_SIZE_T
+#define ENGINE_SIZE_T size_t
 #define EngineOutput(p)	printf(p)
 #define MAX_PATH 4096
 #define _IOREAD         0x0001

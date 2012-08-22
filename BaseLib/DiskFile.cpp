@@ -99,6 +99,11 @@ BOOL CDiskFile::Close(void)
 {
 	int		iReturn;
 
+	if (!mpsFileHandle)
+	{
+		return FALSE;
+	}
+
 	iReturn = fclose(mpsFileHandle);
 	if (iReturn == 0)
 	{
@@ -135,11 +140,11 @@ BOOL CDiskFile::Create(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CDiskFile::Read(void* pvBuffer, int iSize, int iCount)
+filePos CDiskFile::Read(void* pvBuffer, filePos iSize, filePos iCount)
 {
-	int		iRead;
+	filePos		iRead;
 
-	iRead = fread(pvBuffer, iSize, iCount, mpsFileHandle);
+	iRead = (filePos)fread(pvBuffer, (size_t)iSize, (size_t)iCount, mpsFileHandle);
 	return iRead;
 }
 
@@ -150,7 +155,10 @@ int CDiskFile::Read(void* pvBuffer, int iSize, int iCount)
 //////////////////////////////////////////////////////////////////////////
 BOOL CDiskFile::Seek(filePos iOffset, int iSeekOrigin)
 {
-	return FixBool(fseek(mpsFileHandle, (int)iOffset, iSeekOrigin));
+	int		iResult;
+
+	iResult = fseek(mpsFileHandle, (size_t)iOffset, iSeekOrigin);
+	return iResult == 0;
 }
 
 
@@ -158,9 +166,12 @@ BOOL CDiskFile::Seek(filePos iOffset, int iSeekOrigin)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CDiskFile::Write(const void* pvBuffer, int iSize, int iCount)
+filePos CDiskFile::Write(const void* pvBuffer, filePos iSize, filePos iCount)
 {
-	return (int)fwrite(pvBuffer, iSize, iCount, mpsFileHandle);
+	filePos	iWritten;
+
+	iWritten = (filePos)fwrite(pvBuffer, (size_t)iSize, (size_t)iCount, mpsFileHandle);
+	return iWritten;
 }
 
 

@@ -39,7 +39,6 @@ SET(HEADER_FILES
 					MapStringUnknown.h
 					MapTypeUnknown.h
 					MathFunction.h
-					Named.h
 					NamedIndexedBlock.h
 					NamedIndexedData.h
 					NamedIndexedObjects.h

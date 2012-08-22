@@ -25,7 +25,10 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "DurableFile.h"
 
 
-class CIndexDescriptor;
+//This class contains a file with every data descriptor in it - regardless of the size of the data it describes.  
+//The actual data is contained in files in the CIndexedDataFiles class.
+
+class CIndexedDataDescriptor;
 class CDurableFileController;
 class CIndexDescriptorsFile
 {
@@ -37,9 +40,9 @@ public:
 
 	void			Init(CDurableFileController* pcDurableFileControl, char* szFileName, char* szRewriteName);
 	void			Kill(void);
-	long long int 	NumDescriptors(void);
-	int				Read(CIndexDescriptor* pcDescriptor, int iPosition, int iNum = 1);
-	int				Write(CIndexDescriptor* pcDescriptor, int iPosition, int iNum = 1);
+	filePos			NumDescriptors(void);
+	filePos			Read(CIndexedDataDescriptor* pcDescriptor, int iPosition, int iNum = 1);
+	filePos			Write(CIndexedDataDescriptor* pcDescriptor, int iPosition, int iNum = 1);
 	CDurableFile*	GetDurableFile(void);
 };
 

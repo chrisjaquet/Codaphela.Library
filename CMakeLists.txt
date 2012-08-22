@@ -67,6 +67,8 @@ ENDIF()
 # Extra Definitions
 IF(${CMAKE_COMPILER_IS_GNUCXX} AND WIN32)
     ADD_DEFINITIONS(-DWIN_GNU_32)
+ELSEIF(UNIX)
+    ADD_DEFINITIONS(-DLINUX_GNU_32)
 ENDIF()
 
 OPTION(CodaphelaLibrary_BUILD_SHARED_LIBRARIES "Set this to ON to build shared libraries, rather than static libraries." OFF)

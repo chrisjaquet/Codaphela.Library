@@ -21,7 +21,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
 #include "DurableFileController.h"
-#include "IndexDescriptor.h"
+#include "IndexedDataDescriptor.h"
 #include "IndexDescriptorsFile.h"
 
 
@@ -32,7 +32,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 void CIndexDescriptorsFile::Init(CDurableFileController* pcDurableFileControl, char* szFileName, char* szRewriteName)
 {
 	mpcDurableFileControl = pcDurableFileControl;
-	mcIndexedDescriptorFile.Init(pcDurableFileControl->mbDurable, szFileName, szRewriteName);
+	mcIndexedDescriptorFile.Init(pcDurableFileControl->IsDurable(), szFileName, szRewriteName);
 	pcDurableFileControl->AddFile(&mcIndexedDescriptorFile);
 	mcIndexedDescriptorFile.Open();
 }
@@ -53,9 +53,9 @@ void CIndexDescriptorsFile::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-long long int CIndexDescriptorsFile::NumDescriptors(void)
+filePos CIndexDescriptorsFile::NumDescriptors(void)
 {
-	return mcIndexedDescriptorFile.Size() / sizeof(CIndexDescriptor);
+	return mcIndexedDescriptorFile.Size() / sizeof(CIndexedDataDescriptor);
 }
 
 
@@ -63,9 +63,9 @@ long long int CIndexDescriptorsFile::NumDescriptors(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CIndexDescriptorsFile::Read(CIndexDescriptor* pcDescriptor, int iPosition, int iNum)
+filePos CIndexDescriptorsFile::Read(CIndexedDataDescriptor* pcDescriptor, int iPosition, int iNum)
 {
-	return mcIndexedDescriptorFile.Read(EFSO_SET, iPosition * sizeof(CIndexDescriptor), pcDescriptor, sizeof(CIndexDescriptor), iNum);
+	return mcIndexedDescriptorFile.Read(EFSO_SET, iPosition * sizeof(CIndexedDataDescriptor), pcDescriptor, sizeof(CIndexedDataDescriptor), iNum);
 }
 
 
@@ -73,9 +73,9 @@ int CIndexDescriptorsFile::Read(CIndexDescriptor* pcDescriptor, int iPosition, i
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CIndexDescriptorsFile::Write(CIndexDescriptor* pcDescriptor, int iPosition, int iNum)
+filePos CIndexDescriptorsFile::Write(CIndexedDataDescriptor* pcDescriptor, int iPosition, int iNum)
 {
-	return mcIndexedDescriptorFile.Write(iPosition * sizeof(CIndexDescriptor), pcDescriptor, sizeof(CIndexDescriptor), iNum);
+	return mcIndexedDescriptorFile.Write(iPosition * sizeof(CIndexedDataDescriptor), pcDescriptor, sizeof(CIndexedDataDescriptor), iNum);
 }
 
 
