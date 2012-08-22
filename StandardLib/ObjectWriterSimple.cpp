@@ -20,6 +20,8 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/FileUtil.h"
 #include "BaseLib/DiskFile.h"
+#include "ObjectFileGeneral.h"
+#include "SerialisedObject.h"
 #include "ObjectWriterSimple.h"
 
 
@@ -27,9 +29,9 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectWriterSimple::Init(char* szDirectory)
+void CObjectWriterSimple::Init(char* szDirectory, char* szBaseName)
 {
-	mszDirectory.Init(szDirectory);
+	CObjectWriter::Init(szDirectory, szBaseName);
 }
 
 
@@ -39,7 +41,7 @@ void CObjectWriterSimple::Init(char* szDirectory)
 //////////////////////////////////////////////////////////////////////////
 void CObjectWriterSimple::Kill(void)
 {
-	mszDirectory.Kill();
+	CObjectWriter::Kill();
 }
 
 
@@ -47,43 +49,68 @@ void CObjectWriterSimple::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectWriterSimple::Write(OIndex oi, char* szObjectName, char* szClassName, void* pvObject, int iLength)
+BOOL CObjectWriterSimple::Begin(void)
+{
+	return CObjectWriter::Begin();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectWriterSimple::End(void)
+{
+	return CObjectWriter::End();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectWriterSimple::Write(CSerialisedObject* pcSerialised)
 {
 	CFileUtil		cFileUtil;
 	CChars			szFileName;
 	CChars			szDirectory;
 	CFileBasic		cFile;
 	CChars			szFullName;
+	char*			szExtension;
+
+	ReturnOnFalse(ObjectStartsWithBase(pcSerialised->GetName()));
 
 	szFileName.Init();
 	szDirectory.Init();
-	cFileUtil.SplitPath(szObjectName, &szFileName, &szDirectory);
-	szFileName.Append(".DRG");
+	cFileUtil.SplitPath(pcSerialised->GetName(), &szFileName, &szDirectory);
+	szFileName.Append(".");
+	szFileName.Append(OBJECT_FILE_EXTENSION);
 
 	szFullName.Init(mszDirectory);
 	szFullName.Append(FILE_SEPARATOR[0]);
 	szFullName.Append(szDirectory);
+	szDirectory.Kill();
 
 	cFileUtil.MakeDir(szFullName.Text());
 
 	szFullName.Append(FILE_SEPARATOR[0]);
 	szFullName.Append(szFileName);
+	szFileName.Kill();
 
 	cFile.Init(DiskFile(szFullName.Text()));
+	szFullName.Kill();
 	cFile.Open(EFM_Write_Create);
 
-	ReturnOnFalse(cFile.WriteInt(0));
-	ReturnOnFalse(cFile.WriteString(szClassName));
-	ReturnOnFalse(cFile.WriteLong(oi));
+	//Write file type identifier.
+	szExtension = OBJECT_FILE_EXTENSION;
+	ReturnOnFalse(cFile.WriteData(szExtension, 4));
+	ReturnOnFalse(cFile.WriteInt(BASIC_OBJECT_FILE));
 
-	ReturnOnFalse(cFile.Write(pvObject, iLength, 1));
+	//Write object stream.
+	ReturnOnFalse(cFile.WriteData(pcSerialised, pcSerialised->GetLength()));
 
 	cFile.Close();
 	cFile.Kill();
-
-	szFullName.Kill();
-	szDirectory.Kill();
-	szFileName.Kill();
 	return TRUE;
 }
 

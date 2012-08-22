@@ -37,10 +37,10 @@ void CPreprocessor::InitPlatformSpecific(void)
 
 	AddDefine("_M_IX86");
 	AddDefine("__inline", "inline");
-	
+
 #ifdef __cplusplus
 	sz.Init();
-	sz.Append(__cplusplus);
+	sz.Append((int)__cplusplus); // FIXME: This should be a long int on MinGW/GCC
 	AddDefine("__cplusplus", sz.Text());
 	sz.Kill();
 #endif

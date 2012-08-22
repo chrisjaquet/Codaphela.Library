@@ -1,6 +1,6 @@
 /** ---------------- COPYRIGHT NOTICE, DISCLAIMER, and LICENSE ------------- **
 
-Copyright (c) 2009 Andrew Paterson
+Copyright (c) 2012 Andrew Paterson
 
 This file is part of The Codaphela Project: Codaphela StandardLib
 
@@ -18,47 +18,30 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "MathFunction.h"
+#ifndef __OBJET_GRAPH_WRITER_H__
+#define __OBJET_GRAPH_WRITER_H__
+#include "BaseObject.h"
+#include "ObjectWriter.h"
+#include "DependentObjects.h"
 
 
-void CMathFunction::Init(void)
+class CObjectGraphSerialiser
 {
-	mathFunc = NULL;
-	pvData = NULL;
-}
+protected:
+	CDependentObjects	mcDependentObjects;
+	CObjectWriter*		mpcWriter;
+
+public:
+	void	Init(CObjectWriter* pcWriter);
+	void	Kill(void);
+
+	BOOL	Write(CBaseObject* pcObject);
+	BOOL	WriteUnwritten(CBaseObject* pcObject);
+
+	void	AddDependent(CBaseObject* pcObject);
+	void	MarkWritten(CBaseObject* pcObject);
+};
 
 
-void CMathFunction::Kill(void)
-{
-	if (pvData)
-	{
-		free(pvData);
-		pvData = NULL;
-	}
-	mathFunc = NULL;
-}
-
-
-void* CMathFunction::AllocateData(int iType, int iSize)
-{
-	return UnknownTypeAllocate(iSize, iType);
-}
-
-
-void CMathFunction::SetFunction(MathFunc func)
-{
-	mathFunc = func;
-}
-
-
-void CMathFunction::SetData(void* pvData)
-{
-	this->pvData = pvData;
-}
-
-
-float SpringFunction(float fDistance, SSpringConstants* pvData)
-{
-	return fDistance * pvData->K;
-}
+#endif // __OBJET_GRAPH_WRITER_H__
 

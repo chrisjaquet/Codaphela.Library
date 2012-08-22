@@ -23,6 +23,9 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "Unknown.h"
 
 
+//This class is roughly a void* (or possibly an Object*).  It should probably have been called CObjectPointer but it's easier to start typing CPo...
+
+
 class CBaseObject;
 class CObject;
 class CPointerObject
@@ -31,6 +34,9 @@ friend class CObjects;
 friend class CArrayCommonObject;
 friend class CSet;
 friend class CArray;
+template<class M>
+friend class CPointer;
+friend class CObjectDeserialiser;
 
 protected:
 	CBaseObject*	mpcObject;
@@ -43,12 +49,17 @@ public:
 	void			operator = (CPointerObject pcPointer);
 	CBaseObject*	operator -> ();
 	CBaseObject*	operator & ();
+	BOOL			operator ! ();
 	BOOL			IsNotNull(void);
 	BOOL			IsNull(void);
+
+	CPointerObject*	This(void);
 
 protected:
 	BOOL			Dehollow(void);
 	void			PointTo(CBaseObject* pcObject);
+
+	void			Clear(void);
 };
 
 

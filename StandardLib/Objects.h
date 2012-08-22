@@ -25,21 +25,23 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "NamedIndexedObjects.h"
 #include "Unknowns.h"
 #include "Pointer.h"
+#include "ObjectsSource.h"
 
 
-#define OMalloc(classtype)			(gcObjects.Add<classtype>());
-#define ONMalloc(classtype, name)	(gcObjects.Add<classtype>(name));
+#define OMalloc(classtype)			(gcObjects.Add<classtype>())
+#define ONMalloc(classtype, name)	(gcObjects.Add<classtype>(name))
+#define ONull						(gcObjects.Null())
 
 
 class CObjects
 {
 protected:
 	CUnknowns*				mpcUnknownsAllocatingFrom;
-	CNamedIndexedObjects	mcIndexes;  //Objects (BaseObject*) allocated in Unkonws referenced by name and OIndex.  
 
+	CNamedIndexedObjects	mcMemory;  //Objects (BaseObject*) allocated in Unkonws referenced by name and OIndex.  
 	CNamedIndexedData		mcDatabase;  //Objects in the database also referenced by string and OIndex.  
-
-	//CFileSystemData			mcFileSystem;  //Objects on the file system in .DRG files referenced only by name.
+	
+	CObjectsSource			mcSource;
 
 	OIndex					moiNext;
 
@@ -47,12 +49,16 @@ public:
 						void			Init(CUnknowns* pcUnknownsAllocatingFrom, char* szWorkingDirectory);
 						void			Kill(void);
 
-	template<class M>	CPointer<M>		Add(void);
-	template<class M>	CPointer<M>		Add(char* szName);
 
+						CPointerObject	Get(OIndex oi);
+						CPointerObject	Get(char* szName);
 	template<class M> 	CPointer<M>		Get(OIndex oi);
 	template<class M>	CPointer<M>		Get(char* szName);
 
+	template<class M>	CPointer<M>		Add(void);
+	template<class M>	CPointer<M>		Add(char* szName);
+
+						CPointerObject	Null(void);
 	template<class M>	CPointer<M>		Null(void);
 
 protected:
@@ -148,8 +154,6 @@ template<class M>
 CPointer<M> CObjects::Null(void)
 {
 	CPointer<M>		pObject;
-
-	//This looks dodgy, rather define a singleton null object.
 	return pObject;
 }
 
@@ -163,7 +167,7 @@ CPointer<M> CObjects::Get(OIndex oi)
 {
 	CBaseObject*	pvObject;
 
-	pvObject = mcIndexes.Get(oi);
+	pvObject = mcMemory.Get(oi);
 	if (pvObject)
 	{
 		CPointer<M>		pObject;
@@ -173,7 +177,7 @@ CPointer<M> CObjects::Get(OIndex oi)
 	}
 	else
 	{
-		return Null();
+		return Null<M>();
 	}
 }
 
@@ -185,16 +189,19 @@ CPointer<M> CObjects::Get(OIndex oi)
 template<class M>
 CPointer<M> CObjects::Get(char* szName)
 {
-	OIndex			oi;
+	CBaseObject*	pvObject;
 
-	oi = mcIndexes.Get(szName);
-	if (oi != INVALID_OBJECT_IDENTIFIER)
+	pvObject = mcMemory.Get(szName);
+	if (pvObject)
 	{
-		return Get(oi);
+		CPointer<M>		pObject;
+
+		pObject.mpcObject = pvObject;
+		return pObject;
 	}
 	else
 	{
-		return Null();
+		return Null<M>();
 	}
 }
 

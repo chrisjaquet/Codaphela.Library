@@ -842,7 +842,7 @@ BOOL CInputDevicesReader::ReadSource(CMarkupTag* pcParentTag, CInputDeviceDesc* 
 	if (szFriendly.Empty())
 	{
 		szFriendly.Kill();
-		return NULL;
+		return FALSE;
 	}
 
 	fValue = 0;

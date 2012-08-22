@@ -23,7 +23,9 @@ zlib is Copyright Jean-loup Gailly and Mark Adler
 ** ------------------------------------------------------------------------ **/
 #include <windows.h>
 #include <GdiPlus.h>
+#ifndef WIN_GNU_32
 #include <GdiPlusHeaders.h>
+#endif
 #include "ColourARGB.h"
 #include "RADWriter.h"
 #include "ImageCopier.h"
@@ -54,13 +56,13 @@ BOOL GetEncoderClsid(EImageType eImageType, CLSID* psID)
 	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
 
 	// GetImageEncoders creates an array of ImageCodecInfo objects
-	// and copies that array into a previously allocated buffer. 
-	// The third argument, imageCodecInfos, is a pointer to that buffer. 
+	// and copies that array into a previously allocated buffer.
+	// The third argument, imageCodecInfos, is a pointer to that buffer.
 	GetImageEncoders(num, size, pImageCodecInfo);
 
 	memset(psID, 0, sizeof(CLSID));
 	//These are the only types that can be written.  Stop looking for a tga writer.
-	switch(eImageType) 
+	switch(eImageType)
 	{
 	case IT_BMP:
 		wcscpy(szID, L"image/bmp");
@@ -70,7 +72,7 @@ BOOL GetEncoderClsid(EImageType eImageType, CLSID* psID)
 		break;
 	case IT_JPG:
 		wcscpy(szID, L"image/jpeg");
-		break;	
+		break;
 	case IT_GIF:
 		wcscpy(szID, L"image/gif");
 		break;
@@ -79,13 +81,13 @@ BOOL GetEncoderClsid(EImageType eImageType, CLSID* psID)
 		break;
 	default:
 		wcscpy(szID, L"NoTFouNd");
-	}		
+	}
 
 	// Display the graphics file format (MimeType)
 	// for each ImageCodecInfo object.
 	bFound = FALSE;
 	for(UINT j = 0; j < num; ++j)
-	{ 
+	{
 		if (_wcsicmp(szID, pImageCodecInfo[j].MimeType) == 0)
 		{
 			memcpy(psID, &pImageCodecInfo[j].Clsid, sizeof(CLSID));
@@ -194,6 +196,8 @@ BOOL WriteImage(CImage* pcImage, char* szFileName, EImageType eType)
 		return (SaveRAD(pcImage, szFileName));
 	case IT_RAW:
 		return (SaveRAW(pcImage, szFileName));
+    default:
+        break;
 	}
 	return FALSE;
 }

@@ -61,7 +61,7 @@ BOOL CPackFile::Open(EFileMode eFileMode)
 			return TRUE;
 		}
 	}
-	else if (eFileMode = EFM_Read)
+	else if (eFileMode == EFM_Read)
 	{
 		if (mpcPackFiles->IsReadMode())
 		{

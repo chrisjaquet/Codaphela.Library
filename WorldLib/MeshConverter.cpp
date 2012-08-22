@@ -1004,7 +1004,7 @@ BOOL CMeshConverter::CreateLinkNodes(void)
 			pcLinkNode->psToSubObjectSpaceFromZeroSpace = mpcSceneConverter->GetWorld()->CreateMatrix();
 			pcLinkNode->psToZeroSpaceFromSubObjectSpace = mpcSceneConverter->GetWorld()->CreateMatrix();
 			
-			if (Float4x4Inverse(&pcLinkNode->psToSubObjectSpaceFromZeroSpace->sD3DMatrix, &fDeterminant, psMatrix) == NULL)
+			if (Float4x4Inverse(&pcLinkNode->psToSubObjectSpaceFromZeroSpace->sD3DMatrix, &fDeterminant, psMatrix) == FALSE)
 			{
 				gcUserError.Set("Matrix has no inverse");
 				return FALSE;

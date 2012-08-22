@@ -31,20 +31,17 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 
 class CArrayString;
-class CString  //Make sure nothing has included a 'CString'.  That class is ours.
-{
-public:
-};
 
 
 //Fix CChars to not allocate memory for the empty string.
 //CChars must be based on something other than CArrayChar.
 //Currently mallocs every 8 characters.
 
-class CFileReader;
-class CFileWriter;
+
 class CChars
 {
+friend class CFileReader;
+friend class CFileWriter;
 protected:
 	CArrayChar	mcText;
 
@@ -62,8 +59,6 @@ public:
 	void	InitList(CChars* szFirst, ...);
 	void	InitLength(int iLength);
 	void	Kill(void);
-	BOOL	Load(CFileReader* pcReader);
-	BOOL	Save(CFileWriter* pcWriter);
 	void	Fake(char* sz);
 	void	Fake(char* sz, int iStartInclusive, int iEndExclusive);
 	int		Length(void);
@@ -72,6 +67,8 @@ public:
 	void	Set(CChars* psz);
 	void	Append(char* sz);
 	void	Append(char* sz, int iStrlen);
+	void	Append(const char* sz);
+	void	Append(const char* sz, int iStrlen);
 	void	Append(CChars sz);  //Oi fix these to use void	Append(char* sz, int iStrlen);
 	void	Append(CChars* psz);  //Oi fix these to use void	Append(char* sz, int iStrlen);
 	void	Append(char c);
@@ -157,6 +154,7 @@ public:
 	void	Reverse(void);
 	void	Clear(void);
 	int		CountNewLines(void);
+	int		Count(char c);
 	void	LowerCase(void);
 	void	UpperCase(void);
 

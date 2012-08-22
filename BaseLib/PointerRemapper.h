@@ -23,6 +23,8 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __POINTER_REMAPPER_H__
 #define __POINTER_REMAPPER_H__
 
+#include <stdlib.h>
+
 #ifdef LINUX_GNU_32
 #   include <stdlib.h>
 #endif

@@ -44,7 +44,11 @@ int CALLBACK EnumFontsProc(CONST LOGFONT *lplf, CONST TEXTMETRIC *lptm, DWORD dw
 		pcWinText = (CWinText*)lpData;
 		psWinFont = pcWinText->mcWinFonts.Add();
 		psWinFont->sInstances.Init();
+#ifndef WIN_GNU_32
 		strcpy_s(psWinFont->szName, lplf->lfFaceName);
+#else
+		strcpy(psWinFont->szName, lplf->lfFaceName);
+#endif
 	}
 
 	return 1;
@@ -134,7 +138,7 @@ SWinFontInstance* CWinText::Create(char* szName, int iHeight, int iWidth, int iW
 		{
 			hFont = CreateFont(iHeight, iWidth, 0, 0, iWeight, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE | DEFAULT_PITCH, szName);
 			psInstance = psWinFont->sInstances.Add();
-			
+
 			psInstance->hFont = hFont;
 			psInstance->iHeight = iHeight;
 			psInstance->iWeight = iWeight;
@@ -158,7 +162,7 @@ void CWinText::Draw(char* szString, SWinFontInstance* psInstance, HDC hDC, int i
 
 	iLen = (int)strlen(szString);
 	iFormat = 0;
-	
+
 	if (iFlags & TEXT_ALIGN_HCENTER)	{ iFormat |= DT_CENTER; }
 	if (iFlags & TEXT_ALIGN_VCENTER)	{ iFormat |= DT_VCENTER; }
 	if (iFlags & TEXT_ALIGN_LEFT)		{ iFormat |= DT_LEFT; }

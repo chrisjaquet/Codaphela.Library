@@ -58,6 +58,26 @@ CBaseObject* CNamedIndexedObjects::Get(OIndex oi)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+CBaseObject* CNamedIndexedObjects::Get(char* szName)
+{
+	OIndex	oi;
+
+	oi = mcNames.Get(szName);
+	if (oi != INVALID_O_INDEX)
+	{
+		return Get(oi);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CNamedIndexedObjects::Add(OIndex oi, CBaseObject* pvMemory)
 {
 	mcObjects.Add(oi, pvMemory);
@@ -93,14 +113,17 @@ void CNamedIndexedObjects::AddWithID(CBaseObject* pvObject, OIndex oi)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNamedIndexedObjects::AddWithIDAndName(CBaseObject* pvObject, OIndex oi, char* szName)
+BOOL CNamedIndexedObjects::AddWithIDAndName(CBaseObject* pvObject, OIndex oi, char* szName)
 {
 	CNamedObject*	pcNamed;
+	BOOL			bResult;
 
 	AddWithID(pvObject, oi);
 
 	pcNamed = (CNamedObject*)pvObject;
-	pcNamed->SetName(szName);
+	bResult = pcNamed->InitName(szName);
 
 	mcNames.Add(pcNamed->GetOI(), szName);
+	return bResult;
 }
+

@@ -19,7 +19,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include "Objects.h"
-#include "ObjectWriter.h"
+#include "ObjectSerialiser.h"
 #include "Root.h"
 
 
@@ -102,10 +102,8 @@ BOOL CRoot::IsSubRoot(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CRoot::Save(CObjectWriter* pcFile)
+BOOL CRoot::Save(CObjectSerialiser* pcFile)
 {
-	ReturnOnFalse(SaveHeader(pcFile));
-
 	return pcFile->WritePointer(mpObjects);
 }
 
@@ -114,7 +112,7 @@ BOOL CRoot::Save(CObjectWriter* pcFile)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CRoot::Load(CObjectReader* pcFile)
+BOOL CRoot::Load(CObjectDeserialiser* pcFile)
 {
 	//LoadHeader is already called by whatever allocated this object.
 

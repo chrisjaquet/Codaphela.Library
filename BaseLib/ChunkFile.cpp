@@ -51,13 +51,23 @@ void CChunkFile::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CChunkFile::WriteOpen(void)
 {
+	return WriteOpen(0);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CChunkFile::WriteOpen(int iUserID)
+{
 	mcChunkStack.Init(5);
 	mmsziNames.Init(8, TRUE);
-	msHeader.WriteInit();
+	msHeader.WriteInit(iUserID);
 	miLastName = CFN_Error;
 
 	ReturnOnFalse(CFileBasic::Open(EFM_Write_Create));
-	ReturnOnFalse(CFileBasic::Write(&msHeader, sizeof(SChunkFileHeader), 1));
+	ReturnOnFalse(CFileBasic::Write(&msHeader, sizeof(CChunkFileHeader), 1));
 
 	return WriteChunkBegin();
 }
@@ -75,7 +85,7 @@ BOOL CChunkFile::WriteClose(void)
 	((CMD5HashFile*)mpcFile)->StopHashing();
 	((CMD5HashFile*)mpcFile)->CopyDigestToDest(msHeader.acMD5Hash);
 	CFileBasic::Seek(0);
-	ReturnOnFalse(CFileBasic::Write(&msHeader, sizeof(SChunkFileHeader), 1));
+	ReturnOnFalse(CFileBasic::Write(&msHeader, sizeof(CChunkFileHeader), 1));
 	CFileBasic::Seek(0, EFSO_END);
 	ReturnOnFalse(CFileBasic::Close());
 
@@ -99,7 +109,7 @@ BOOL CChunkFile::ReadOpen(void)
 	miLastName = CFN_Error;
 
 	ReturnOnFalse(CFileBasic::Open(EFM_Read));
-	ReturnOnFalse(CFileBasic::Read(&msHeader, sizeof(SChunkFileHeader), 1));
+	ReturnOnFalse(CFileBasic::Read(&msHeader, sizeof(CChunkFileHeader), 1));
 	if (msHeader.iMagic != CHUNK_HEADER_MAGIC)
 	{
 		return FALSE;
@@ -114,7 +124,7 @@ BOOL CChunkFile::ReadOpen(void)
 		return FALSE;
 	}
 
-	CFileBasic::Seek(sizeof(SChunkFileHeader));
+	CFileBasic::Seek(sizeof(CChunkFileHeader));
 	return __PrivateReadChunkBegin();
 }
 
@@ -136,32 +146,6 @@ BOOL CChunkFile::ReadClose(void)
 	mcChunkStack.Kill();
 	mmsziNames.Kill();
 	return bResult;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-void SChunkFileHeader::WriteInit(void)
-{
-	iChunkNamesPos = -1;
-	memset(acMD5Hash, 0, 16);
-	iMagic = CHUNK_HEADER_MAGIC;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-void CChunkHeader::WriteInit(void)
-{
-	iChunkIndexPos = -1;
-	iChunkSize = 0;
-	iName = -1;
-	memset(acMD5Hash, 0, 16);
-	iMagic = CHUNK_HEADER_MAGIC;
 }
 
 
@@ -359,7 +343,7 @@ BOOL CChunkFile::__PrivateReadChunkIndex(filePos iIndexPos, CChunkIndex* pcIndex
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-int CChunkFile::FindFirstChunkWithName(int iName)
+int CChunkFile::FindFirstChunkWithID(int iName)
 {
 	CChunkStackElement*		psElement;
 
@@ -386,7 +370,7 @@ int CChunkFile::FindFirstChunkWithName(char* szName)
 	piName = mmsziNames.GetWithKey(szName);
 	if (piName)
 	{
-		return FindFirstChunkWithName(*piName);
+		return FindFirstChunkWithID(*piName);
 	}
 	else
 	{
@@ -419,7 +403,7 @@ int CChunkFile::FindNextChunkWithName(void)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-int CChunkFile::GetNumChunksWithName(int iName)
+int CChunkFile::GetNumChunksWithID(int iName)
 {
 	CChunkStackElement*		psElement;
 

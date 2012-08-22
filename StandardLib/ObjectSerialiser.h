@@ -18,19 +18,37 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#ifndef __OBJECT_WRITER_DEST_H__
-#define __OBJECT_WRITER_DEST_H__
-#include "CoreLib/IndexedGeneral.h"
-#include "Unknown.h"
+#ifndef __OBJET_SERIALISER_H__
+#define __OBJET_SERIALISER_H__
+#include "BaseLib/FileWriter.h"
+#include "BaseLib/MemoryFile.h"
+#include "BaseObject.h"
+#include "PointerObject.h"
 
 
-class CObjectWriterDest : public CUnknown
+class CObjectSerialiser : public CFileWriter
 {
-BASE_FUNCTIONS(CObjectWriterDest);
+protected:
+	CBaseObject*			mpcThis;
+	CMemoryFile*			mpcMemory;
+	CFileBasic				mcFile;
+
 public:
-	virtual BOOL Write(OIndex oi, char* szObjectName, char* szClassName, void* pvObject, int iLength) =0;
+			void			Init(CBaseObject* pcObject);
+	virtual void			Kill(void);
+			BOOL			Save(void);
+
+	virtual BOOL			WritePointer(CPointerObject pObject);
+			BOOL			WriteHeader(CBaseObject* pcBaseObject);
+	virtual BOOL			WriteDependent(CBaseObject* pcBaseObject);
+
+			void*			GetData(void);
+			int				GetLength(void);
+
+protected:
+			filePos			Write(const void* pvSource, filePos iSize, filePos iCount);
 };
 
 
-#endif // __OBJECT_WRITER_DEST_H__
+#endif // __OBJET_SERIALISER_H__
 

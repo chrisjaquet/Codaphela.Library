@@ -106,6 +106,8 @@ void CPPDirective::Append(CChars* psz)
 	case PPD_pragma:
 		psz->Append("pragma");
 		break;
+    default:
+        break;
 	}
 	if (mcTokens.mcArray.IsNotEmpty())
 	{

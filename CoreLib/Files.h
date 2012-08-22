@@ -26,6 +26,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "BaseLib/PackFile.h"
 #include "BaseLib/FileSystem.h"
 #include "BaseLib/MapStringInt.h"
+#include "FileIterator.h"
 #include "PackFileOffset.h"
 
 
@@ -41,17 +42,31 @@ protected:
 
 public:
 
-	BOOL			Init(char* szDirectory, char* szPackFilesExtension);
-	void			Kill(void);
+	BOOL					Init(char* szDirectory, char* szPackFilesExtension);
+	void					Kill(void);
 
-	int				GetNumPackFiles(void);
-	CAbstractFile*	GetFile(char* szFullName);
-	void			GetFileNames(CMapStringInt* cFileNames);
+	int						GetNumPackFiles(void);
+	CAbstractFile*			GetFile(char* szFullName);
+
+	CFileIteratorReturn*	StartIteration(CFileIterator* pcIter);
+	CFileIteratorReturn*	Iterate(CFileIterator* pcIter);
+	void					StopIteration(CFileIterator* pcIter);
+
+	void					GetFileNames(CMapStringInt* cFileNames);
 
 protected:
-	CDiskFile*		GetSystemFile(char* szFullName);
-	CPackFile*		GetPackFile(char* szFullName);
-	CPackFile*		GetPackFile(CPackFileOffset* pcPackFiles, char* szFullName);
+	CDiskFile*				GetSystemFile(char* szFullName);
+	CPackFile*				GetPackFile(char* szFullName);
+	CPackFile*				GetPackFile(CPackFileOffset* pcPackFiles, char* szFullName);
+
+	BOOL					AddPackFile(CFileNodeSystemFile* pcFileNodeSystemFile);
+	BOOL					AddPackFiles(void);
+
+	CFileIteratorReturn*	IterateOnFileSystem(CFileIterator* pcIter);
+	CFileIteratorReturn*	IterateInPackFiles(CFileIterator* pcIter);
+
+	CFileIteratorReturn*	IterateInPackFiles(CFileIterator* pcIter, CFileNodePackFileNode* pcPackFileNode, CPackFileOffset* pcPackFiles);
+	CFileIteratorReturn*	IterateFileSystemNode(CFileIterator* pcIter, CSystemFileNode* pcSystemFileNode);
 };
 
 

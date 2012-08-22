@@ -18,30 +18,25 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#ifndef __OBJET_GRAPH_WRITER_H__
-#define __OBJET_GRAPH_WRITER_H__
-#include "BaseObject.h"
-#include "ObjectWriterDest.h"
-#include "DependentObjects.h"
+#ifndef __OBJECT_MULTIPLE_SOURCE_H__
+#define __OBJECT_MULTIPLE_SOURCE_H__
+#include "BaseLib/ArrayString.h"
+#include "ObjectSource.h"
 
 
-class CObjectGraphWriter
+class CObjectMultipleSource : public CObjectSource
 {
+BASE_FUNCTIONS(CObjectMultipleSource);
 protected:
-	CDependentObjects		mcDependentObjects;
-	CObjectWriterDest*		mpcWriter;
+	CArrayString	mcNames;
 
 public:
-	void	Init(CObjectWriterDest* pcWriter);
-	void	Kill(void);
+	void			Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName);
+	void			Kill(void);
 
-	BOOL	Write(CBaseObject* pcObject);
-	BOOL	WriteUnwritten(CBaseObject* pcObject);
-
-	void	AddDependent(CBaseObject* pcObject);
-	void	MarkWritten(CBaseObject* pcObject);
+	BOOL			Contains(char* szFullName);
 };
 
 
-#endif // __OBJET_GRAPH_WRITER_H__
+#endif // __OBJECT_MULTIPLE_SOURCE_H__
 

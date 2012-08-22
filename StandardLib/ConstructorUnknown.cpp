@@ -28,7 +28,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CConstructorUnknown::Init(void)
 {
-	mcConstructorObjects.Init(FALSE, FALSE);
+//	mcConstructorObjects.Init(FALSE, FALSE);
 }
 
 
@@ -38,7 +38,7 @@ void CConstructorUnknown::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CConstructorUnknown::Kill(void)
 {
-	mcConstructorObjects.Kill();
+//	mcConstructorObjects.Kill();
 }
 
 
@@ -49,7 +49,7 @@ void CConstructorUnknown::Kill(void)
 void CConstructorUnknown::AddUnknown(CUnknown* pcUnknown)
 {
 	pcUnknown = gcUnknowns.AddExisting(pcUnknown);
-	mcConstructorObjects.Put(pcUnknown->ClassName(), pcUnknown);
+//	mcConstructorObjects.Put(pcUnknown->ClassName(), pcUnknown);
 }
 
 
@@ -61,7 +61,7 @@ BOOL CConstructorUnknown::Construct(CUnknown* pcDest, char* szName)
 {
 	CUnknown*	pcConstructor;
 
-	pcConstructor = mcConstructorObjects.Get(szName);
+//	pcConstructor = mcConstructorObjects.Get(szName);
 	if (!pcConstructor)
 	{
 		return FALSE;
@@ -80,7 +80,7 @@ CUnknown* CConstructorUnknown::GetUnknown(char* szName)
 {
 	CUnknown*	pcConstructor;
 
-	pcConstructor = mcConstructorObjects.Get(szName);
+//	pcConstructor = mcConstructorObjects.Get(szName);
 	return pcConstructor;
 }
 

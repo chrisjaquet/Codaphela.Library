@@ -105,11 +105,25 @@ typedef int BOOL;
 //#define _IOERR          0x0020
 //#define _IOSTRG         0x0040
 //#define _IORW           0x0080
-#define INT_MAX         0x7fffffff
+#ifndef INT_MAX
+#   define INT_MAX         0x7fffffff
+#endif
 #define FILE_SEPARATOR "\\"
 #define OTHER_OS_FILE_SEPARATOR "/"
 #define __ENGINE_FUNCTION__ __FUNCTION__
 #define __ENGINE_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
+
+// Microsoft SAL (source-code annotation language) definitions (needed by XInput.h)
+#ifndef __in
+#define __in
+#endif
+#ifndef __out
+#define __out
+#endif
+#ifndef __reserved
+#define __reserved
+#endif
+
 #endif // WIN_GNU_32
 
 

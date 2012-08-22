@@ -1,6 +1,6 @@
 /** ---------------- COPYRIGHT NOTICE, DISCLAIMER, and LICENSE ------------- **
 
-Copyright (c) 2009 Andrew Paterson
+Copyright (c) 2012 Andrew Paterson
 
 This file is part of The Codaphela Project: Codaphela StandardLib
 
@@ -18,42 +18,19 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#ifndef __MATH_FUNCTION_H__
-#define __MATH_FUNCTION_H__
-#include "StandardHeader.h"
+#ifndef __OBJECT_DESERIALISER_H__
+#define __OBJECT_DESERIALISER_H__
+#include "BaseLib/FileReader.h"
+#include "Pointer.h"
 
-typedef float (*MathFunc)(float, void*);
 
-
-class CMathFunction
+class CObjectDeserialiser : public CFileReader
 {
 public:
-	MathFunc	mathFunc;
-	void*		pvData;  //SUnknownType*...
-
-	void	Init(void);
-	void	Kill(void);
-	void*	AllocateData(int iType, int iSize);
-	void	SetFunction(MathFunc func);
-	void	SetData(void* pvData);
-	__inline float Calculate(float fValue);
+	virtual BOOL ReadPointer(CPointerObject* pObject);
+			BOOL ReadHeader(CBaseObject* pcBaseObject);
+	virtual BOOL ReadDependent(CBaseObject* pcBaseObject);
 };
 
 
-struct SSpringConstants
-{
-	float K;
-};
-
-
-float SpringFunction(float fDistance, SSpringConstants* pvData);
-
-
-__inline float CMathFunction::Calculate(float fValue)
-{
-	return mathFunc(fValue, pvData);
-}
-
-
-#endif //__MATH_FUNCTION_H__
-
+#endif // __OBJECT_DESERIALISER_H__

@@ -637,9 +637,9 @@ BOOL CConvexHullGenerator::TriangleHasEdge(int iEdge1, int iEdge2, CExtremeTrian
 	iOther[1] = GetIndex(mpsPoints, iStride, pcTriangle->mpsPosition1);
 	iOther[2] = GetIndex(mpsPoints, iStride, pcTriangle->mpsPosition2);
 
-	if (((iEdge1 == iOther[0]) && (iEdge2 == iOther[1]) || ((iEdge1 == iOther[1]) && (iEdge2 == iOther[0]))) ||
-		((iEdge1 == iOther[1]) && (iEdge2 == iOther[2]) || ((iEdge1 == iOther[2]) && (iEdge2 == iOther[1]))) ||
-		((iEdge1 == iOther[0]) && (iEdge2 == iOther[2]) || ((iEdge1 == iOther[2]) && (iEdge2 == iOther[0]))))
+	if ((((iEdge1 == iOther[0]) && (iEdge2 == iOther[1])) || (((iEdge1 == iOther[1]) && (iEdge2 == iOther[0])))) ||
+		(((iEdge1 == iOther[1]) && (iEdge2 == iOther[2])) || (((iEdge1 == iOther[2]) && (iEdge2 == iOther[1])))) ||
+		(((iEdge1 == iOther[0]) && (iEdge2 == iOther[2])) || (((iEdge1 == iOther[2]) && (iEdge2 == iOther[0])))))
 	{
 		return TRUE;
 	}

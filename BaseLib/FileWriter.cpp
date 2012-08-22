@@ -28,7 +28,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CFileWriter::WriteData(void* pvData, int iDataSize)
+BOOL CFileWriter::WriteData(void* pvData, filePos iDataSize)
 {
 	CheckWrite(pvData, iDataSize);
 	return TRUE;
@@ -76,7 +76,7 @@ BOOL CFileWriter::WriteString(char* szString)
 //////////////////////////////////////////////////////////////////////////
 BOOL CFileWriter::WriteString(CChars* szString)
 {
-	return szString->Save(this);
+	return WriteArrayTemplate(&szString->mcText);
 }
 
 

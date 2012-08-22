@@ -170,7 +170,7 @@ int CASCIITree::PrivateAdd(CASCIINode* pcNode, int iNode, int iLen, char* szText
 
 		pcChild = mcNodes.Add();
 		pcChild->Init(pcNode, (int)c);
-		pcNode->mapcChildren[c] = pcChild;
+		pcNode->mapcChildren[(int)c] = pcChild;
 		pcNode = pcChild;
 	}
 
@@ -189,7 +189,7 @@ int CASCIITree::PrivateAdd(CASCIINode* pcNode, int iNode, int iLen, char* szText
 
 	pcChars->mlliID = lliID;
 
-	pcNode->maiWordEnds[c] = iIndex;
+	pcNode->maiWordEnds[(int)c] = iIndex;
 	return iIndex;
 }
 
@@ -469,7 +469,7 @@ void CASCIITree::PrivateMoveLastToRemoved(EASCIITreeRemoveStyle eStyle, CASCIINo
 
 		c = pszidEnd->GetChar(pszidEnd->Length()-1);
 		c -= ASCII_NODE_START_CHAR;
-		pcEndLastNode->maiWordEnds[c] = iWordEnd;
+		pcEndLastNode->maiWordEnds[(int)c] = iWordEnd;
 	}
 	else
 	{

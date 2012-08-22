@@ -24,6 +24,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "CoreLib/GuidClass.h"
 #include "WinDirectInput.h"
 #define XINPUT_USE_9_1_0
+#include "BaseLib/Define.h"
 #include <XInput.h>
 #include "WinInput.h"
 
@@ -247,7 +248,7 @@ void CDirectInput::ResetDetails(void)
 //////////////////////////////////////////////////////////////////////////
 void CDirectInput::Update(void)
 {
-	DIDEVICEOBJECTDATA		sData[256];	
+	DIDEVICEOBJECTDATA		sData[256];
 	DWORD					dwItems;
 	int						iJoystick;
 	DWORD					dwItem;
@@ -259,8 +260,8 @@ void CDirectInput::Update(void)
 	{
 		pcDetail = masDIJoystickDetail.Get(iJoystick);
 		hResult = pcDetail->lpDIDevice->GetDeviceState(sizeof(DIJOYSTATE2), &cJoyState);
-		if (FAILED(hResult)) 
-		{ 
+		if (FAILED(hResult))
+		{
 			//May be unplugged, not just tabbed out.
 			pcDetail->lpDIDevice->Unacquire();
 			pcDetail->lpDIDevice->Acquire();
@@ -268,8 +269,8 @@ void CDirectInput::Update(void)
 
 		dwItems = 256;
 		hResult = pcDetail->lpDIDevice->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), sData, &dwItems, 0);
-		if (SUCCEEDED(hResult)) 
-		{ 
+		if (SUCCEEDED(hResult))
+		{
 			for (dwItem = 0; dwItem < dwItems; dwItem++)
 			{
 				//Er?

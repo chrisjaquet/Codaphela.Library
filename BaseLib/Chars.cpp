@@ -278,26 +278,6 @@ void CChars::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CChars::Load(CFileReader* pcReader)
-{
-	return pcReader->ReadArrayTemplate(&mcText);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CChars::Save(CFileWriter* pcWriter)
-{
-	return pcWriter->WriteArrayTemplate(&mcText);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
 void CChars::Fake(char* sz)
 {
 	if (sz)
@@ -445,6 +425,43 @@ void CChars::Append(char* sz, int iLen)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CChars::Append(const char* sz)
+{
+	int		iLen;
+	char*	pcPosition;
+
+	if (sz)
+	{
+		iLen = (int)strlen(sz);
+		pcPosition = PrivateGrow(iLen);
+		strcpy(pcPosition, sz);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CChars::Append(const char* sz, int iLen)
+{
+	char*	pcPosition;
+	char*	pcZero;
+
+	if (sz)
+	{
+		pcPosition = PrivateGrow(iLen);
+		memcpy(pcPosition, sz, iLen);
+		pcZero = mcText.Tail();
+		*pcZero = 0;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CChars::Append(char c)
 {
 	char* pcReplace;
@@ -566,7 +583,7 @@ void CChars::Append(double d)
 {
 	char sz[32];
 
-	sprintf(sz, "%.8d", d);
+	sprintf(sz, "%.8f", d);
 	Append(sz);
 }
 
@@ -2042,7 +2059,7 @@ void CChars::AppendData2(char* szData, int iDataLength, int iMaxLength)
 	int				iLength;
 	unsigned char	c;
 	BOOL			bLastReadable;
-	
+
 	if (iDataLength > iMaxLength)
 	{
 		iLength = iMaxLength;
@@ -2128,6 +2145,30 @@ int CChars::CountNewLines(void)
 {
 	return ::CountNewLines(mcText.GetData(), mcText.NumElements());
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CChars::Count(char c)
+{
+	int		i;
+	char	cAt;
+	int		iCount;
+
+	iCount = 0;
+	for (i = 0; i < Length(); i++)
+	{
+		cAt = GetChar(i);
+		if (cAt == c)
+		{
+			iCount ++;
+		}
+	}
+	return iCount;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //

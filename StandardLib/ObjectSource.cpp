@@ -25,8 +25,11 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectSource::Init(void)
+void CObjectSource::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
 {
+	mpcConverter = pcConverter;
+	mpcFile = pcFile;
+	mszFileName.Init(szFileName);
 }
 
 
@@ -36,5 +39,19 @@ void CObjectSource::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CObjectSource::Kill(void)
 {
+	mszFileName.Kill();
+	mpcFile = NULL;
+	mpcConverter = NULL;
 	CUnknown::Kill();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectSource::IsNative(void)
+{
+	return FALSE;
+}
+

@@ -29,7 +29,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void EngineDebugLog(char* szFile, int iLine, char* szFunction, char* szAdditonal)
+void EngineDebugLog(const char* szFile, int iLine, const char* szFunction, const char* szAdditonal)
 {
 	CChars		szOutput;
 	CFileUtil	cFileUtil;

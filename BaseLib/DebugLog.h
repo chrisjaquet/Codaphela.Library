@@ -29,7 +29,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define DEBUG_LOG EngineDebugLog(__FILE__, __LINE__, __ENGINE_PRETTY_FUNCTION__);
 
 
-void EngineDebugLog(char* szFile, int iLine, char* szFunction, char* szAdditonal = NULL);
+void EngineDebugLog(const char* szFile, int iLine, const char* szFunction, const char* szAdditonal = NULL);
 
 
 #endif // __DEBUG_LOG_H__

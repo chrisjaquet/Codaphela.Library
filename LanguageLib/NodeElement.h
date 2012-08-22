@@ -94,6 +94,8 @@ struct SNodeElement
 		case NT_Inclusive:
 			szString->Append("Inclusive, ");
 			break;
+        default:
+            break;
 		}
 
 		switch(sNode.eModifier) 
@@ -101,6 +103,8 @@ struct SNodeElement
 		case NM_Inverse:
 			szString->Append("Inverse, ");
 			break;
+        default:
+            break;
 		}
 
 		if (sNode.bFinal) 
@@ -116,6 +120,8 @@ struct SNodeElement
 		case NN_Empty:
 			szString->Append("Empty, ");
 			break;
+        default:
+            break;
 		}
 
 		szString->Append(sNode.iMinimum);

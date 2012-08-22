@@ -320,6 +320,23 @@ CChars* CArrayString::Get(int iIndex)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
+CChars* CArrayString::Tail(void)
+{
+	if (NumElements() > 0)
+	{
+		return Get(NumElements()-1);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
 char* CArrayString::GetText(int iIndex)
 {
 	CChars*		pcChars;
@@ -383,6 +400,50 @@ int CArrayString::GetIndex(char* szStart, int iLen)
 	}
 	return -1;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+int CArrayString::FindInSorted(char* szString, BOOL bCaseSensitive)
+{
+	CChars	szFake;
+
+	szFake.Fake(szString);
+	return FindInSorted(&szFake, bCaseSensitive);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+int CArrayString::FindInSorted(CChars* szString, BOOL bCaseSensitive)
+{
+	int(*Func)(const void*, const void*);
+	int		iIndex;
+	BOOL	bResult;
+
+	if (bCaseSensitive)
+	{
+		Func = CompareChars;
+	}
+	else
+	{
+		Func = CompareCharsIgnoreCase;
+	}
+	bResult = mcArray.FindInSorted(szString, Func, &iIndex);
+	if (!bResult)
+	{
+		return -1;
+	}
+	else
+	{
+		return iIndex;
+	}
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //																		//
@@ -509,5 +570,43 @@ void CArrayString::Dump(void)
 	}
 	sz.Dump();
 	sz.Kill();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CArrayString::Split(char* szString, char cSplitter)
+{
+	CChars			szTemp;
+
+	szTemp.Init(szString);
+	if (!szTemp.Empty())
+	{
+		szTemp.Split(this, cSplitter);
+		szTemp.Kill();
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CArrayString::RemoveTail(void)
+{
+	if (NumElements() > 0)
+	{
+		Remove(NumElements()-1);
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 

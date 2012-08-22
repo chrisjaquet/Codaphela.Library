@@ -32,7 +32,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 struct SIndexedLevel
 {
-	struct (SIndexedLevel*)	apsLevels[INDEXED_LEVELS_IN_LEVEL];  //Points
+	struct SIndexedLevel*   apsLevels[INDEXED_LEVELS_IN_LEVEL];  //Points
 
 	void Init(void);
 	BOOL IsEmpty(void);

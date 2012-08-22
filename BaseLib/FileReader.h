@@ -46,7 +46,7 @@ public:
 	virtual				filePos	Read(void* pvDest, filePos iSize, filePos iCount) =0;
 
 	//General
-						BOOL	ReadData(void* pvData, int iDataSize);
+						BOOL	ReadData(void* pvData, filePos iDataSize);
 
 	//Chunking
 						int		FindFirstChunkWithName(char* szName);
@@ -59,7 +59,8 @@ public:
 	//Strings.
 						BOOL	ReadStringLength(int* piLength);
 						BOOL	ReadStringChars(char* szString, int iLength);
-						BOOL	ReadString(CChars* szString);
+						BOOL	ReadString(CChars* szString);  //Call this one if the string was saved from a CChars
+						BOOL	ReadString(CChars* szString, BOOL bDoesntMatter);  //Or this one if the string was saved from a char*
 
 	//Arrays.
 	template<class M>	BOOL	ReadArrayTemplate(CArrayTemplate<M>* pcArray);
