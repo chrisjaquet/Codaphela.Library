@@ -22,8 +22,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __FILE_NODE_H__
 #define __FILE_NODE_H__
-//CDJ: #include "AbstractFile.h"
-//CDJ:  #include "ArrayString.h"
 #include "BaseFileNode.h"
 #include "FileNodeDirectory.h"
 #include "PackFileNode.h"
@@ -36,10 +34,10 @@ friend class CFileNodeDirectory<M>;
 protected:
 	union
 	{
-		CFileNodeDirectory<M>	msDirectory;
+		CFileNodeDirectory<M>	msDirectory;		
 		M						msFile;
 	} u;
-
+	
 public:
 	void					InitFile(char* szName, CFileNode* pcParent);
 	void					InitDirectory(char* szName, CFileNode* pcParent);

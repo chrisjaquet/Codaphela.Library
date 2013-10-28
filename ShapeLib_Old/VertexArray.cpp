@@ -1,4 +1,4 @@
-#include "BaseLib/ErrorHandler.h"
+#include "CoreLib\ErrorHandler.h"
 #include "VertexArray.h"
 
 
@@ -24,7 +24,7 @@ void CVertexArray::SetVectorSize(int iNumVectors)
 {
 	maVectorSource.Kill();
 	maVectorSource.Allocate(iNumVectors);
-	if (maVectorTransformed.mpvArray == NULL)
+	if (maVectorTransformed.pvArray == NULL)
 	{
 		maVectorTransformed.Allocate(iNumVectors+1);
 	}
@@ -41,7 +41,7 @@ void CVertexArray::SetMatrixSize(int iNumMatricies)
 void CVertexArray::Set(void)
 {
 	//The size + 1 is to stop directX overwriting memory when it transforms the last vertex in the array.
-	if (maVectorTransformed.mpvArray == NULL)
+	if (maVectorTransformed.pvArray == NULL)
 	{
 		maVectorTransformed.Allocate(maVectorSource.miUsedElements+1);
 	}

@@ -1,5 +1,5 @@
 #include "ShapeTypes.h"
-#include "CoreLib/TypeDescriptor.h"
+#include "CoreLib\TypeDescriptor.h"
 #include "ConvexHull.h"
 #include "Box.h"
 

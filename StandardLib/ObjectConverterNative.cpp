@@ -1,7 +1,11 @@
 #include "BaseLib/ErrorTypes.h"
+#include "BaseLib/ChunkFileFile.h"
 #include "Unknowns.h"
 #include "Objects.h"
 #include "ObjectFileGeneral.h"
+#include "IndexGenerator.h"
+#include "ObjectDeserialiser.h"
+#include "ObjectGraphDeserialiser.h"
 #include "ObjectConverterNative.h"
 
 
@@ -11,6 +15,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CObjectConverterNative::Init(void)
 {
+	mcDependentObjects.Init();
 }
 
 
@@ -20,6 +25,7 @@ void CObjectConverterNative::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CObjectConverterNative::Kill(void)
 {
+	mcDependentObjects.Kill();
 	CObjectConverter::Kill();
 }
 
@@ -50,7 +56,8 @@ BOOL CObjectConverterNative::IsFor(CAbstractFile* pcFile)
 //////////////////////////////////////////////////////////////////////////
 CObjectSource* CObjectConverterNative::CreateSource(CAbstractFile* pcFile, char* szFileName)
 {
-	CObjectSource*	pcSource;
+	CObjectSourceChunked*	pcSourceChunked;
+	CObjectSourceSimple*	pcSourceSimple;
 	BOOL					bResult;
 	CFileBasic				cFile;
 	int						c;
@@ -75,15 +82,19 @@ CObjectSource* CObjectConverterNative::CreateSource(CAbstractFile* pcFile, char*
 
 	if (c == CHUNKED_OBJECT_FILE)
 	{
-		pcSource = UMalloc(CObjectSourceChunked);
-		pcSource->Init(this, pcFile, szFileName);
-		return pcSource;
+		pcSourceChunked = UMalloc(CObjectSourceChunked);
+		bResult = pcSourceChunked->Init(this, pcFile, szFileName);
+		if (!bResult)
+		{
+			return NULL;
+		}
+		return pcSourceChunked;
 	}
 	else if (c == BASIC_OBJECT_FILE)
 	{
-		pcSource = UMalloc(CObjectSourceSimple);
-		pcSource->Init(this, pcFile, szFileName);
-		return pcSource;
+		pcSourceSimple = UMalloc(CObjectSourceSimple);
+		pcSourceSimple->Init(this, pcFile, szFileName);
+		return pcSourceSimple;
 	}
 	else
 	{
@@ -96,11 +107,32 @@ CObjectSource* CObjectConverterNative::CreateSource(CAbstractFile* pcFile, char*
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectConverterNative::Convert(CAbstractFile* pcFile, char* szFileName)
+CBaseObject* CObjectConverterNative::Convert(CObjectSource* pcSource, char* szObjectName)
 {
-	return ONull;
-}
+	CChunkFileFile				cFile;
+	CBaseObject*				pvObject;
+	CFileBasic					cFileBasic;
+	CObjectGraphDeserialiser	cGraphDeserialiser;
+	CObjectReader*				pcReader;
+	CObjectAllocator			cAllocator;
 
+	//This if statement should be calling a virtual method instead.
+	pcReader = pcSource->GetReader();
+	if (!pcReader)
+	{
+		return NULL;
+	}
+
+	mcDependentObjects.Kill();
+	mcDependentObjects.Init();
+
+	cAllocator.Init(&gcObjects);
+	cGraphDeserialiser.Init(pcReader, TRUE,  &cAllocator, &mcDependentObjects, gcObjects.GetMemory());
+	pvObject = cGraphDeserialiser.Read(szObjectName);
+	cGraphDeserialiser.Kill();
+
+	return pvObject;
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -112,3 +144,12 @@ BOOL CObjectConverterNative::IsNative(void)
 	return TRUE;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+OIndex CObjectConverterNative::TestGetNewIndexFromOld(OIndex oiOld)
+{
+	return mcDependentObjects.GetNewIndexFromOld(oiOld);
+}

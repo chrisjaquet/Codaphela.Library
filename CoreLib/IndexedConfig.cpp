@@ -28,7 +28,17 @@ Microsoft Windows is Copyright Microsoft Corporation
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedConfig::Manual(char* szWorkingDirectory, BOOL bDurable, BOOL bDirtyTesting, BOOL bWriteThrough, int iIndicesSecondLevelWidth, int iIndicesThirdLevelWidth, int iIndicesNumSecondLevelChunks, int iIndicesNumThirdLevelChunks, int iIndicesMemoryChunkSize, int iObjectsCacheSize)
+void CIndexedConfig::Manual(char* szWorkingDirectory, 
+							BOOL bDurable, 
+							BOOL bDirtyTesting, 
+							BOOL bWriteThrough, 
+							int iIndicesSecondLevelWidth, 
+							int iIndicesThirdLevelWidth, 
+							int iIndicesNumSecondLevelChunks, 
+							int iIndicesNumThirdLevelChunks, 
+							int iIndicesMemoryChunkSize, 
+							int iObjectsCacheSize, 
+							BOOL bTransient)
 {
 	mszWorkingDirectory = szWorkingDirectory;
 	mbDurable = bDurable;
@@ -40,6 +50,7 @@ void CIndexedConfig::Manual(char* szWorkingDirectory, BOOL bDurable, BOOL bDirty
 	miIndicesNumThirdLevelChunks = iIndicesNumThirdLevelChunks;
 	miIndicesMemoryChunkSize = iIndicesMemoryChunkSize;
 	miObjectsCacheSize = iObjectsCacheSize;
+	mbTransient = bTransient;
 }
 
 
@@ -62,6 +73,30 @@ void CIndexedConfig::OptimiseForStreaming(char* szWorkingDirectory)
 	miIndicesNumThirdLevelChunks = 1024;
 	miIndicesMemoryChunkSize = miIndicesNumThirdLevelChunks * sizeof(CIndexedDataDescriptor);
 	miObjectsCacheSize = 0;
+	mbTransient = (szWorkingDirectory == NULL);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CIndexedConfig::OptimiseForGameGraph(char* szWorkingDirectory)
+{
+	//This configuration is used where write performance is important.
+	//The database will become corrupt if it is not closed.
+
+	mszWorkingDirectory = szWorkingDirectory;
+	mbDurable = FALSE;
+	mbDirtyTesting = TRUE;
+	mbWriteThrough = FALSE;
+	miIndicesSecondLevelWidth = 131072;
+	miIndicesThirdLevelWidth = 2048;
+	miIndicesNumSecondLevelChunks = 8; 
+	miIndicesNumThirdLevelChunks = 1024;
+	miIndicesMemoryChunkSize = miIndicesNumThirdLevelChunks * sizeof(CIndexedDataDescriptor);
+	miObjectsCacheSize = 128 MB;
+	mbTransient = (szWorkingDirectory == NULL);
 }
 
 
@@ -71,6 +106,9 @@ void CIndexedConfig::OptimiseForStreaming(char* szWorkingDirectory)
 //////////////////////////////////////////////////////////////////////////
 void CIndexedConfig::OptimiseForTransactions(char* szWorkingDirectory)
 {
+	//This configuration is used where database consistency is important.
+	//Changes are immediately written to disk atomically.
+
 	mszWorkingDirectory = szWorkingDirectory;
 	mbDurable = TRUE;
 	mbDirtyTesting = TRUE;
@@ -81,6 +119,7 @@ void CIndexedConfig::OptimiseForTransactions(char* szWorkingDirectory)
 	miIndicesNumThirdLevelChunks = 1024;
 	miIndicesMemoryChunkSize = miIndicesNumThirdLevelChunks * sizeof(CIndexedDataDescriptor);
 	miObjectsCacheSize = 128 MB;
+	mbTransient = (szWorkingDirectory == NULL);
 }
 
 
@@ -125,6 +164,23 @@ void CIndexedConfig::SetDirtyTesting(BOOL bDirtyTesting)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CIndexedConfig::SetWriteThrough(BOOL bWriteThrough)
+{
+	if (bWriteThrough)
+	{
+		mbWriteThrough = TRUE;
+	}
+	else
+	{
+		mbWriteThrough = FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CIndexedConfig::DisableObjectCaching(void)
 {
 	miObjectsCacheSize = 0;
@@ -139,3 +195,14 @@ void CIndexedConfig::SetObjectCacheSize(int iObjectsCacheSize)
 {
 	miObjectsCacheSize = iObjectsCacheSize;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CIndexedConfig::SetTransient(BOOL bTransient)
+{
+	mbTransient = bTransient;
+}
+

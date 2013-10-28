@@ -28,8 +28,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 class CMemoryFile : public CAbstractFile
 {
-public:
-	CArrayChar	cArray;
+protected:
 	int			iFlags;
 	filePos		iPos;
 	BOOL		mbOpen;
@@ -37,6 +36,10 @@ public:
 	int			miInitialLength;
 	BOOL		mbFakeArray;
 
+public:
+	CArrayChar	cArray;  //protect me please.
+
+public:
 	void		Init(void);
 	void		Init(void* pvInitialMem, int iInitialLength);
 	void		Kill(void);
@@ -49,13 +52,14 @@ public:
 	BOOL		Open(EFileMode eFileMode);
 	BOOL		Close(void);
 	filePos		Read(void* pvBuffer, filePos iSize, filePos iCount);
-	BOOL		Seek(filePos iOffset, int iSeekOrigin);
+	BOOL		Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin);
 	filePos		Write(const void* pvBuffer, filePos iSize, filePos iCount);
 	filePos		Tell(void);
 	BOOL		Eof(void);
 	BOOL		IsOpen(void);
 	filePos		Size(void);
 	BOOL		Flush(void);
+	BOOL		Delete(void);
 };
 
 

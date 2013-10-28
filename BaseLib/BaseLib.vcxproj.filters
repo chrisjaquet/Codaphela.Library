@@ -136,6 +136,12 @@
     <Filter Include="Source\Memory\Stack">
       <UniqueIdentifier>{91d7bf57-f8bf-4a0d-8a40-ed855a370939}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\File\Chunk\File">
+      <UniqueIdentifier>{feba0ce7-c90b-4a9d-8b4f-d8d3cf107795}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Validation">
+      <UniqueIdentifier>{9578599c-0d13-4921-b43b-f8f2a6e0d99c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataMacro.h">
@@ -513,9 +519,6 @@
     <ClInclude Include="Bool.h">
       <Filter>Source\Define</Filter>
     </ClInclude>
-    <ClInclude Include="DebugLog.h">
-      <Filter>Source\Define</Filter>
-    </ClInclude>
     <ClInclude Include="Define.h">
       <Filter>Source\Define</Filter>
     </ClInclude>
@@ -581,6 +584,24 @@
     </ClInclude>
     <ClInclude Include="ChunkFileGeneral.h">
       <Filter>Source\File\Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkFileFile.h">
+      <Filter>Source\File\Chunk\File</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayVoidPtr.h">
+      <Filter>Source\Data\Array</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryHeader.h">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="LogString.h">
+      <Filter>Source\Error</Filter>
+    </ClInclude>
+    <ClInclude Include="Validation.h">
+      <Filter>Source\Validation</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Source\Error</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -869,9 +890,6 @@
     <ClCompile Include="PointerFunctions.cpp">
       <Filter>Source\Pointer</Filter>
     </ClCompile>
-    <ClCompile Include="DebugLog.cpp">
-      <Filter>Source\Define</Filter>
-    </ClCompile>
     <ClCompile Include="Aardvark.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -914,17 +932,29 @@
     <ClCompile Include="ChunkFileHeader.cpp">
       <Filter>Source\File\Chunk</Filter>
     </ClCompile>
+    <ClCompile Include="ChunkFileFile.cpp">
+      <Filter>Source\File\Chunk\File</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayVoidPtr.cpp">
+      <Filter>Source\Data\Array</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryHeader.cpp">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="FileMode.cpp">
+      <Filter>Source\File\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="LogString.cpp">
+      <Filter>Source\Error</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="MemoryTodo.txt">
-      <Filter>Source\Memory\Manager</Filter>
-    </None>
     <None Include="gpl.txt">
       <Filter>Source\License</Filter>
     </None>
     <None Include="lgpl.txt">
       <Filter>Source\License</Filter>
     </None>
-    <None Include="Libs.txt" />
+    <None Include="MemoryTodo.txt" />
   </ItemGroup>
 </Project>

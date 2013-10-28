@@ -1,4 +1,6 @@
+#include "Unknowns.h"
 #include "ObjectSourceSimple.h"
+#include "ObjectReaderSimple.h"
 #include "ObjectConverterNative.h"
 
 
@@ -9,6 +11,7 @@
 void CObjectSourceSimple::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
 {
 	CObjectSingleSource::Init(pcConverter, pcFile, szFileName);
+	mpcReader = NULL;
 }
 
 
@@ -36,6 +39,16 @@ BOOL CObjectSourceSimple::IsSimple(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CObjectSourceSimple::IsNative(void)
+{
+	return TRUE; 
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CObjectSourceSimple::Contains(char* szFullName)
 {
 	return CObjectSingleSource::Contains(szFullName);
@@ -46,9 +59,17 @@ BOOL CObjectSourceSimple::Contains(char* szFullName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectSourceSimple::Convert(void)
+CBaseObject* CObjectSourceSimple::Convert(char* szFullName)
 {
-	return CObjectSingleSource::Convert();
+	CBaseObject*	pvObject;
+
+	mpcReader = UMalloc(CObjectReaderSimple);
+	mpcReader->Init(NULL);
+
+	pvObject = mpcConverter->Convert(this, szFullName);
+	mpcReader->Kill();
+
+	return pvObject;
 }
 
 
@@ -56,8 +77,8 @@ CPointerObject CObjectSourceSimple::Convert(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectSourceSimple::Convert(char* szFullName)
+CObjectReader* CObjectSourceSimple::GetReader(void)
 {
-	return CObjectSingleSource::Convert(szFullName);
+	return mpcReader;
 }
 

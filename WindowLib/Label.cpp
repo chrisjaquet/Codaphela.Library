@@ -41,8 +41,7 @@ void CLabel::Init(CViewport* pcViewport, char* szString, BOOL bDefaultBorder, BO
 	mpcText->SetText(szString);
 	mpcFill = GetFactory()->CreateFillContainer();
 	mpcFill->AddComponent(mpcText);
-    SInsets t = mpcWidget->GetBorderWidths();
-	mpcFill->SetInsets(&t);
+	mpcFill->SetInsets(&mpcWidget->GetBorderWidths());
 
 	AddComponent(mpcFill1);
 	AddComponent(mpcFill);

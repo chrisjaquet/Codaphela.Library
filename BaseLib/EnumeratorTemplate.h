@@ -925,11 +925,11 @@ void __CEnumeratorTemplate<M>::QuickSort(void)
 
 	if (mbCaseSensitive)
 	{
-		this->mcList.QuickSort(AlphabeticalComparisionCallbackCaseSensitive);
+		mcList.QuickSort(AlphabeticalComparisionCallbackCaseSensitive);
 	}
 	else
 	{
-		this->mcList.QuickSort(AlphabeticalComparisionCallbackCaseInsensitive);
+		mcList.QuickSort(AlphabeticalComparisionCallbackCaseInsensitive);
 	}
 	RecreateIDArray();
 }

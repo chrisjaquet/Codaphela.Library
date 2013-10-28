@@ -317,8 +317,6 @@ UInputChordCriteria* FindFirstActionCriteria(UInputChordCriteria* puCriteria)
 				return puFound;
 			}
 		}
-    default:
-        break;
 	}
 	return NULL;
 }
@@ -384,8 +382,6 @@ int FindLongestAction(UInputChordCriteria* puCriteria)
 				iLongest = iCurrent;
 			}
 		}
-    default:
-        break;
 	}
 	return iLongest;
 }
@@ -514,8 +510,6 @@ int MatchActionEvent(UInputChordCriteria* puCriteria, CArrayInputDeviceTimeValue
 			iTotalCount += iCount;
 		}
 		return iTotalCount;
-    default:
-        break;
 	}
 	return 0;
 }

@@ -23,7 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __FILE_NAMES_H__
 #define __FILE_NAMES_H__
 #include "FileNode.h"
-#include "ArrayString.h"
+
 
 template <class M>
 class CFileNames

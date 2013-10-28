@@ -28,7 +28,8 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CObjectsSource::Init(void)
 {
-	mcSources.Init();
+	macSources.Init();
+	mmszpcConverters.Init();
 }
 
 
@@ -38,7 +39,8 @@ void CObjectsSource::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CObjectsSource::Kill(void)
 {
-	mcSources.Kill();
+	mmszpcConverters.Kill();
+	macSources.Kill();
 }
 
 
@@ -46,8 +48,19 @@ void CObjectsSource::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectsSource::AddSource(CObjectSource* pcSource)
+CObjectSource* CObjectsSource::GetSource(char* szFullName)
 {
-	return mcSources.Add(pcSource);
+	int					i;
+	CObjectSource*		pcSource;
+
+	for (i = 0; i < macSources.NumElements(); i++)
+	{
+		pcSource = (CObjectSource*)macSources.Get(i);
+		if (pcSource->Contains(szFullName))
+		{
+			return pcSource;
+		}
+	}
+	return NULL;
 }
 

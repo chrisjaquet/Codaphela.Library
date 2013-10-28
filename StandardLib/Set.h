@@ -1,6 +1,6 @@
 /** ---------------- COPYRIGHT NOTICE, DISCLAIMER, and LICENSE ------------- **
 
-Copyright (c) 2012 Andrew Paterson
+Copyright (c) 2013 Andrew Paterson
 
 This file is part of The Codaphela Project: Codaphela StandardLib
 
@@ -20,27 +20,28 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __SET_H__
 #define __SET_H__
-#include "SetUnknown.h"
-#include "ArrayCommonObject.h"
-#include "PointerObject.h"
+#include "Pointer.h"
+#include "SetObject.h"
+#include "BaseObject.h"
 
 
-class CSet : public CArrayCommonObject
+template<class M = CBaseObjec>
+class CSet : public CSetObject
 {
-BASE_FUNCTIONS(CSet);
+	BASE_FUNCTIONS(CSet);
 public:
-	void 			Init(int iChunkSize = ARRAY_COMMOM_CHUNK_SIZE);
+	Ptr<CSet<M>>	Init(int iChunkSize = ARRAY_COMMOM_CHUNK_SIZE);
 	void 			Kill(void);
+
+	void			Add(Ptr<M> pObject);
+	void			AddAll(Ptr<CArrayCommonObject> pcSet);
+	Ptr<M>			Get(int iIndex);
+	BOOL			Remove(Ptr<M> pObject);
 
 	void			RemoveDuringIteration(SSetIterator* psIter);
 
-	CPointerObject	StartIteration(SSetIterator* psIter);
-	CPointerObject	Iterate(SSetIterator* psIter);
-
-	template<class M>
-	CPointer<M>		StartIteration(SSetIterator* psIter);
-	template<class M>
-	CPointer<M>		Iterate(SSetIterator* psIter);
+	Ptr<M>			StartIteration(SSetIterator* psIter);
+	Ptr<M>			Iterate(SSetIterator* psIter);
 };
 
 
@@ -49,9 +50,77 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-CPointer<M> CSet::StartIteration(SSetIterator* psIter)
+Ptr<CSet<M>> CSet<M>::Init(int iChunkSize)
 {
-	return (M*)StartIteration(psIter);
+	CSetObject::Init(iChunkSize);
+	return Ptr<CSet<M>>(this);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CSet<M>::Kill(void)
+{
+	CSetObject::Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CSet<M>::Add(Ptr<M> pObject)
+{
+	CSetObject::Add(pObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CSet<M>::AddAll(Ptr<CArrayCommonObject> pcSet)
+{
+	pcSet->ClassName();
+	CSetObject::AddAll((CArrayCommonObject*)pcSet.Dereference());
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+Ptr<M> CSet<M>::Get(int iIndex)
+{
+	return CSetObject::Get(iIndex);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+BOOL CSet<M>::Remove(Ptr<M> pObject)
+{
+	return CSetObject::Remove(pObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CSet<M>::RemoveDuringIteration(SSetIterator* psIter)
+{
+	CSetObject::RemoveDuringIteration(psIter);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,9 +128,20 @@ CPointer<M> CSet::StartIteration(SSetIterator* psIter)
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-CPointer<M> CSet::Iterate(SSetIterator* psIter)
+Ptr<M> CSet<M>::StartIteration(SSetIterator* psIter)
 {
-	return (M*)Iterate(psIter);
+	return CSetObject::StartIteration(psIter);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+Ptr<M> CSet<M>::Iterate(SSetIterator* psIter)
+{
+	return CSetObject::Iterate(psIter);
 }
 
 

@@ -82,7 +82,7 @@ void CMovement::Update(void)
 		}
 		D3DXMatrixTransformation((D3DXMATRIX*)&mpsOutput->sD3DMatrix, NULL, NULL, NULL, NULL, (D3DXQUATERNION*)psRotation, (D3DXVECTOR3*)psPosition);
 	}
-	else if (miType == MT_Matrix)
+	else if (miType = MT_Matrix)
 	{
 		pcMatrix = (CTransformNode*)mpcMatrixAnimation->Update();
 		mpsOutput->sD3DMatrix = *pcMatrix->GetMatrix();

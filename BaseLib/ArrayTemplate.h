@@ -136,15 +136,16 @@ public:
 	void	Init(SArrayTemplateHeader* psHeader);
 	void	Init(__CArrayTemplate<M>* pcTemplateArray);
 
-	void 	Allocate(int iChunkSize);
+	void 	Allocate(int iNumElements);
 	void 	Allocate(int iChunkSize, int iNumElements);
 	void	Fake(M* pvData, int iNum);
 	void	FakeSetUsedElements(int iUsedElements);
 	M*		Get(int iIndex);
 	void 	ReInit(int iChunkSize = 0);
-	void 	SetAllocateSize(int iSize);
 
 	M&		operator[](int iIndex);
+
+	void 	SetAllocateSize(int iSize);
 };
 
 
@@ -1719,9 +1720,9 @@ void CArrayTemplate<M>::Init(__CArrayTemplate<M>* pcTemplateArray)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CArrayTemplate<M>::Allocate(int iChunkSize)
+void CArrayTemplate<M>::Allocate(int iNumElements)
 {
-	Init(iChunkSize);
+	Init(iNumElements);
 	this->GrowByChunk();
 }
 
@@ -1750,7 +1751,7 @@ void CArrayTemplate<M>::ReInit(int iChunkSize)
 	this->Kill();
 	if (iChunkSize == 0)
 	{
-		Init(this->miChunkSize);
+		Init(miChunkSize);
 	}
 	else
 	{
@@ -1814,7 +1815,7 @@ M* CArrayTemplate<M>::Get(int iIndex)
 template<class M>
 void CArrayTemplate<M>::SetAllocateSize(int iSize)
 {
-	this->miChunkSize = iSize;
+	miChunkSize = iSize;
 }
 
 

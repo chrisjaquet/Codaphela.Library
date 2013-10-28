@@ -39,6 +39,11 @@ public:
 
 	char*	GetName(void);
 	BOOL	IsNamed(void);
+	BOOL	IsNamed(char* szName);
+
+protected:
+	void	Free(void);
+	void	SetName(char* szName);
 
 private:
 	BOOL	InitName(char* szName);

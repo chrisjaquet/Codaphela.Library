@@ -104,7 +104,7 @@ M CArrayPrimitiveTemplate<M>::SafeGetValue(int iElementPos)
 {
 	if ((iElementPos >= 0) && (iElementPos < this->miUsedElements))
 	{
-		return this->mpvArray[iElementPos];
+		return mpvArray[iElementPos];
 	}
 	return -1;
 }
@@ -117,7 +117,7 @@ M CArrayPrimitiveTemplate<M>::SafeGetValue(int iElementPos)
 template<class M>
 void CArrayPrimitiveTemplate<M>::SetValue(int iElementPos, M iElement)
 {
-	this->mpvArray[iElementPos] = iElement;
+	mpvArray[iElementPos] = iElement;
 }
 
 
@@ -169,62 +169,6 @@ void CArrayPrimitiveTemplate<M>::AddList(M iStop, ...)
 	va_end(vaMarker);
 }
 
-#if(defined(WIN_GNU_32) || defined(LINUX_GNU_32))
-// Specialisations for vararg compatibility on GCC
-// FIXME Do we need to handle unsigned char, short and float separately as well?
-//
-// char -> int
-template<>
-void CArrayPrimitiveTemplate<char>::AddList(char iStop, ...)
-{
-	va_list		vaMarker;
-	char		iValue;
-
-	va_start(vaMarker, iStop);
-	iValue = (char) (va_arg(vaMarker, int) );
-	while(iValue != iStop)
-	{
-		Add(iValue);
-		iValue = (char)va_arg(vaMarker, int);
-	}
-	va_end(vaMarker);
-}
-
-// short -> int
-template<>
-void CArrayPrimitiveTemplate<short>::AddList(short iStop, ...)
-{
-	va_list		vaMarker;
-	short		iValue;
-
-	va_start(vaMarker, iStop);
-	iValue = (short) (va_arg(vaMarker, int) );
-	while(iValue != iStop)
-	{
-		Add(iValue);
-		iValue = (short)va_arg(vaMarker, int);
-	}
-	va_end(vaMarker);
-}
-
-// float -> double
-template<>
-void CArrayPrimitiveTemplate<float>::AddList(float iStop, ...)
-{
-	va_list		vaMarker;
-	float 		iValue;
-
-	va_start(vaMarker, iStop);
-	iValue = (float) (va_arg(vaMarker, double) );
-	while(iValue != iStop)
-	{
-		Add(iValue);
-		iValue = (float)va_arg(vaMarker, double);
-	}
-	va_end(vaMarker);
-}
-#endif
-
 
 //////////////////////////////////////////////////////////////////////////
 //																		//
@@ -266,7 +210,7 @@ void CArrayPrimitiveTemplate<M>::SetArrayValues(M iStartValue, M iIncrement)
 template<class M>
 void CArrayPrimitiveTemplate<M>::QuickSort(void)
 {
-	CArrayTemplate<M>::QuickSort(&ComparePrimitive<M>);
+	CArrayTemplate::QuickSort(&ComparePrimitive<M>);
 }
 
 
@@ -277,7 +221,7 @@ void CArrayPrimitiveTemplate<M>::QuickSort(void)
 template<class M>
 void CArrayPrimitiveTemplate<M>::BubbleSort(void)
 {
-	CArrayTemplate<M>::BubbleSort(&ComparePrimitive<M>);
+	CArrayTemplate::BubbleSort(&ComparePrimitive<M>);
 }
 
 
@@ -330,8 +274,8 @@ void CArrayPrimitiveTemplate<M>::Swap(int iIndex1, int iIndex2)
 	M*		piElement2;
 	M		iTemp;
 
-	piElement1 = this->Get(iIndex1);
-	piElement2 = this->Get(iIndex2);
+	piElement1 = Get(iIndex1);
+	piElement2 = Get(iIndex2);
 	iTemp = (*piElement1);
 	(*piElement1) = (*piElement2);
 	(*piElement2) = iTemp;
@@ -348,7 +292,7 @@ void CArrayPrimitiveTemplate<M>::InsertIntoSorted(M iElement, BOOL bOverwriteExi
 	int		iPos;
 	BOOL	bExists;
 
-	bExists = this->FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
+	bExists = FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
 	if (iPos < this->miUsedElements)
 	{
 		if (!bExists)
@@ -384,7 +328,7 @@ BOOL CArrayPrimitiveTemplate<M>::RemoveFromSorted(M iElement)
 	int		iPos;
 	BOOL	bExists;
 
-	bExists = this->FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
+	bExists = FindInSorted(&iElement, ComparePrimitive<M>, &iPos);
 	if (bExists)
 	{
 		this->RemoveAt(iPos, TRUE);

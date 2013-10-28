@@ -830,9 +830,6 @@ TRISTATE CTypeParser::Parse(EPrimitiveTypes eType, void* pvDest, int iDestLength
 				return ParseUChar((unsigned char*)pvDest);
 			}
 			break;
-        
-        default:
-            break;
 
 	}
 	return TRIERROR;

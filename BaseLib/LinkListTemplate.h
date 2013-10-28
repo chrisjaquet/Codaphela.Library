@@ -38,7 +38,7 @@ template<class M>
 class __CLinkListTemplate
 {
 public:
-	SDNode*		mpsHead;
+	SDNode*		mpsHead; 
 	SDNode*		mpsTail;
 	int			miNumElements;
 
@@ -73,7 +73,7 @@ void InsertLinkListBeforeNode(__CLinkListTemplate<M>* pcLinkList, M* psPos);
 	void	BubbleSort(int(*)(const void*, const void*));
 	void	InsertIntoSorted(int(*)(const void*, const void*), M* psNode);
 
-protected:
+protected:	
 	void*	MemoryAllocate(int iMemSize);
 	void	Free(void* pvMem);
 };
@@ -359,7 +359,7 @@ void __CLinkListTemplate<M>::RemoveTail(void)
 //////////////////////////////////////////////////////////////////////////
 template<class M>
 void __CLinkListTemplate<M>::Remove(M* psNodeData)
-{
+{	
 	Detach(psNodeData);
 	FreeDetached(psNodeData);
 }
@@ -371,7 +371,7 @@ void __CLinkListTemplate<M>::Remove(M* psNodeData)
 //////////////////////////////////////////////////////////////////////////
 template<class M>
 BOOL __CLinkListTemplate<M>::SafeRemove(M* pvData)
-{
+{	
 	if (IsInList(pvData))
 	{
 		Remove(pvData);
@@ -463,7 +463,7 @@ void __CLinkListTemplate<M>::Swap(M* psData1, M* psData2)
 	{
 		return;
 	}
-
+	
 	sNodeTemp1.psNext = psNode1->psNext;
 	sNodeTemp1.psPrev = psNode1->psPrev;
 	sNodeTemp2.psNext = psNode2->psNext;
@@ -481,7 +481,7 @@ void __CLinkListTemplate<M>::Swap(M* psData1, M* psData2)
 		psNode1->psPrev = sNodeTemp2.psPrev;
 		psNode2->psNext = sNodeTemp1.psNext;
 		psNode2->psPrev = sNodeTemp1.psPrev;
-	}
+	} 
 	else if (psNode1->psNext==psNode2)
 	{
 		if (sNodeTemp1.psPrev)	{ sNodeTemp1.psPrev->psNext=psNode2; } else { mpsHead=psNode2; }
@@ -681,10 +681,10 @@ int __CLinkListTemplate<M>::IndexOf(M* pvData)
 template<class M>
 void CLinkListTemplate<M>::Init(void)
 {
-	this->mpsHead = NULL;
-	this->mpsTail = NULL;
-	this->miNumElements = 0;
-	this->miElementSize = sizeof(M);
+	mpsHead = NULL;
+	mpsTail = NULL;
+	miNumElements = 0;
+	miElementSize = sizeof(M);
 }
 
 
@@ -697,9 +697,10 @@ M* CLinkListTemplate<M>::AllocateDetached(void)
 {
 	SDNode*		psNode;
 
-	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
+	psNode = (SDNode*)MemoryAllocate(sizeof(SDNode) + miElementSize);
 	return CLinkListTemplateHeaderGetData(psNode);
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 //																		//
@@ -711,9 +712,9 @@ M* CLinkListTemplate<M>::InsertAfterTail(void)
 	SDNode*		psNode;
 	M*			psData;
 
-	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
+	psNode = (SDNode*)MemoryAllocate(sizeof(SDNode) + miElementSize);
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	this->InsertDetachedAfterTail(psData);
+	InsertDetachedAfterTail(psData);
 	return psData;
 }
 
@@ -728,9 +729,9 @@ M* CLinkListTemplate<M>::InsertBeforeHead(void)
 	SDNode*		psNode;
 	M*			psData;
 
-	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
+	psNode = (SDNode*)MemoryAllocate(sizeof(SDNode) + miElementSize);
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	this->InsertDetachedBeforeHead(psData);
+	InsertDetachedBeforeHead(psData);
 	return psData;
 }
 
@@ -745,7 +746,7 @@ M* CLinkListTemplate<M>::InsertBeforeNode(M* psPos)
 	SDNode*		psNode;
 	M*			psData;
 
-	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
+	psNode = (SDNode*)MemoryAllocate(sizeof(SDNode) + miElementSize);
 	psData = CLinkListTemplateHeaderGetData(psNode);
 	InsertDetachedBeforeNode(psData, psPos);
 	return psData;
@@ -762,9 +763,9 @@ M* CLinkListTemplate<M>::InsertAfterNode(M* psPos)
 	SDNode*		psNode;
 	M*			psData;
 
-	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
+	psNode = (SDNode*)MemoryAllocate(sizeof(SDNode) + miElementSize);
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	this->InsertDetachedAfterNode(psData, psPos);
+	InsertDetachedAfterNode(psData, psPos);
 	return psData;
 }
 
@@ -777,7 +778,7 @@ template<class M>
 M* CLinkListTemplate<M>::Add(void)
 {
 	//This included to make swapping between arrays and lists easier.
-	return this->InsertAfterTail();
+	return InsertAfterTail();
 }
 
 
@@ -788,7 +789,7 @@ M* CLinkListTemplate<M>::Add(void)
 template<class M>
 int CLinkListTemplate<M>::ByteSize(void)
 {
-	return ((sizeof(SDNode) + this->miElementSize) * this->miNumElements);
+	return ((sizeof(SDNode) + miElementSize) * miNumElements);
 }
 
 

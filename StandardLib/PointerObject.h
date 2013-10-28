@@ -20,47 +20,79 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __POINTER_OBJECT_H__
 #define __POINTER_OBJECT_H__
-#include "Unknown.h"
+#include "BaseLib/Log.h"
+#include "CoreLib/IndexedGeneral.h"
+#include "EmbeddedObject.h"
+
+
+#define LOG_POINTER_DEBUG()	LogPointerDebug(this, __ENGINE_PRETTY_FUNCTION__)
 
 
 //This class is roughly a void* (or possibly an Object*).  It should probably have been called CObjectPointer but it's easier to start typing CPo...
+//CPointer (and friends) are either declared on the stack or as a field on a CObject; nowhere else.  The only time embedding is NULL is when
+//this pointer is declared on the stack.
 
-
-class CBaseObject;
+class CEmbeddedObject;
 class CObject;
-class CPointerObject
+class CObjectDeserialiser;
+class CPointer
 {
-friend class CObjects;
-friend class CArrayCommonObject;
-friend class CSet;
-friend class CArray;
-template<class M>
-friend class CPointer;
-friend class CObjectDeserialiser;
-
+template<class M> friend class Ptr;
 protected:
-	CBaseObject*	mpcObject;
-	CObject*		mpcEmbedding;  //Collections do not embed pointer objects.  They manage their own pointers.
+	CEmbeddedObject*	mpcObject;
+	CObject*			mpcEmbedding;  //Collections do not embed pointer objects.  They manage their own pointers.
 
 public:
-					CPointerObject();
-	void 			Init(CObject* pcEmbedding);
-	void			operator = (CBaseObject* ptr);
-	void			operator = (CPointerObject pcPointer);
-	CBaseObject*	operator -> ();
-	CBaseObject*	operator & ();
-	BOOL			operator ! ();
-	BOOL			IsNotNull(void);
-	BOOL			IsNull(void);
+						CPointer();
+						CPointer(CEmbeddedObject* pcObject);
+						CPointer(CPointer& pcPointer);
+						~CPointer();
 
-	CPointerObject*	This(void);
+	void				operator = (CEmbeddedObject* pcObject);
+	void				operator = (CPointer& pcPointer);
+	CEmbeddedObject*	operator -> ();
+	CEmbeddedObject*	operator & ();
+	BOOL				operator ! ();
 
-protected:
-	BOOL			Dehollow(void);
-	void			PointTo(CBaseObject* pcObject);
+	void 				SetEmbedding(CObject* pcEmbedding);
 
-	void			Clear(void);
+	BOOL				IsNotNull(void);
+	BOOL				IsNull(void);
+
+	CPointer*			This(void);
+	CObject*			Embedding(void);
+	CEmbeddedObject*	Object(void);
+	CEmbeddedObject**	ObjectPtr(void);
+	void				UnsafePointTo(CEmbeddedObject* pcNewObject);
+	CBaseObject*		BaseObject(void);
+	int					MorphInto(CEmbeddedObject* pcOld);
+
+	BOOL				IsHollow(void);
+	BOOL				Load(CObjectDeserialiser* pcFile);
+	int					GetDistToRoot(void);
+	OIndex				GetIndex(void);
+	char*				GetName(void);
+	BOOL				IsNamed(void);
+	char*				ClassName(void);
+	BOOL				IsDirty(void);
+	void				Kill(void);
+	void				ClearIndex(void);
+	void				AssignObject(CEmbeddedObject* pcObject);
+	CEmbeddedObject*	Dereference(void);
+
+	void				PointTo(CEmbeddedObject* pcObject, BOOL bKillIfNoRoot);
+	void				AddHeapFrom(CBaseObject* pcFrom);
+
+	CEmbeddedObject*	Return(void);
+	void				UnsafeClearObject(void);
+
+	void				DumpFroms(void);
+	void				DumpTos(void);
+	void				Dump(void);
 };
+
+
+void LogPointerDebug(CPointer* pvThis, char* szMethod);
 
 
 #endif // __POINTER_OBJECT_H__

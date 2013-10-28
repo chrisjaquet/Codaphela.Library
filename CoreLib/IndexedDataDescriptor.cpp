@@ -30,16 +30,14 @@ Microsoft Windows is Copyright Microsoft Corporation
 //////////////////////////////////////////////////////////////////////////
 void CIndexedDataDescriptor::Init(OIndex oi, unsigned int uiDataSize)
 {
+	memset(this, 0, sizeof(CIndexedDataDescriptor));
+
 	moi = oi;
 
 	muiDataSize = uiDataSize;
-	msFlags = 0;
 
 	miFileIndex = -1;
 	miIndexInFile = -1;
-
-	mpvCache = NULL;
-	muiTimeStamp = 0;
 }
 
 
@@ -178,7 +176,7 @@ void CIndexedDataDescriptor::TimeStamp(unsigned int uiTimeStamp)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CIndexedDataDescriptor::File(int iFileIndex, filePos iIndexInFile)
+void CIndexedDataDescriptor::SetIndexes(int iFileIndex, filePos iIndexInFile)
 {
 	miFileIndex = iFileIndex;
 	miIndexInFile = iIndexInFile;

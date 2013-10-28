@@ -29,5 +29,5 @@ public:
 };
 
 
-#endif // __FLIP_CONTAINER_H__
+#endif __FLIP_CONTAINER_H__
 

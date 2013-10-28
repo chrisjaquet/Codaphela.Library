@@ -18,9 +18,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/Log.h"
 #include "CoreLib/IndexedGeneral.h"
+#include "Null.h"
 #include "ObjectFileGeneral.h"
-#include "PointerObject.h"
+#include "ObjectHeader.h"
+#include "ObjectGraphDeserialiser.h"
 #include "ObjectDeserialiser.h"
 
 
@@ -28,13 +31,21 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectDeserialiser::ReadPointer(CPointerObject* pObject)
+BOOL CObjectDeserialiser::Init(CDependentObjectAdder* pcDependents)
 {
-	CBaseObject*	pcBaseObject;
+	mpcDependents = pcDependents;
 
-	pObject->Clear();
-	pcBaseObject = &*pObject;
-	return ReadHeader(pcBaseObject);
+	return TRUE;
+} 
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CObjectDeserialiser::Kill(void)
+{
+	mpcDependents = NULL;
 }
 
 
@@ -42,33 +53,108 @@ BOOL CObjectDeserialiser::ReadPointer(CPointerObject* pObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectDeserialiser::ReadHeader(CBaseObject* pcBaseObject)
+CBaseObject* CObjectDeserialiser::Load(CSerialisedObject* pcSerialised)
 {
-	OIndex		oi;
-	int			c;
-	CChars		szName;
+	BOOL			bResult;
+	int				iLength;
+	CObjectHeader	sHeader;
+	CMemoryFile*	pcMemory;
 
-	ReturnOnFalse(ReadInt(&c));
+	if (!pcSerialised)
+	{
+		gcLogger.Error("CObjectDeserialiser::Load Serialised Object is NULL.");
+		return NULL;
+	}
 
-	if (c == OBJECT_POINTER_NULL)
+	pcMemory = MemoryFile(pcSerialised, pcSerialised->GetLength());
+	mcFile.Init(pcMemory);
+	bResult = mcFile.Open(EFM_Read);
+	if (!bResult)
+	{
+		mcFile.Kill();
+		return NULL;
+	}
+
+	bResult = ReadInt(&iLength);
+	if (!bResult)
+	{
+		gcLogger.Error("CObjectDeserialiser::Load Could not read serialised object length.");
+		mcFile.Close();
+		mcFile.Kill();
+
+		return NULL;
+	}
+
+	bResult = ReadObjectHeader(&sHeader);
+	if (!bResult)
+	{
+		gcLogger.Error("CObjectDeserialiser::Load Could not read serialised object header.");
+		mcFile.Close();
+		mcFile.Kill();
+		sHeader.Kill();
+		return NULL;
+	}
+
+	CBaseObject*	pvObject;
+
+	pvObject = mpcDependents->AllocateObject(&sHeader);
+
+	sHeader.Kill();
+
+	if (pvObject == NULL)
+	{
+		gcLogger.Error("CObjectDeserialiser::Load Could not load serialised object.");
+		mcFile.Close();
+		mcFile.Kill();
+		return NULL;
+	}
+
+	bResult = pvObject->Load(this);
+	if (!bResult)
+	{
+		gcLogger.Error("CObjectDeserialiser::Load Could not load serialised object.");
+		mcFile.Close();
+		mcFile.Kill();
+
+		pvObject->Kill();
+		return NULL;
+	}
+
+	mcFile.Close();
+	mcFile.Kill();
+
+	return pvObject;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectDeserialiser::ReadIdentifier(CObjectIdentifier* pcPointerHeader)
+{
+	pcPointerHeader->Init();
+
+	ReturnOnFalse(ReadInt(&pcPointerHeader->mcType));
+
+	if (pcPointerHeader->mcType == OBJECT_POINTER_NULL)
 	{
 		return TRUE;
 	}
-	else if (c == OBJECT_POINTER_ID)
+	else if (pcPointerHeader->mcType == OBJECT_POINTER_ID)
 	{
-		ReturnOnFalse(ReadLong(&oi));
-		return FALSE;
+		ReturnOnFalse(ReadLong(&pcPointerHeader->moi));
 	}
-	else if (c == OBJECT_POINTER_NAMED)
+	else if (pcPointerHeader->mcType == OBJECT_POINTER_NAMED)
 	{
-		ReturnOnFalse(ReadString(&szName));
-		szName.Kill();
-		return FALSE;
+		ReturnOnFalse(ReadLong(&pcPointerHeader->moi));
+		ReturnOnFalse(ReadString(&pcPointerHeader->mszObjectName, TRUE));
 	}
 	else
 	{
 		return FALSE;
 	}
+	return TRUE;
 }
 
 
@@ -76,8 +162,101 @@ BOOL CObjectDeserialiser::ReadHeader(CBaseObject* pcBaseObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectDeserialiser::ReadDependent(CBaseObject* pcBaseObject)
+BOOL CObjectDeserialiser::ReadObjectHeader(CObjectHeader* pcObjectHeader)
 {
-	return ReadHeader(pcBaseObject);
+	pcObjectHeader->Init();
+	ReturnOnFalse(ReadIdentifier(pcObjectHeader));
+	ReturnOnFalse(ReadString(&pcObjectHeader->mszClassName, TRUE));
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+filePos CObjectDeserialiser::Read(void* pvDest, filePos iSize, filePos iCount)
+{
+	return mcFile.Read(pvDest, iSize, iCount);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectDeserialiser::ReadPointer(CPointer* pObject)
+{
+	CPointerHeader		cHeader;
+	BOOL				bResult;
+	CEmbeddedObject**	ppcObjectPtr;
+	CObject*			pcEmbedding;
+
+	pObject->UnsafeClearObject();
+
+	bResult = ReadIdentifier(&cHeader);
+	if (!bResult)
+	{
+		cHeader.Kill();
+		return FALSE;
+	}
+
+	if ((cHeader.mcType == OBJECT_POINTER_NAMED) || (cHeader.mcType == OBJECT_POINTER_ID))
+	{
+		bResult = ReadShort(&cHeader.miNumEmbedded);
+		bResult &= ReadShort(&cHeader.miEmbeddedIndex);
+		if (!bResult)
+		{
+			cHeader.Kill();
+			return FALSE;
+		}
+		ppcObjectPtr = pObject->ObjectPtr();
+		pcEmbedding = pObject->Embedding();
+
+		bResult &= mpcDependents->AddDependent(&cHeader, ppcObjectPtr, (CBaseObject*)pcEmbedding, cHeader.miNumEmbedded, cHeader.miEmbeddedIndex);
+		return bResult;
+	}
+	else
+	{
+		return TRUE;
+	}
+
+
+	//cHeader is killed by mpcDependents.
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectDeserialiser::ReadDependent(CEmbeddedObject** ppcObjectPtr, CBaseObject* pcContaining)
+{
+	CPointerHeader	cHeader;
+	BOOL			bResult;
+
+	bResult = ReadIdentifier(&cHeader);
+	if (bResult)
+	{
+		if ((cHeader.mcType == OBJECT_POINTER_NAMED) || (cHeader.mcType == OBJECT_POINTER_ID))
+		{
+			bResult = ReadShort(&cHeader.miNumEmbedded);
+			bResult &= ReadShort(&cHeader.miEmbeddedIndex);
+
+			*ppcObjectPtr = NULL;
+			bResult &= mpcDependents->AddDependent(&cHeader, ppcObjectPtr, pcContaining, cHeader.miNumEmbedded, cHeader.miEmbeddedIndex);
+			return bResult;
+		}
+		else
+		{
+			return TRUE;
+		}
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	//cHeader is killed by mpcDependents.
 }
 

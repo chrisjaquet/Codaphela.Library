@@ -99,9 +99,9 @@ template <class M>
 void CLinkListTemplateFreeList<M>::Kill(void)
 {
 	mcFreeList.Kill();
-	this->mpsHead = NULL;
-	this->mpsTail = NULL;
-	this->miNumElements = 0;
+	mpsHead = NULL;
+	mpsTail = NULL;
+	miNumElements = 0;
 }
 
 

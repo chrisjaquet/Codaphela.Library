@@ -24,6 +24,7 @@ zlib is Copyright Jean-loup Gailly and Mark Adler
 #ifndef __IMAGE_CELS_SOURCE_H__
 #define __IMAGE_CELS_SOURCE_H__
 #include "StandardLib/Unknown.h"
+#include "StandardLib/Pointer.h"
 #include "Image.h"
 #include "ImageCelGroup.h"
 #include "ImageSource.h"
@@ -63,30 +64,29 @@ protected:
 
 	//Output
 	CArrayUnknown						macImageCels;
-	CArrayImage							macFillMasks;
-	CArrayImage							macImages;
+	CArray<CImage>						macFillMasks;
+	CArray<CImage>						macImages;
 
 public:
-	void 			Init(BOOL bPackOnLoad = FALSE);
-	void 			Kill(void);
+	void 				Init(BOOL bPackOnLoad = FALSE);
+	void 				Kill(void);
 
-	void			AddSource(CImageSource* pcImageSource, CImageCelSource* pcCelSource);
-	void			AddDiskFileSources(char* szPathName, char* szFileNameContains, char* szImageName, CImageCelSource* pcCelSource);
-	void			AddDiskFileSource(char* szFileName, char* szImageName, CImageCelSource* pcCelSource);
-	void			AddMemorySource(CImage* pcImage, CImageCelSource* pcCelSource);
+	void				AddSource(CImageSource* pcImageSource, CImageCelSource* pcCelSource);
+	void				AddDiskFileSources(char* szPathName, char* szFileNameContains, char* szImageName, CImageCelSource* pcCelSource);
+	void				AddDiskFileSource(char* szFileName, char* szImageName, CImageCelSource* pcCelSource);
+	void				AddMemorySource(CImage* pcImage, CImageCelSource* pcCelSource);
 
-	void			AddModifier(CImageModifier* pcModifier);
+	void				AddModifier(CImageModifier* pcModifier);
 
-	BOOL			Load(void);
+	BOOL				Load(void);
 
-	CArrayUnknown*	GetCels(void);
-	CArrayUnknown*	TakeControlOfCels(void);
-	CArrayImage*	TakeControlOfImages(void);
-	CArrayUnknown*	GetImageCels(void);
+	Ptr<CArray<CImage>>	GetImages(void);
+	CArrayUnknown*		GetCels(void);
+	CArrayUnknown*		GetImageCels(void);
 
 private:
-	CImage*			Combine(int iFirstCelIndex);
-	void			PopulateImageArray(void);
+	Ptr<CImage>	Combine(int iFirstCelIndex);
+	void				PopulateImageArray(void);
 };
 
 

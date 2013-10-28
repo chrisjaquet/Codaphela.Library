@@ -1,7 +1,7 @@
 #ifndef __LINE_SEGMENT_H__
 #define __LINE_SEGMENT_H__
 #include <d3dx9.h>
-#include "BaseLib/ChunkFile.h"
+#include "CoreLib\ChunkFile.h"
 
 
 class CLineSegmentImm

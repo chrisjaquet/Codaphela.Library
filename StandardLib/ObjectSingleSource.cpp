@@ -19,6 +19,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include "ObjectConverter.h"
+#include "Objects.h"
 #include "ObjectSingleSource.h"
 
 
@@ -26,9 +27,10 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectSingleSource::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
+void CObjectSingleSource::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szObjectName)
 {
-	CObjectSource::Init(pcConverter, pcFile, szFileName);
+	CObjectSource::Init(pcConverter, pcFile, NULL);
+	mszObjectName.Init(szObjectName);
 }
 
 
@@ -38,6 +40,7 @@ void CObjectSingleSource::Init(CObjectConverter* pcConverter, CAbstractFile* pcF
 //////////////////////////////////////////////////////////////////////////
 void CObjectSingleSource::Kill(void)
 {
+	mszObjectName.Kill();
 	CObjectSource::Kill();
 }
 
@@ -48,7 +51,7 @@ void CObjectSingleSource::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CObjectSingleSource::Contains(char* szFullName)
 {
-	return mszFileName.Equals(szFullName);
+	return mszObjectName.Equals(szFullName);
 }
 
 
@@ -56,18 +59,15 @@ BOOL CObjectSingleSource::Contains(char* szFullName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectSingleSource::Convert(char* szFullName)
+CBaseObject* CObjectSingleSource::Convert(char* szFullName)
 {
-	return Convert();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectSingleSource::Convert(void)
-{
-	return mpcConverter->Convert(mpcFile, mszFileName.Text());
+	if (mszObjectName.EqualsIgnoreCase(szFullName))
+	{
+		return mpcConverter->Convert(this, szFullName);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 

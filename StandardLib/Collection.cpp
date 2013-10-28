@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "Objects.h"
 #include "Collection.h"
 
 
@@ -40,4 +41,23 @@ BOOL CCollection::IsCollection(void)
 	return TRUE;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CCollection::IsObject(void)
+{
+	return FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CBaseObject* CCollection::Dehollow(void)
+{
+	return this;
+}
 

@@ -26,13 +26,14 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 class CObjectSingleSource : public CObjectSource
 {
 BASE_FUNCTIONS(CObjectSingleSource);
+protected:
+	CChars	mszObjectName;
 public:
-			void			Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName);
-			void			Kill(void);
+	void			Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szObjectName);
+	void			Kill(void);
 
-	virtual CPointerObject	Convert(void);
-			CPointerObject	Convert(char* szFullName);
-			BOOL			Contains(char* szFullName);
+	CBaseObject*	Convert(char* szFullName);
+	BOOL			Contains(char* szFullName);
 };
 
 

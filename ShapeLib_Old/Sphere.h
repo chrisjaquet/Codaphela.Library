@@ -1,7 +1,7 @@
 #ifndef __SPHERE_H__
 #define __SPHERE_H__
 #include <d3dx9.h>
-#include "BaseLib/ArrayTemplate.h"
+#include "CoreLib\ArrayTemplate.h"
 
 
 class CSphereImm

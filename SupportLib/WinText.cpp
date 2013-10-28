@@ -21,6 +21,7 @@ libpng is Copyright Glenn Randers-Pehrson
 zlib is Copyright Jean-loup Gailly and Mark Adler
 
 ** ------------------------------------------------------------------------ **/
+#include "StandardLib/Objects.h"
 #include "ImageRecolourInvertBlackAndWhite.h"
 #include "ImageAccessorCreator.h"
 #include "ImageWriter.h"
@@ -44,11 +45,7 @@ int CALLBACK EnumFontsProc(CONST LOGFONT *lplf, CONST TEXTMETRIC *lptm, DWORD dw
 		pcWinText = (CWinText*)lpData;
 		psWinFont = pcWinText->mcWinFonts.Add();
 		psWinFont->sInstances.Init();
-#ifndef WIN_GNU_32
 		strcpy_s(psWinFont->szName, lplf->lfFaceName);
-#else
-		strcpy(psWinFont->szName, lplf->lfFaceName);
-#endif
 	}
 
 	return 1;
@@ -138,7 +135,7 @@ SWinFontInstance* CWinText::Create(char* szName, int iHeight, int iWidth, int iW
 		{
 			hFont = CreateFont(iHeight, iWidth, 0, 0, iWeight, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE | DEFAULT_PITCH, szName);
 			psInstance = psWinFont->sInstances.Add();
-
+			
 			psInstance->hFont = hFont;
 			psInstance->iHeight = iHeight;
 			psInstance->iWeight = iWeight;
@@ -162,7 +159,7 @@ void CWinText::Draw(char* szString, SWinFontInstance* psInstance, HDC hDC, int i
 
 	iLen = (int)strlen(szString);
 	iFormat = 0;
-
+	
 	if (iFlags & TEXT_ALIGN_HCENTER)	{ iFormat |= DT_CENTER; }
 	if (iFlags & TEXT_ALIGN_VCENTER)	{ iFormat |= DT_VCENTER; }
 	if (iFlags & TEXT_ALIGN_LEFT)		{ iFormat |= DT_LEFT; }
@@ -196,15 +193,16 @@ void CWinText::Draw(char* szString, SWinFontInstance* psInstance, HDC hDC, int x
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CFont* CWinText::GenerateFont(SWinFontInstance* pcWinFont, char* szFontName)
+Ptr<CFont> CWinText::GenerateFont(SWinFontInstance* pcWinFont, char* szFontName)
 {
 	HFONT								hFont;
 	HDC									hDC;
-	CImage								cImageTemp;
+	Ptr<CImage>							pcImageTemp;
 	TEXTMETRIC							sTextMetric;
-	CFont*								pcFont;
+	Ptr<CFont>							pcFont;
 	CArrayRectangle						acRectangles;
 	CChars								szLetters;
+	Ptr<CImage>							pcImage;
 
 	if (!pcWinFont)
 	{
@@ -221,19 +219,18 @@ CFont* CWinText::GenerateFont(SWinFontInstance* pcWinFont, char* szFontName)
 
 	GetTextMetrics(hDC, &sTextMetric);
 
-	pcFont = UMalloc(CFont);
-	pcFont->Init(szFontName, acRectangles.Get(0)->GetWidth(), sTextMetric.tmAscent, sTextMetric.tmDescent);
+	pcFont = OMalloc(CFont)->Init(szFontName, acRectangles.Get(0)->GetWidth(), sTextMetric.tmAscent, sTextMetric.tmDescent);
 
-	DrawTextToImage(&cImageTemp, &szLetters, hDC);
+	pcImageTemp = DrawTextToImage(&szLetters, hDC);
 
-	pcFont->GetImage()->Kill();
-	PackImage(pcFont->GetImage(), pcFont, &cImageTemp, &acRectangles);
+	pcImage = PackImage(pcFont, &pcImageTemp, &acRectangles);
+	pcFont->SetImage(pcImage);
 
 	pcFont->Done();
 
 	szLetters.Kill();
 	acRectangles.Kill();
-	cImageTemp.Kill();
+	pcImageTemp->Kill();
 
 	return pcFont;
 }
@@ -243,7 +240,7 @@ CFont* CWinText::GenerateFont(SWinFontInstance* pcWinFont, char* szFontName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CWinText::PackImage(CImage* pcDestImage, CFont* pcFont, CImage* pcSource, CArrayRectangle* pacRectangles)
+Ptr<CImage> CWinText::PackImage(Ptr<CFont> pcFont, CImage* pcSource, CArrayRectangle* pacRectangles)
 {
 	CImageCelsSource					cSource;
 	CImageCombiner						cCombiner;
@@ -253,6 +250,7 @@ void CWinText::PackImage(CImage* pcDestImage, CFont* pcFont, CImage* pcSource, C
 	CImageRecolourInvertBlackAndWhite	cRecolour;
 	int									i;
 	CImageCelSourceRectangles			cRectangles;
+	Ptr<CImage>							pcDestImage;
 
 	sColour.Zero();
 	cRectangles.Init(pacRectangles);
@@ -264,9 +262,9 @@ void CWinText::PackImage(CImage* pcDestImage, CFont* pcFont, CImage* pcSource, C
 	cSource.AddModifier(&cRecolour);
 	cSource.Load();
 
-	cCombiner.Init(pcDestImage, ICL_Best, ICS_PowerOf2, ICC_FromCels);
+	cCombiner.Init(ICL_Best, ICS_PowerOf2, ICC_FromCels);
 	cCombiner.AddCels(cSource.GetCels());
-	cCombiner.Combine();
+	pcDestImage = cCombiner.Combine();
 	pacCels = cCombiner.GetCels();
 
 	for (i = 0; i < pacCels->NumElements(); i++)
@@ -279,6 +277,8 @@ void CWinText::PackImage(CImage* pcDestImage, CFont* pcFont, CImage* pcSource, C
 	cRecolour.Kill();
 	cRectangles.Kill();
 	cSource.Kill();
+
+	return pcDestImage;
 }
 
 
@@ -330,7 +330,7 @@ void CWinText::GetSourceGlyphs(CChars* pszDest)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CWinText::DrawTextToImage(CImage* pcDestImage, CChars* pszLetters, HDC hDC)
+Ptr<CImage> CWinText::DrawTextToImage(CChars* pszLetters, HDC hDC)
 {
 	HBITMAP			hBM;
 	BITMAPINFO		bmi;
@@ -356,9 +356,12 @@ void CWinText::DrawTextToImage(CImage* pcDestImage, CChars* pszLetters, HDC hDC)
 	SelectObject(hDC, hBM);
 	TextOut(hDC, 0, 0, pszLetters->Text(), pszLetters->Length());
 
+	Ptr<CImage>	pcDestImage = OMalloc(CImage);
+
 	pcDestImage->Init(sSize.cx, sSize.cy, PT_uchar, IMAGE_DIFFUSE_BLUE, IMAGE_DIFFUSE_GREEN, IMAGE_DIFFUSE_RED, IMAGE_OPACITY, CHANNEL_ZERO);
 	memcpy(pcDestImage->GetData(), pBits, pcDestImage->GetByteSize());
 
 	DeleteObject(hBM);
 
+	return pcDestImage;
 }

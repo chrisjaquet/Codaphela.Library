@@ -57,10 +57,6 @@ CASTCommon* CAbstractSyntaxTree::Create(AbstractSyntaxTypes eType)
 	case EAST_ListDecl:
 		pcCommon = CASTListDecl::Construct(malloc(sizeof(CASTListDecl)));
 		break;
-
-    default:
-        break;
-
 	}
 
 	if (pcCommon)

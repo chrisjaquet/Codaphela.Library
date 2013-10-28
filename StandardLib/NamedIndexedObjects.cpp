@@ -18,8 +18,10 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/Log.h"
 #include "NamedIndexedObjects.h"
 #include "NamedObject.h"
+#include "NamedHollowObject.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,7 +31,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 void CNamedIndexedObjects::Init(void)
 {
 	mcNames.Init();
-	mcObjects.Init();
+	mcIndexedObjects.Init();
 }
 
 
@@ -39,8 +41,19 @@ void CNamedIndexedObjects::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CNamedIndexedObjects::Kill(void)
 {
-	mcObjects.Kill();
+	mcIndexedObjects.Kill();
 	mcNames.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CNamedIndexedObjects::ReInit(void)
+{
+	Kill();
+	Init();
 }
 
 
@@ -50,7 +63,7 @@ void CNamedIndexedObjects::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CNamedIndexedObjects::Get(OIndex oi)
 {
-	return (CBaseObject*)mcObjects.Get(oi);
+	return (CBaseObject*)mcIndexedObjects.Get(oi);
 }
 
 
@@ -78,34 +91,57 @@ CBaseObject* CNamedIndexedObjects::Get(char* szName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CNamedIndexedObjects::Add(OIndex oi, CBaseObject* pvMemory)
+BOOL CNamedIndexedObjects::RemoveIndex(OIndex oi)
 {
-	mcObjects.Add(oi, pvMemory);
-}
+	BOOL	bResult;
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CNamedIndexedObjects::Remove(OIndex oi)
-{
-	mcObjects.Remove(oi);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CNamedIndexedObjects::AddWithID(CBaseObject* pvObject, OIndex oi)
-{
-	if (pvObject->IsRoot())
+	if (oi != INVALID_O_INDEX)
 	{
-		pvObject->SetDistToRoot(0);
+		//This only removes the index from the indexes, it does not free the object pointer too.
+		bResult = mcIndexedObjects.Remove(oi);
+		return bResult;
 	}
-	pvObject->SetObjectID(oi);
-	Add(oi, pvObject);
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexedObjects::RemoveName(char* szName)
+{
+	BOOL	bResult;
+
+	if ((szName != NULL) && (szName[0] != 0))
+	{
+		//This only removes the name from the names, it does not free the object pointer to.
+		bResult = mcNames.Remove(szName);
+		return bResult;
+	}
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexedObjects::AddWithID(CBaseObject* pvObject, OIndex oi)
+{
+	BOOL	bResult;
+
+	
+	bResult = mcIndexedObjects.Add(oi, pvObject);
+	if (bResult)
+	{
+		pvObject->SetObjectID(oi);
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 
 
@@ -115,15 +151,136 @@ void CNamedIndexedObjects::AddWithID(CBaseObject* pvObject, OIndex oi)
 //////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexedObjects::AddWithIDAndName(CBaseObject* pvObject, OIndex oi, char* szName)
 {
-	CNamedObject*	pcNamed;
-	BOOL			bResult;
+	CNamedObject*		pcNamed;
+	CNamedHollowObject*	pcNamedHollow;
+	BOOL				bResult;
+	int					iResult;
 
-	AddWithID(pvObject, oi);
+	if (mcNames.Contains(szName))
+	{
+		gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "].  It already exists.", NULL);
+		return FALSE;
+	}
 
-	pcNamed = (CNamedObject*)pvObject;
-	bResult = pcNamed->InitName(szName);
+	if (!mcNames.IsOnlyValidCharacters(szName))
+	{
+		gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "].  It's name contains invalid characters.", NULL);
+		return FALSE;
+	}
 
-	mcNames.Add(pcNamed->GetOI(), szName);
+	bResult = AddWithID(pvObject, oi);
+	if (!bResult)
+	{
+		char sz[32];
+
+		gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "].  An index [", IToA(oi, sz, 10), "] already exists.", NULL);
+		return FALSE;
+	}
+
+	if (!pvObject->IsHollow())
+	{
+		pcNamed = (CNamedObject*)pvObject;
+		bResult = pcNamed->InitName(szName);
+	}
+	else
+	{
+		pcNamedHollow = (CNamedHollowObject*)pvObject;
+		bResult = pcNamedHollow->InitName(szName);
+	}
+
+	if ((szName != NULL) && (szName[0] != 0))
+	{
+		iResult = mcNames.Add(pvObject->GetOI(), szName);
+
+		//This should never happen.  The checks at the top cut it out.
+		if (iResult == -1)
+		{
+			char sz[32];
+
+			gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "] and index [", IToA(oi, sz, 10), "].  It broke unexpectedly", NULL);
+			bResult = FALSE;
+		}
+	}
 	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+OIndex CNamedIndexedObjects::NumIndexed(void)
+{
+	return mcIndexedObjects.NumIndexed();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CNamedIndexedObjects::NumNames(void)
+{
+	return mcNames.NumElements();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CIndexedObjects* CNamedIndexedObjects::GetObjects(void)
+{
+	return &mcIndexedObjects;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CASCIITree* CNamedIndexedObjects::GetNames(void)
+{
+	return &mcNames;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CBaseObject* CNamedIndexedObjects::StartIteration(SIndexesIterator* psIter)
+{
+	OIndex		oi;
+
+	oi = mcIndexedObjects.StartIteration(psIter);
+	if (oi != INVALID_O_INDEX)
+	{
+		return Get(oi);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CBaseObject* CNamedIndexedObjects::Iterate(SIndexesIterator* psIter)
+{
+	OIndex		oi;
+
+	oi = mcIndexedObjects.Iterate(psIter);
+	if (oi != INVALID_O_INDEX)
+	{
+		return Get(oi);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 

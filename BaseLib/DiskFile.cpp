@@ -153,7 +153,7 @@ filePos CDiskFile::Read(void* pvBuffer, filePos iSize, filePos iCount)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDiskFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CDiskFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	int		iResult;
 
@@ -236,6 +236,23 @@ filePos CDiskFile::Size(void)
 BOOL CDiskFile::Flush(void)
 {
 	return fflush(mpsFileHandle) != 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CDiskFile::Delete(void)
+{
+	CFileUtil	cFileUtil;
+
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	return cFileUtil.Delete(mszFileName.Text());
 }
 
 

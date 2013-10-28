@@ -29,6 +29,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "AbstractFile.h"
 #include "DiskFile.h"
 #include "FileUtil.h"
+#include "Validation.h"
 
 
 CLogger		gcLogger;
@@ -124,6 +125,12 @@ void CLogger::Add(char* szText)
 void CLogger::Error(char* szText)
 {
 	Add("ERROR", szText);
+
+#ifdef BREAK_ON_ERROR
+	Break();
+#elif BREAK_ON_WARNING
+	Break();
+#endif
 }
 
 
@@ -166,6 +173,42 @@ void CLogger::Error2(char* szText, ...)
 void CLogger::Warning(char* szText)
 {
 	Add("WARNING", szText);
+
+#ifdef BREAK_ON_WARNING
+	Break();
+#endif
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::Info2(char* szText, ...)
+{
+	va_list		vaMarker;
+	char*		sz;
+	CChars		szInfo;
+
+	if (szText)
+	{
+		szInfo.Init(szText);
+		va_start(vaMarker, szText);
+		sz = va_arg(vaMarker, char*);
+		while (sz != NULL)
+		{
+			szInfo.Append(sz);
+			sz = va_arg(vaMarker, char*);
+		}
+		va_end(vaMarker);
+
+		Info(szInfo.Text());
+		szInfo.Kill();
+	}
+	else
+	{
+		Info("");
+	}
 }
 
 
@@ -177,6 +220,39 @@ void CLogger::Info(char* szText)
 {
 	Add("INFO", szText);
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::Debug2(char* szText, ...)
+{
+	va_list		vaMarker;
+	char*		sz;
+	CChars		szInfo;
+
+	if (szText)
+	{
+		szInfo.Init(szText);
+		va_start(vaMarker, szText);
+		sz = va_arg(vaMarker, char*);
+		while (sz != NULL)
+		{
+			szInfo.Append(sz);
+			sz = va_arg(vaMarker, char*);
+		}
+		va_end(vaMarker);
+
+		Debug(szInfo.Text());
+		szInfo.Kill();
+	}
+	else
+	{
+		Debug("");
+	}
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////

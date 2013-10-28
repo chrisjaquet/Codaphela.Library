@@ -18,6 +18,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/ArrayVoidPtr.h"
+#include "BaseLib/Log.h"
 #include "Unknown.h"
 #include "Unknowns.h"
 
@@ -55,27 +57,27 @@ void CUnknowns::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CUnknown* CUnknowns::AddExisting(CUnknown* pcUnknown)
+CUnknown* CUnknowns::AddExisting(CUnknown* pcExisting)
 {
 	char		szDebug[4];
 	int			iSize;
-	CUnknown*	pc;
+	CUnknown*	pcNew;
 	
-	iSize = pcUnknown->ClassSize();
-	pc = (CUnknown*)mcMemory.Add(iSize);
-	if (pc)
+	iSize = pcExisting->ClassSize();
+	pcNew = (CUnknown*)mcMemory.Add(iSize);
+	if (pcNew)
 	{
-		memcpy(pc, pcUnknown, iSize);
+		memcpy(pcNew, pcExisting, iSize);
 
-		DebugName(pc, &szDebug);
-		mcMemory.SetDebugName(pc, &szDebug);
+		DebugName(pcNew, &szDebug);
+		mcMemory.SetDebugName(pcNew, &szDebug);
 
-		pc->PreInit(this);
-		if (pc->Iterable())
+		pcNew->PreInit(this);
+		if (pcNew->Iterable())
 		{
-			mcIterables.Add(pc);
+			mcIterables.Add(pcNew);
 		}
-		return pc;
+		return pcNew;
 	}
 	else
 	{
@@ -92,13 +94,23 @@ CUnknown* CUnknowns::Add(char* szClassName)
 {
 	CUnknown*	pcUnknown;
 
+	if ((szClassName == NULL) || (szClassName[0] == 0))
+	{
+		gcLogger.Error2(__METHOD__, " No constructor found for class with empty name.", NULL);
+		return NULL;
+	}
+
 	pcUnknown = mcConstructors.GetUnknown(szClassName);
 	if (pcUnknown)
 	{
 		pcUnknown = AddExisting(pcUnknown);
 		return pcUnknown;
 	}
-	return NULL;	
+	else
+	{
+		gcLogger.Error2(__METHOD__, " No constructor found for class [", szClassName, "].", NULL);
+		return NULL;	
+	}
 }
 
 
@@ -109,17 +121,10 @@ CUnknown* CUnknowns::Add(char* szClassName)
 CUnknown* CUnknowns::AddFromHeader(CFileReader* pcFile)
 {
 	BOOL		bResult;
-	int			iClassSize;
 	int			iLength;
 	char		sz[256];
 	char*		psz;
 	CUnknown*	pcUnknown;
-
-	bResult = pcFile->ReadInt(&iClassSize);
-	if (bResult != TRUE)
-	{
-		return NULL;
-	}
 
 	bResult = pcFile->ReadStringLength(&iLength);
 	if (bResult != TRUE)
@@ -215,6 +220,34 @@ void CUnknowns::RemoveInKill(CUnknown* pcUnknown)
 		mcIterables.Remove(pcUnknown);
 	}
 	mcMemory.Remove(pcUnknown);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CUnknowns::RemoveInKill(CArrayUnknownPtr* papcObjectPts)
+{
+	int				i;
+	CUnknown*		pcUnknown;
+	CArrayVoidPtr	cArray;
+	void**			pvData;
+
+	//Optimise this sometime later as iterables aren't used yet.
+	for (i = 0; i < papcObjectPts->NumElements(); i++)
+	{
+		pcUnknown = *papcObjectPts->Get(i);
+		if (pcUnknown->Iterable())
+		{
+			mcIterables.Remove(pcUnknown);
+		}
+	}
+
+	pvData = (void**)papcObjectPts->GetData();
+	cArray.Fake(pvData, papcObjectPts->NumElements());
+
+	mcMemory.Remove(&cArray);
 }
 
 

@@ -24,6 +24,8 @@ zlib is Copyright Jean-loup Gailly and Mark Adler
 #include "BaseLib/Logger.h"
 #include "BaseLib/FileUtil.h"
 #include "CoreLib/MarkupTextParser.h"
+#include "StandardLib/Pointer.h"
+#include "StandardLib/Objects.h"
 #include "ImageCelSourceSubImages.h"
 #include "ImageCelsSource.h"
 #include "SubImageXML.h"
@@ -113,9 +115,9 @@ BOOL CImageCelsSourceXML::ImportCels(CMarkupTag* pcCelsTag, char* szFileName)
 	BOOL						bResult;
 	CImageCelSourceSubImages	cSubImagesSource;
 	CImageCelsSource			cCelsSource;
-	CImageCelGroup*				pcGroup;
 	CChars						szGroupName;
 	CFileUtil					cFileUtil;
+	Ptr<CImageCelGroup>			pcGroup;
 
 	acSubImages.Init();
 	pcCelTag = pcCelsTag->GetTag("Cel", &sIter);
@@ -141,10 +143,11 @@ BOOL CImageCelsSourceXML::ImportCels(CMarkupTag* pcCelsTag, char* szFileName)
 	cCelsSource.AddDiskFileSource(szFileName, szGroupName.Text(), &cSubImagesSource);
 	cCelsSource.Load();
 
-	mpcWorld->AddImages(cCelsSource.TakeControlOfImages());
+	mpcWorld->AddImages(cCelsSource.GetImages());
 
-	pcGroup = mpcWorld->AddGroup(szGroupName.Text());
-	pcGroup->AddCels(cCelsSource.TakeControlOfCels());
+	pcGroup = ONMalloc(CImageCelGroup, szGroupName.Text());
+	mpcWorld->AddGroup(pcGroup);
+	pcGroup->AddCels(cCelsSource.GetImageCels());
 
 	szGroupName.Kill();
 	cSubImagesSource.Kill();

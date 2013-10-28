@@ -20,6 +20,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #include "ObjectFileGeneral.h"
 #include "PointerObject.h"
+#include "Object.h"
 #include "ObjectSerialiser.h"
 
 
@@ -27,11 +28,12 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectSerialiser::Init(CBaseObject* pcObject)
+void CObjectSerialiser::Init(CObjectSingleSerialiser* pcSerialiser, CBaseObject* pcObject)
 {
 	mpcThis = pcObject;
 	mpcMemory = MemoryFile();
 	mcFile.Init(mpcMemory);
+	mpcSerialiser = pcSerialiser;
 }
 
 
@@ -41,6 +43,7 @@ void CObjectSerialiser::Init(CBaseObject* pcObject)
 //////////////////////////////////////////////////////////////////////////
 void CObjectSerialiser::Kill(void)
 {
+	mpcSerialiser = NULL;
 	mpcThis = NULL;
 	mcFile.Kill();
 }
@@ -60,7 +63,7 @@ BOOL CObjectSerialiser::Save(void)
 
 	bResult = WriteInt(0);
 	ReturnOnFalse(bResult);
-	bResult = WriteHeader(mpcThis);
+	bResult = WriteIdentifier(mpcThis);
 	ReturnOnFalse(bResult);
 	bResult = mpcThis->SaveHeader(this);
 	ReturnOnFalse(bResult);
@@ -80,12 +83,12 @@ BOOL CObjectSerialiser::Save(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectSerialiser::WritePointer(CPointerObject pObject)
+BOOL CObjectSerialiser::WritePointer(CPointer& pObject)
 {
-	CBaseObject*	pcBaseObject;
+	CEmbeddedObject*	pcEmbeddedObject;
 
-	pcBaseObject = &pObject;
-	return WriteHeader(pcBaseObject);
+	pcEmbeddedObject = (&pObject);
+	return WriteDependent(pcEmbeddedObject);
 }
 
 
@@ -93,9 +96,37 @@ BOOL CObjectSerialiser::WritePointer(CPointerObject pObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectSerialiser::WriteDependent(CBaseObject* pcBaseObject)
+BOOL CObjectSerialiser::WriteDependent(CEmbeddedObject* pcDependent)
 {
-	return WriteHeader(pcBaseObject);
+	BOOL			bResult;
+	CBaseObject*	pcContainer;
+	unsigned short	iEmbeddedIndex;
+	unsigned short	iNumEmbedded;
+
+	if (pcDependent)
+	{
+		pcContainer = pcDependent->GetEmbeddingContainer();
+		iEmbeddedIndex = pcContainer->GetEmbeddedIndex(pcDependent);
+		iNumEmbedded = pcContainer->GetNumEmbedded();
+
+		bResult = WriteIdentifier(pcContainer);
+		bResult &= WriteShort(iNumEmbedded);
+		bResult &= WriteShort(iEmbeddedIndex);
+
+		if (bResult)
+		{
+			if (mpcSerialiser)
+			{
+				mpcSerialiser->AddDependent(pcContainer);
+			}
+		}
+		return bResult;
+	}
+	else
+	{
+		bResult = WriteIdentifier(NULL);
+		return bResult;
+	}
 }
 
 
@@ -103,7 +134,7 @@ BOOL CObjectSerialiser::WriteDependent(CBaseObject* pcBaseObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjectSerialiser::WriteHeader(CBaseObject* pcObject)
+BOOL CObjectSerialiser::WriteIdentifier(CBaseObject* pcObject)
 {
 	OIndex		oi;
 	int			c;
@@ -115,6 +146,7 @@ BOOL CObjectSerialiser::WriteHeader(CBaseObject* pcObject)
 		{
 			c = OBJECT_POINTER_ID;
 			WriteInt(c);
+
 			oi = pcObject->GetOI();
 			return WriteLong(oi);
 		}
@@ -122,6 +154,10 @@ BOOL CObjectSerialiser::WriteHeader(CBaseObject* pcObject)
 		{
 			c = OBJECT_POINTER_NAMED;
 			WriteInt(c);
+
+			oi = pcObject->GetOI();
+			WriteLong(oi);
+
 			szName = pcObject->GetName();
 			return WriteString(szName);
 		}

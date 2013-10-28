@@ -67,8 +67,6 @@ public:
 	void	Set(CChars* psz);
 	void	Append(char* sz);
 	void	Append(char* sz, int iStrlen);
-	void	Append(const char* sz);
-	void	Append(const char* sz, int iStrlen);
 	void	Append(CChars sz);  //Oi fix these to use void	Append(char* sz, int iStrlen);
 	void	Append(CChars* psz);  //Oi fix these to use void	Append(char* sz, int iStrlen);
 	void	Append(char c);

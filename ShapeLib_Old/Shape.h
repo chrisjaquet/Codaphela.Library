@@ -1,10 +1,10 @@
 #ifndef __SHAPE_H__
 #define __SHAPE_H__
 #include "VertexArray.h"
-#include "BaseLib/LinkListUnknown.h"
+#include "CoreLib\LinkListUnknown.h"
 #include "ShapeTransformer.h"
-#include "BaseLib/ChunkFile.h"
-#include "StandardLib/StandardHeader.h"
+#include "CoreLib\ChunkFile.h"
+#include "StandardLib\StandardHeader.h"
 
 
 enum EShapeType
