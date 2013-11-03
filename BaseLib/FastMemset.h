@@ -23,12 +23,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __FAST_MEMSET_H__
 #define __FAST_MEMSET_H__
 
-#include <stdlib.h>
-
-#ifdef LINUX_GNU_32
-#   include <stdlib.h>
-#endif
-
 
 typedef void (*memset_fast_func)(void*, unsigned char);
 extern memset_fast_func ga_memset_fast[65];

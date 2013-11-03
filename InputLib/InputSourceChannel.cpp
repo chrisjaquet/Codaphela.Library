@@ -146,8 +146,6 @@ void CInputSouceChannel::ToString(CChars* psz)
 	case ISCC_AlwaysValid:
 		psz->Append("ISCC_AlwaysValid: ");
 		break;
-    default:
-        break;
 	}
 	psz->AppendNewLine();
 

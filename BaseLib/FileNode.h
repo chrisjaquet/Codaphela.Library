@@ -34,7 +34,7 @@ friend class CFileNodeDirectory<M>;
 protected:
 	union
 	{
-		CFileNodeDirectory<M>	msDirectory;
+		CFileNodeDirectory<M>	msDirectory;		
 		M						msFile;
 	} u;
 	

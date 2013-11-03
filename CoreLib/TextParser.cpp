@@ -2080,7 +2080,7 @@ TRISTATE CTextParser::FindWhiteSpace(void)
 				return TRITRUE;
 			}
 		}
-		if (cCurrent == '/')
+		if (cCurrent = '/')
 		{
 			bStartOfComment = TRUE;
 		}

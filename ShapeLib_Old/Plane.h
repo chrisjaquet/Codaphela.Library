@@ -24,5 +24,5 @@ public:
 typedef CArrayTemplate<CPlaneImm> CPlaneArray;
 
 
-#endif __PLANE_H__
+#endif // __PLANE_H__
 

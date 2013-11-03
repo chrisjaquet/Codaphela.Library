@@ -266,7 +266,7 @@ void CArrayPrimitiveTemplate<M>::SetArrayValues(M iStartValue, M iIncrement)
 template<class M>
 void CArrayPrimitiveTemplate<M>::QuickSort(void)
 {
-	CArrayTemplate<M>::QuickSort(&ComparePrimitive<M>);
+	CArrayTemplate::QuickSort(&ComparePrimitive<M>);
 }
 
 

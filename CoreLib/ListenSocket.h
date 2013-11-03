@@ -26,12 +26,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 class CListenSocket : public CSocket
 {
 protected:
-#ifdef WIN32
 	SOCKET		mListenSocket;
-#else
-#warning mListenSocket must be implemented for non-windows systems
-    int      mListenSocket;
-#endif // WIN32
 	BOOL		mbListening;
 
 public:

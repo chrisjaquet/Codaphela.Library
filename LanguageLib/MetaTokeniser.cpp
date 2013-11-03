@@ -578,8 +578,6 @@ TRISTATE CMetaTokeniser::TokeniseNode(CDefinition* pcDefinition, SNodeElement* p
 			mpcParser->LoadState(&sPosition);
 			sPosition.Kill();
 			break;
-        default:
-            break;
 		}
 
 		OutputNodeCount(psNodeElement, iNodes, tResult, iNodeDepth);

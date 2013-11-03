@@ -41,7 +41,7 @@ public:
 		{
 			unsigned int	ui[3];
 		} aSmall;
-	} aUnion;
+	};
 
 	void	Init(void);
 	void	Kill(void);

@@ -285,8 +285,6 @@ CPPDirective* CPreprocessorTokeniser::TokeniseDirective(CMemoryStackExtended* pc
 		return TokeniseHashError(pcStack);
 	case PPD_pragma:
 		return TokeniseHashPragma(pcStack);
-    default:
-        break;
 	}
 	return NULL;
 }

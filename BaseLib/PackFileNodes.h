@@ -30,7 +30,7 @@ protected:
 public:
 	void Init(void);
 	void Kill(void);
-};
+}
 
 
 #endif // __PACK_FILE_NODES_H__

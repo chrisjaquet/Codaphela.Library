@@ -118,7 +118,7 @@ BOOL CMarkupTextParser::ReadBool(CMarkupTag* pcIntTag, BOOL* pcBool, BOOL bLogEr
 	pcIntTag->GetText(&szBool);
 	cTextParser.Init(&szBool);
 	tResult = cTextParser.GetExactCaseInsensitiveCharacterSequence("TRUE");
-	if (tResult == TRITRUE)
+	if (tResult = TRITRUE)
 	{
 		*pcBool = TRUE;
 	}
@@ -133,7 +133,7 @@ BOOL CMarkupTextParser::ReadBool(CMarkupTag* pcIntTag, BOOL* pcBool, BOOL bLogEr
 	}
 
 	tResult = cTextParser.GetExactCaseInsensitiveCharacterSequence("FALSE");
-	if (tResult == TRITRUE)
+	if (tResult = TRITRUE)
 	{
 		*pcBool = FALSE;
 	}

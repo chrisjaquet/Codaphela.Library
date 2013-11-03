@@ -367,7 +367,7 @@ void CMapStringTemplate<D>::Remove(char* szKey)
 template<class D>
 BOOL CMapStringTemplate<D>::IsCaseSensitive(void)
 {
-	return (this->Func == CompareChars);
+	return Func == CompareChars;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -379,11 +379,11 @@ void CMapStringTemplate<D>::SetCaseSensitive(BOOL bCaseSensitive)
 {
 	if (bCaseSensitive)
 	{
-		this->Func = CompareChars;
+		Func = CompareChars;
 	}
 	else
 	{
-		this->Func = CompareCharsIgnoreCase;
+		Func = CompareCharsIgnoreCase;
 	}
 }
 

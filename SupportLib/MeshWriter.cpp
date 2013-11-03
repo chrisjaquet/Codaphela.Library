@@ -41,8 +41,6 @@ BOOL WriteMesh(CMesh* pcMesh, char* szFileName, EMeshType eType)
 	{
 	case MT_OBJ:
 		return (SaveOBJ(pcMesh, szFileName));
-    default:
-        break;
 	}
 	return FALSE;
 }

@@ -234,7 +234,7 @@ BOOL CInstanceConverter::ConvertLight(CLightInstance** ppcLightInstance, int iLi
 		{
 			pcLightInstance->SetPoint(0.0f, (1.0f/(CONVERSION_LIGHT_RANGE*0.04f)), 0.0f, CONVERSION_LIGHT_RANGE);
 		}
-		else if (pcLight->meDecay == LDT_Square)
+		else if (pcLight->meDecay = LDT_Square)
 		{
 			pcLightInstance->SetPoint(0.0f, 0.0f, (1.0f/(CONVERSION_LIGHT_RANGE*0.001f)), sqrtf(CONVERSION_LIGHT_RANGE));
 		}

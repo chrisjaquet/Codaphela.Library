@@ -23,8 +23,8 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #ifndef __MATRIX_SELECTION_CONVERTER_H__
 #define __MATRIX_SELECTION_CONVERTER_H__
 #include "SelectionOverrides.h"
-#include "WorldLib/GraphicsObject.h"
-#include "WorldLib/MeshInstance.h"
+#include "WorldLib\GraphicsObject.h"
+#include "WorldLib\MeshInstance.h"
 #include "GraphicsInstance.h"
 #include "DirectXLib/FlexibleVertexFormats.h"
 

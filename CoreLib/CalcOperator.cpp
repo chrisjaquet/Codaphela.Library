@@ -285,3 +285,4 @@ BOOL CCalcOperator::IsAmbiguous(void)
         break;
 	}
 	return FALSE;
+}
