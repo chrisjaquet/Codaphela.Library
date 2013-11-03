@@ -26,26 +26,69 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 class CObject : public CBaseObject
 {
 template<class M>
+friend class Ptr;
 friend class CPointer;
-friend class CPointerObject;
+friend class CObjects;
+friend class CObjectGraphDeserialiser;
 
 BASE_FUNCTIONS(CObject);
 protected:
-	CArrayEmbedded<CBaseObject*, 5>	mapTos;  //Objects that 'this' points to.
+	CArrayEmbedded<CPointer*, 5>		mapPointers;  //Pointers in this object.  
+	CArrayEmbedded<CBaseObject*, 3>		mapEmbedded;  //Objects embedded in this object
 
 public:
-					CObject(void);
-	void			Kill(void);
-	int				NumTos(void);
-	BOOL			IsCollection(void);
-	void			SetDistToRoot(int iDistToRoot);
-	void			GetTos(CArrayBaseObjectPtr* papcTos);
+						CObject();
+	void				PreInit(CObjects* pcObjects);
+	void				PreInit(void);
+	void				Kill(void);
+	BOOL				IsCollection(void);
+	BOOL				IsObject(void);
+	void				SetPointedTosExpectedDistToRoot(int iDistToRoot);
+	CPointer*			Pointer(CPointer* pcPointer);
+	void				Embedded(CBaseObject* pcObject);
+	BOOL				IsDirty(void);
+	int					GetEmbeddedIndex(CEmbeddedObject* pcEmbedded);
+	int					GetNumEmbedded(void);
+	CEmbeddedObject*	GetEmbeddedObject(int iIndex);
+	CBaseObject*		Dehollow(void);
+	int					NumHeapFroms(void);
+	int					NumStackFroms(void);
+	void				SetFlag(int iFlag, int iFlagValue);
+	void				GetHeapFroms(CArrayEmbeddedBaseObjectPtr* papcFroms);
+	void				GetStackFroms(CArrayPointerPtr* papcFroms);
+	CBaseObject*		GetClosestFromToRoot(void);
+	CBaseObject*		GetClosestFromToStack(void);
+	int					NumTos(void);
+	int					UnsafeNumEmbeddedObjectTos(void);
+	void				GetTos(CArrayEmbeddedObjectPtr* papcTos);
+	BOOL				ContainsTo(CEmbeddedObject* pcEmbedded);
+	void				CollectAndClearTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
+	int					CollectEmbeddedObjectDetachedFroms(CDistCalculatorParameters* pcParameters);
+	void				UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* papcTos);
+	void				ValidateTos(void);
+	void				ValidateConsistency(void);
 
 protected:
-	void			AddTo(CBaseObject* pcTo);
-	void			RemoveTo(CBaseObject* pcTo);
-	void			RemoveAllTos(CArrayEmbeddedBaseObjectPtr* papcFromsChanged);
-	void			CollectedThoseToBeKilled(CArrayBaseObjectPtr* papcKilled);
+	void				KillDontFree(void);
+	void				KillInternalData(void);
+	void				RemoveTo(CEmbeddedObject* pcTo);
+	void				RemoveAllTos(void);
+	void				RemoveEmbeddedObjectAllTos(void);
+	void				RemoveAllHeapFroms(void);
+	void				RemoveAllStackFroms(void);
+	CBaseObject*		GetClosestFromForCanFindRoot(void);
+	int					RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
+	void				UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
+	int					CalculateDistToRootFromPointedFroms(int iDistToRoot);
+	void				Free(void);
+	void				SetPointedTosDistToRoot(int iDistToRoot);
+	BOOL				SetDistToRoot(int iDistToRoot);
+	void				SetDistToStack(int iDistToStack);
+	BOOL				RecurseGetEmbeddedIndex(CEmbeddedObject* pcTest, int* piIndex);
+	CEmbeddedObject*	RecurseGetEmbeddedObject(int iIndex, int* iCount);
+	void				ValidateEmbeddedObjectTos(void);
+	void				ValidateEmbeddedConsistency(void);
+	BOOL				IsDistToRootValid(void);
 };
 
 

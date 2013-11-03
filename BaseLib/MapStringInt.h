@@ -37,6 +37,7 @@ public:
 	void	Put(char* szKey, int iData);
 	void	PutAllowDuplicates(CChars* psKey, int iData);
 	void	PutAllowDuplicates(char* szKey, int iData);
+	CChars*	GetWithValue(int iData);
 };
 
 

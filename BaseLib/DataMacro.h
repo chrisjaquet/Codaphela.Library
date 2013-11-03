@@ -23,7 +23,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __DATA_MACRO_H__
 #define __DATA_MACRO_H__
 
-#include "ErrorHandler.h"
 
 #define HeaderAndDataAllocate(SHeaderType, SDataType) \
 	HeaderAllocateMacro<SHeaderType, SDataType>()

@@ -38,7 +38,7 @@ template<class M>
 class __CLinkListTemplate
 {
 public:
-	SDNode*		mpsHead;
+	SDNode*		mpsHead; 
 	SDNode*		mpsTail;
 	int			miNumElements;
 
@@ -73,7 +73,7 @@ void InsertLinkListBeforeNode(__CLinkListTemplate<M>* pcLinkList, M* psPos);
 	void	BubbleSort(int(*)(const void*, const void*));
 	void	InsertIntoSorted(int(*)(const void*, const void*), M* psNode);
 
-protected:
+protected:	
 	void*	MemoryAllocate(int iMemSize);
 	void	Free(void* pvMem);
 };
@@ -359,7 +359,7 @@ void __CLinkListTemplate<M>::RemoveTail(void)
 //////////////////////////////////////////////////////////////////////////
 template<class M>
 void __CLinkListTemplate<M>::Remove(M* psNodeData)
-{
+{	
 	Detach(psNodeData);
 	FreeDetached(psNodeData);
 }
@@ -371,7 +371,7 @@ void __CLinkListTemplate<M>::Remove(M* psNodeData)
 //////////////////////////////////////////////////////////////////////////
 template<class M>
 BOOL __CLinkListTemplate<M>::SafeRemove(M* pvData)
-{
+{	
 	if (IsInList(pvData))
 	{
 		Remove(pvData);
@@ -463,7 +463,7 @@ void __CLinkListTemplate<M>::Swap(M* psData1, M* psData2)
 	{
 		return;
 	}
-
+	
 	sNodeTemp1.psNext = psNode1->psNext;
 	sNodeTemp1.psPrev = psNode1->psPrev;
 	sNodeTemp2.psNext = psNode2->psNext;
@@ -481,7 +481,7 @@ void __CLinkListTemplate<M>::Swap(M* psData1, M* psData2)
 		psNode1->psPrev = sNodeTemp2.psPrev;
 		psNode2->psNext = sNodeTemp1.psNext;
 		psNode2->psPrev = sNodeTemp1.psPrev;
-	}
+	} 
 	else if (psNode1->psNext==psNode2)
 	{
 		if (sNodeTemp1.psPrev)	{ sNodeTemp1.psPrev->psNext=psNode2; } else { mpsHead=psNode2; }
@@ -701,6 +701,7 @@ M* CLinkListTemplate<M>::AllocateDetached(void)
 	return CLinkListTemplateHeaderGetData(psNode);
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 //																		//
 //																		//
@@ -711,9 +712,9 @@ M* CLinkListTemplate<M>::InsertAfterTail(void)
 	SDNode*		psNode;
 	M*			psData;
 
-	psNode = (SDNode*)((this->MemoryAllocate)(sizeof(SDNode) + this->miElementSize));
+	psNode = (SDNode*)MemoryAllocate(sizeof(SDNode) + miElementSize);
 	psData = CLinkListTemplateHeaderGetData(psNode);
-	this->InsertDetachedAfterTail(psData);
+	InsertDetachedAfterTail(psData);
 	return psData;
 }
 

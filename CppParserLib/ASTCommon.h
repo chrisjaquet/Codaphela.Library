@@ -22,7 +22,6 @@ along with Codaphela CppParserLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __A_S_T_Common_H__
 #include "AbstractSyntaxTypes.h"
 #include "BaseLib/Define.h"
-#include <string.h> 
 
 
 class CASTCommon

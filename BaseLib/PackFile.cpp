@@ -109,7 +109,7 @@ filePos CPackFile::Read(void* pvBuffer, filePos iSize, filePos iCount)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CPackFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CPackFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	if (meMode != EFM_Unknown)
 	{
@@ -191,6 +191,22 @@ BOOL CPackFile::Flush(void)
 	{
 		return mpcPackFiles->Flush(mpsPackFile);
 	}
+	return FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPackFile::Delete(void)
+{
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	//return mpcPackFiles->Remove(this);
 	return FALSE;
 }
 

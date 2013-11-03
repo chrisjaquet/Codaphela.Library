@@ -191,7 +191,7 @@ filePos CMD5HashFile::Write(const void* pvBuffer, filePos iSize, filePos iCount)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CMD5HashFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CMD5HashFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	if (mbResetMD5OnSeek)
 	{
@@ -238,6 +238,21 @@ filePos CMD5HashFile::Size(void)
 BOOL CMD5HashFile::Flush(void)
 {
 	return mpcFile->Flush();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CMD5HashFile::Delete(void)
+{
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	return mpcFile->Delete();
 }
 
 

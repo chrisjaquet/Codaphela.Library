@@ -159,6 +159,16 @@ BOOL CNamedIndexesBlock::IsCached(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexesBlock::IsNotCached(void)
+{
+	return mpvCachePos == NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexesBlock::AddUnsafe(OIndex oi, CChars* szName)
 {
 	CArrayBlock			avFakeBlock;
@@ -496,7 +506,16 @@ void CNamedIndexesBlock::Dump(CArrayBlock* pavFakeBlock)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-filePos CNamedIndexesBlock::UsedNames(void) { return miUsedBlocks; }
+filePos CNamedIndexesBlock::UsedNames(void) 
+{ 
+	return miUsedBlocks; 
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 int CNamedIndexesBlock::GetBlockWidth(void) { return miBlockWidth; }
 filePos CNamedIndexesBlock::GetNumBlocks(void) { return miBlockChunkSize; }
 filePos CNamedIndexesBlock::GetUsedBlocks(void) { return miUsedBlocks; }

@@ -49,7 +49,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;DEBUG;BREAK_ON_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -85,6 +85,9 @@
     <ClCompile Include="FileIteratorReturn.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="IndexedDataFiles.cpp" />
+    <ClCompile Include="IndexedGeneral.cpp" />
+    <ClCompile Include="LogFile.cpp" />
+    <ClCompile Include="LogFileCommands.cpp" />
     <ClCompile Include="PackFileOffset.cpp" />
     <ClCompile Include="TypeNames.cpp" />
     <ClCompile Include="TypeConverter.cpp" />
@@ -172,6 +175,8 @@
     <ClInclude Include="FileIteratorReturn.h" />
     <ClInclude Include="Files.h" />
     <ClInclude Include="IndexedDataFiles.h" />
+    <ClInclude Include="LogFile.h" />
+    <ClInclude Include="LogFileCommands.h" />
     <ClInclude Include="PackFileOffset.h" />
     <ClInclude Include="TypeNames.h" />
     <ClInclude Include="TypeConverter.h" />

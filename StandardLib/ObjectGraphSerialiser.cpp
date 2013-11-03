@@ -18,7 +18,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
-#include "DependentObjectSerialiser.h"
+#include "ObjectSerialiser.h"
 #include "ObjectGraphSerialiser.h"
 #include "SerialisedObject.h"
 
@@ -29,7 +29,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CObjectGraphSerialiser::Init(CObjectWriter* pcWriter)
 {
-	mpcWriter = pcWriter;
+	CObjectSingleSerialiser::Init(pcWriter);
 	mcDependentObjects.Init();
 }
 
@@ -41,6 +41,7 @@ void CObjectGraphSerialiser::Init(CObjectWriter* pcWriter)
 void CObjectGraphSerialiser::Kill(void)
 {
 	mcDependentObjects.Kill();
+	CObjectSingleSerialiser::Kill();
 }
 
 
@@ -51,6 +52,7 @@ void CObjectGraphSerialiser::Kill(void)
 BOOL CObjectGraphSerialiser::Write(CBaseObject* pcObject)
 {
 	CBaseObject*	pcUnwritten;
+	BOOL			bResult;
 
 	ReturnOnFalse(mpcWriter->Begin());
 
@@ -61,7 +63,11 @@ BOOL CObjectGraphSerialiser::Write(CBaseObject* pcObject)
 		pcUnwritten = mcDependentObjects.GetUnwritten();
 		if (pcUnwritten)
 		{
-			ReturnOnFalse(WriteUnwritten(pcUnwritten));
+			bResult = WriteUnwritten(pcUnwritten);
+			if (!bResult)
+			{
+				return FALSE;
+			}
 		}
 		else
 		{
@@ -79,21 +85,21 @@ BOOL CObjectGraphSerialiser::Write(CBaseObject* pcObject)
 //////////////////////////////////////////////////////////////////////////
 BOOL CObjectGraphSerialiser::WriteUnwritten(CBaseObject* pcObject)
 {
-	CDependentObjectSerialiser	cWriter;
-	BOOL						bResult;
-	CSerialisedObject*			pcSerialised;
+	CObjectSerialiser	cSerialiser;
+	BOOL				bResult;
+	CSerialisedObject*	pcSerialised;
 
-	cWriter.Init(this, pcObject);
+	cSerialiser.Init(this, pcObject);
 
-	bResult = cWriter.Save();
+	bResult = cSerialiser.Save();
 	ReturnOnFalse(bResult);
 
-	pcSerialised = (CSerialisedObject*)cWriter.GetData();
+	pcSerialised = (CSerialisedObject*)cSerialiser.GetData();
 
 	bResult = mpcWriter->Write(pcSerialised);
 	ReturnOnFalse(bResult);
 
-	cWriter.Kill();
+	cSerialiser.Kill();
 
 	MarkWritten(pcObject);
 	return TRUE;

@@ -20,7 +20,6 @@ SupportLib/Release/*
 TestLib/Release/*
 WindowLib/Release/*
 WorldLib/Release/*
-*.bak
 DirectXLib/Debug
 DirectXLib/Game_Release
 ImageLib/Debug
@@ -32,4 +31,5 @@ BerkeleyLib/BerkeleyLib.sdf
 BerkeleyLib/BerkeleyLib.suo
 BerkeleyLib/Debug
 BerkeleyLib/ipch
+*.bak
 *.*~

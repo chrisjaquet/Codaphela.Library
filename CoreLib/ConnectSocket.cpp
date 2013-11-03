@@ -20,17 +20,9 @@ along with Codaphela CoreLib.  If not, see <http://www.gnu.org/licenses/>.
 Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
-#include "BaseLib/Define.h"
-
-#ifndef WIN32
-#warning Sockets for non-windows systems need to be implemented.
-#endif // WIN32
-
-#ifdef WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#endif // WIN32
-#include "BaseLib/Logger.h"
+#include "BaseLib/Log.h"
 #include "ConnectSocket.h"
 
 
@@ -62,7 +54,6 @@ void CConnectSocket::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CConnectSocket::Connect(void)
 {
-#ifdef WIN32
 	addrinfo*	sResult;
 	addrinfo*	ptr;
 	addrinfo	hints;
@@ -114,9 +105,5 @@ BOOL CConnectSocket::Connect(void)
 	}
 
 	return TRUE;
-#else
-#warning This function needs to be implemented for non-windows systems
-	return FALSE;
-#endif // WIN32
 }
 

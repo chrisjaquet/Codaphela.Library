@@ -1,5 +1,5 @@
 #include "Distances.h"
-//#include "DirectXLib/D3DVECTORHelper.h"
+#include "DirectXLib/D3DVECTORHelper.h"
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -29,8 +29,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifdef WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#endif // WIN32
-#include "BaseLib/Logger.h"
+#include "BaseLib/Log.h"
 #include "ListenSocket.h"
 
 

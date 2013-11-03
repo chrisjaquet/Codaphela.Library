@@ -49,7 +49,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;DEBUG;BREAK_ON_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -80,7 +80,9 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ArrayVoidPtr.h" />
     <ClInclude Include="BaseFileNode.h" />
+    <ClInclude Include="ChunkFileFile.h" />
     <ClInclude Include="ChunkFileHeader.h" />
     <ClInclude Include="ChunkStack.h" />
     <ClInclude Include="DataMacro.h" />
@@ -108,7 +110,10 @@
     <ClInclude Include="LinkListTemplate.h" />
     <ClInclude Include="LinkListTemplateFreeList.h" />
     <ClInclude Include="LinkListTemplateMemoryStack.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="LogString.h" />
     <ClInclude Include="MemoryCacheAllocation.h" />
+    <ClInclude Include="MemoryHeader.h" />
     <ClInclude Include="PackFileIterator.h" />
     <ClInclude Include="PackFilesGeneral.h" />
     <ClInclude Include="TreeBlock.h" />
@@ -222,8 +227,8 @@
     <ClInclude Include="PointerFunctions.h" />
     <ClInclude Include="PointerRemapper.h" />
     <ClInclude Include="Bool.h" />
-    <ClInclude Include="DebugLog.h" />
     <ClInclude Include="Define.h" />
+    <ClInclude Include="Validation.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="WindowsHeaders.h" />
     <ClInclude Include="ConstructorCall.h" />
@@ -238,12 +243,17 @@
     <ClCompile Include="ArrayPointer.cpp" />
     <ClCompile Include="ArraySimpleChar.cpp" />
     <ClCompile Include="ArrayString.cpp" />
+    <ClCompile Include="ArrayVoidPtr.cpp" />
     <ClCompile Include="BaseFileNode.cpp" />
+    <ClCompile Include="ChunkFileFile.cpp" />
     <ClCompile Include="ChunkFileHeader.cpp" />
+    <ClCompile Include="FileMode.cpp" />
     <ClCompile Include="FileSystemIterator.cpp" />
     <ClCompile Include="LinkListBlock.cpp" />
     <ClCompile Include="LinkListBlockMemoryStack.cpp" />
+    <ClCompile Include="LogString.cpp" />
     <ClCompile Include="MemoryCacheAllocation.cpp" />
+    <ClCompile Include="MemoryHeader.cpp" />
     <ClCompile Include="PackFileIterator.cpp" />
     <ClCompile Include="TreeBlock.cpp" />
     <ClCompile Include="TreeBlockMemoryStack.cpp" />
@@ -338,14 +348,12 @@
     <ClCompile Include="FastMemcpyBackwards.cpp" />
     <ClCompile Include="FastMemset.cpp" />
     <ClCompile Include="PointerFunctions.cpp" />
-    <ClCompile Include="DebugLog.cpp" />
     <ClCompile Include="Aardvark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MemoryTodo.txt" />
     <None Include="gpl.txt" />
     <None Include="lgpl.txt" />
-    <None Include="Libs.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

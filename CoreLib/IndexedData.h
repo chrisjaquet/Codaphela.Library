@@ -22,6 +22,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __INDEXED_DATA_H__
 #define __INDEXED_DATA_H__
+#include "BaseLib/MemoryFile.h"
 #include "IndexedConfig.h"
 #include "IndexedCache.h"
 #include "IndexedData.h"
@@ -52,6 +53,7 @@ protected:
 	BOOL					mbDurable;
 	BOOL					mbCaching;
 	BOOL					mbWriteThrough;
+	BOOL					mbTransient;
 
 public:
 	void 			Init(char* szWorkingDirectory, unsigned int uiCacheSize, BOOL bDurable);  //Old style for testing.
@@ -66,19 +68,35 @@ public:
 	unsigned int	Size(OIndex oi);
 	unsigned int	Flags(OIndex oi);
 	BOOL			Get(OIndex oi, void* pvData);
+	void*			Get(OIndex oi, int* piDataSize);
+
+	BOOL			Contains(OIndex oi);
 
 	BOOL			Remove(OIndex oi);
 
-	BOOL			Flush(void);
+	BOOL			Flush(BOOL bClearCache);
 	void			DurableBegin(void);
 	void			DurableEnd(void);
 
+	BOOL			RemoveFiles(void);
+
+	void			KillNonTransientNonDurable(void);
+	void			KillTransient(void);
+	void			KillEnd(void);
+	BOOL			CloseFiles(void);
+
 	BOOL			IsCaching(void);
-	BOOL			EvictFromCache(CIndexedDataDescriptor* pcDescriptor);
+	BOOL			IsTransient(void);
+	BOOL			IsDurable(void);
 	int				NumCached(void);
+	int				NumCached(int iSize);
 	int				NumFiles(void);
 	OIndex			NumInFile(int iDataSize);
 	OIndex			NumElements(void);
+
+	BOOL			EvictFromCache(CIndexedDataDescriptor* pcDescriptor);
+	BOOL			Uncache(void);
+
 	int				TestNumCachedIndexes(void);
 	int				TestIndexedDescriptorsLength(void);
 	int				TestNumIgnoredCacheElements(void);
@@ -89,6 +107,9 @@ public:
 protected:
 	void 			InitIndices(CIndexedConfig* pcConfig);
 
+	BOOL			SetData(CIndexedDataDescriptor* pcDescriptor, void* pvData, unsigned int uiTimeStamp);
+	BOOL			SetData(CIndexedDataDescriptor* pcDescriptor, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp);
+
 	BOOL			GetData(CIndexedDataDescriptor* pcDescriptor, void* pvData);
 	BOOL			GetDescriptor(OIndex oi, CIndexedDataDescriptor* pcDescriptor);
 
@@ -96,8 +117,7 @@ protected:
 	BOOL			EvictFromCache(SIndexedCacheDescriptor* psExisting);
 	BOOL			EvictOverlappingFromCache(CArrayPointer* papsEvictedIndexedCacheDescriptors);
 
-	void			Invalidate(CIndexedDataDescriptor* pcDescriptor);
-	BOOL			Uncache(void);
+	void			InvalidateData(CIndexedDataDescriptor* pcDescriptor);
 	BOOL			CacheRead(CIndexedDataDescriptor* pcDescriptor);
 	BOOL			CacheWrite(CIndexedDataDescriptor* pcDescriptor, void* pvData, BOOL* pbWritten);
 	BOOL			Write(CIndexedDataDescriptor* pcDescriptor, void* pvData, unsigned int uiTimeStamp);

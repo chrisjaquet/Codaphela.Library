@@ -20,6 +20,7 @@ along with Codaphela BaseLib.  If not, see <http://www.gnu.org/licenses/>.
 Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
+#include "Log.h"
 #include "ASCIITree.h"
 
 
@@ -73,6 +74,12 @@ int CASCIITree::Add(long long int lliID, char* szText, char* szLastCharInclusive
 	int				iNode;
 	int				iWord;
 	int				iLen;
+
+#ifdef DEBUG_ASCII_TREE
+#ifdef DEBUG
+	gcLogger.Info2("CASCIITree::Add(", LongLongToString(lliID), ", \"", szText, "\");", NULL);
+#endif //  DEBUG
+#endif // DEBUG_ASCII_TREE
 
 	if (szLastCharInclusive == NULL)
 	{
@@ -217,6 +224,7 @@ int CASCIITree::GetIndexForNew(char* szText, int iLen)
 	return iIndex;
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -351,6 +359,25 @@ BOOL CASCIITree::Remove(EASCIITreeRemoveStyle eStyle, char* szText, char* szLast
 	int				iWord;
 	int				iLen;
 
+#ifdef DEBUG_ASCII_TREE
+#ifdef DEBUG
+	char*	szStyle = NULL;
+	switch (eStyle)
+	{
+	case ATRS_OnlyEndOfWordMarker:
+		szStyle = "ATRS_OnlyEndOfWordMarker";
+		break;
+	case ATRS_EndOfWordMarkerReuseIndex:
+		szStyle = "ATRS_EndOfWordMarkerReuseIndex";
+		break;
+	case ATRS_MoveLastToRemoved:
+		szStyle = "ATRS_MoveLastToRemoved";
+		break;
+	}
+	gcLogger.Info2("CASCIITree::Remove(", szStyle, ", \"", szText, "\");", NULL);
+#endif // DEBUG
+#endif // DEBUG_ASCII_TREE
+
 	if (szText == NULL)
 	{
 		return FALSE;
@@ -429,7 +456,6 @@ void CASCIITree::PrivateMoveLastToRemoved(EASCIITreeRemoveStyle eStyle, CASCIINo
 {
 	CASCIINode* pcParent;
 	int			iWordEnd;
-	int			iNodeWordEnd;
 	CCharsID*	pszid;
 	CCharsID*	pszidEnd;
 	int			iEndWord;
@@ -450,7 +476,8 @@ void CASCIITree::PrivateMoveLastToRemoved(EASCIITreeRemoveStyle eStyle, CASCIINo
 		if (pcNode->IsEmpty())
 		{
 			pcParent = pcNode->mpcParent;
-			iNodeWordEnd = pcNode->maiWordEnds[szText[pcParent->miParentLetter] - ASCII_NODE_START_CHAR];
+			pcParent->mapcChildren[pcNode->miParentLetter] = NULL;
+
 			mcNodes.Remove(pcNode);
 			pcNode = pcParent;
 		}
@@ -796,6 +823,50 @@ void CASCIITree::PrivateGetLengthTerminated(CASCIINode** ppcLastNode, CASCIINode
 	*piLastNode = i-1;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CASCIITree::Dump(void)
+{
+	CChars	sz;
+
+	sz.Init();
+	RecurseDump(mpcRoot, &sz, 0);
+	sz.Dump();
+	sz.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CASCIITree::RecurseDump(CASCIINode* pcNode, CChars* psz, int iLevel)
+{
+	int		i;
+
+	for (i = 0; i < ASCII_NODE_MAX_CHARS; i++)
+	{
+		if (pcNode->maiWordEnds[i] != -1)
+		{
+			psz->Append(' ', iLevel);
+			psz->Append((char)(i + ASCII_NODE_START_CHAR));
+			psz->Append(" [END]");
+			psz->AppendNewLine();
+		}
+
+		if (pcNode->mapcChildren[i] != NULL)
+		{
+			psz->Append(' ', iLevel);
+			psz->Append((char)(i + ASCII_NODE_START_CHAR));
+
+			psz->AppendNewLine();
+
+			RecurseDump(pcNode->mapcChildren[i], psz, iLevel+1);
+		}
+	}
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -806,7 +877,6 @@ void CASCIITree::DumpWords(void)
 {
 	mcWords.Dump();
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -865,9 +935,17 @@ BOOL CASCIITree::IsEmpty(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CASCIITree::TestConsistency(void)
+BOOL CASCIITree::Contains(char* szText)
 {
-	return TestConsistency(mpcRoot);
+	long long int	lli;
+
+	if ((szText == NULL) || (szText[0] == '\0'))
+	{
+		return FALSE;
+	}
+	
+	lli = Get(szText);
+	return lli != -1LL;
 }
 
 
@@ -875,7 +953,49 @@ BOOL CASCIITree::TestConsistency(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CASCIITree::TestConsistency(CASCIINode* pcNode)
+BOOL CASCIITree::IsOnlyValidCharacters(char* szText)
+{
+	int		i;
+
+	for (i = 0;; i++)
+	{
+		if ((szText == NULL) || (szText[i] == 0))
+		{
+			return TRUE;
+		}
+		else if (szText[i] < ASCII_NODE_START_CHAR)
+		{
+			return FALSE;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CASCIITree::TestConsistency(void)
+{
+	if (!TestWordConsistency(mpcRoot))
+	{
+		return FALSE;
+	}
+
+	if (!TestNodeConsistency(mpcRoot, 0))
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CASCIITree::TestWordConsistency(CASCIINode* pcNode)
 {
 	int		i;
 	BOOL	bResult;
@@ -892,7 +1012,7 @@ BOOL CASCIITree::TestConsistency(CASCIINode* pcNode)
 
 		for (i = 0; i < ASCII_NODE_MAX_CHARS; i++)
 		{
-			bResult = TestConsistency(pcNode->mapcChildren[i]);
+			bResult = TestWordConsistency(pcNode->mapcChildren[i]);
 			if (!bResult)
 			{
 				return FALSE;
@@ -901,6 +1021,46 @@ BOOL CASCIITree::TestConsistency(CASCIINode* pcNode)
 	}
 	return TRUE;
 }
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CASCIITree::TestNodeConsistency(CASCIINode* pcNode, int iLevel)
+{
+	int		i;
+	BOOL	bDetail;
+
+	bDetail = FALSE;
+	for (i = 0; i < ASCII_NODE_MAX_CHARS; i++)
+	{
+		if (pcNode->maiWordEnds[i] != -1)
+		{
+			bDetail = TRUE;
+		}
+
+		if (pcNode->mapcChildren[i] != NULL)
+		{
+			bDetail = TRUE;
+			if (!TestNodeConsistency(pcNode->mapcChildren[i], iLevel+1))
+			{
+				return FALSE;
+			}
+		}
+	}
+
+	if (!bDetail && iLevel > 0)
+	{
+		return FALSE;
+	}
+	else
+	{
+		return TRUE;
+	}
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ public:
 	BOOL						Open(void);
 	BOOL						Save(void);
 	BOOL						Close(void);
+	BOOL						Flush(void);
 
 	BOOL						Add(OIndex oi, char* szName, BOOL bFailOnExisting = TRUE);
 	BOOL						Add(OIndex oi, CChars* szName, BOOL bFailOnExisting = TRUE);
@@ -49,7 +50,6 @@ public:
 	BOOL						Remove(CChars* szName);
 	filePos						NumNames(void);
 
-	BOOL						Flush(void);
 	CIndexedFile*				GetFile(int iDataSize, int iFileNumber);
 	CIndexedFile*				GetOrCreateFile(int iDataSize, int iFileNumber);
 	void*						AllocateInCache(size_t iSize);

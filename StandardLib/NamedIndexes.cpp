@@ -41,6 +41,9 @@ void CNamedIndexes::Init(CDurableFileController* pcController, int iCacheSize, i
 	AddBlock( 512,  247,  503, iBlockChunkSize);
 	AddBlock(1024,  503, 1015, iBlockChunkSize);
 	AddBlock(4096, 1015, 4087, iBlockChunkSize);
+
+	//mcFiles.Open();
+	Open();
 }
 
 
@@ -125,6 +128,16 @@ BOOL CNamedIndexes::Open(void)
 		}
 	}
 	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexes::Flush(void)
+{
+	return Save();
 }
 
 
@@ -240,26 +253,6 @@ BOOL CNamedIndexes::Remove(char* szName)
 
 	szFake.Fake(szName);
 	return Remove(&szFake);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CNamedIndexes::Flush(void)
-{
-	int						i;
-	CNamedIndexesBlocks*	pcBlock;
-	BOOL					bResult;
-
-	bResult = TRUE;
-	for (i = 0; i < macBlocks.NumElements(); i++)
-	{
-		pcBlock = macBlocks.Get(i);
-		bResult &= pcBlock->Flush();
-	}
-	return bResult;
 }
 
 
@@ -418,11 +411,6 @@ CIndexedFile* CNamedIndexes::GetOrCreateFile(int iDataSize, int iFileNumber)
 	else
 	{
 		pcIndexedFile = mcFiles.GetOrCreateFile(iDataSize);
-		if (pcIndexedFile->mbNew)
-		{
-			pcIndexedFile->mbNew = FALSE;
-			mcFiles.WriteIndexedFileDescriptors();
-		}
 	}
 
 	return pcIndexedFile;

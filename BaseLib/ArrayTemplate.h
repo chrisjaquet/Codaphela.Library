@@ -136,15 +136,16 @@ public:
 	void	Init(SArrayTemplateHeader* psHeader);
 	void	Init(__CArrayTemplate<M>* pcTemplateArray);
 
-	void 	Allocate(int iChunkSize);
+	void 	Allocate(int iNumElements);
 	void 	Allocate(int iChunkSize, int iNumElements);
 	void	Fake(M* pvData, int iNum);
 	void	FakeSetUsedElements(int iUsedElements);
 	M*		Get(int iIndex);
 	void 	ReInit(int iChunkSize = 0);
-	void 	SetAllocateSize(int iSize);
 
 	M&		operator[](int iIndex);
+
+	void 	SetAllocateSize(int iSize);
 };
 
 
@@ -694,7 +695,7 @@ BOOL __CArrayTemplate<M>::Copy(__CArrayTemplate* pcTemplateArray)
 	BOOL	bResult;
 
 	//Assumes the array is initialised.  
-	//Returns wether or not it had to be resized.
+	//Returns whether or not it had to be resized.
 	bResult = FALSE;
 	if ((pcTemplateArray->miNumElements != miNumElements) || (pcTemplateArray->miChunkSize != miChunkSize))
 	{
@@ -1719,9 +1720,9 @@ void CArrayTemplate<M>::Init(__CArrayTemplate<M>* pcTemplateArray)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CArrayTemplate<M>::Allocate(int iChunkSize)
+void CArrayTemplate<M>::Allocate(int iNumElements)
 {
-	Init(iChunkSize);
+	Init(iNumElements);
 	this->GrowByChunk();
 }
 

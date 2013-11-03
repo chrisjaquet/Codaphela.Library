@@ -425,43 +425,6 @@ void CChars::Append(char* sz, int iLen)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CChars::Append(const char* sz)
-{
-	int		iLen;
-	char*	pcPosition;
-
-	if (sz)
-	{
-		iLen = (int)strlen(sz);
-		pcPosition = PrivateGrow(iLen);
-		strcpy(pcPosition, sz);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CChars::Append(const char* sz, int iLen)
-{
-	char*	pcPosition;
-	char*	pcZero;
-
-	if (sz)
-	{
-		pcPosition = PrivateGrow(iLen);
-		memcpy(pcPosition, sz, iLen);
-		pcZero = mcText.Tail();
-		*pcZero = 0;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
 void CChars::Append(char c)
 {
 	char* pcReplace;
@@ -583,7 +546,7 @@ void CChars::Append(double d)
 {
 	char sz[32];
 
-	sprintf(sz, "%.8f", d);
+	sprintf(sz, "%.8d", d);
 	Append(sz);
 }
 
@@ -1189,9 +1152,12 @@ void CChars::SplitLines(CArrayString* aszDest)
 //////////////////////////////////////////////////////////////////////////
 BOOL CChars::Equals(char* szString)
 {
-	if (strcmp(Text(), szString) == 0)
+	if (szString)
 	{
-		return TRUE;
+		if (strcmp(Text(), szString) == 0)
+		{
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
@@ -2059,7 +2025,7 @@ void CChars::AppendData2(char* szData, int iDataLength, int iMaxLength)
 	int				iLength;
 	unsigned char	c;
 	BOOL			bLastReadable;
-
+	
 	if (iDataLength > iMaxLength)
 	{
 		iLength = iMaxLength;

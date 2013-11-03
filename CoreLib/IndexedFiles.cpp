@@ -181,8 +181,6 @@ BOOL CIndexedFiles::WriteIndexedFileDescriptors(void)
 {
 	int							i;
 	CIndexedFile*				pcIndexedFile;
-	char						szDataFileName[65536];
-	char						szDataRewriteName[65536];
 	SIndexedFileDescriptor*		psFileDescriptor;
 	void*						pvFileDescriptors;
 	BOOL						bResult;
@@ -197,8 +195,6 @@ BOOL CIndexedFiles::WriteIndexedFileDescriptors(void)
 		psFileDescriptor->iDataSize = pcIndexedFile->miDataSize;
 		psFileDescriptor->iFileIndex = pcIndexedFile->GetFileIndex();
 		psFileDescriptor->iFileNum = pcIndexedFile->miFileNumber;
-
-		bResult &= DataFileName(szDataFileName, szDataRewriteName, pcIndexedFile->miDataSize, pcIndexedFile->miFileNumber);
 	}
 	bResult &= mcDurableFile.Write(0, pvFileDescriptors, sizeof(SIndexedFileDescriptor), mcFiles.NumElements());
 
@@ -254,6 +250,27 @@ BOOL CIndexedFiles::DataFileName(char* szFile1, char* szFile2, int iDataSize, in
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CIndexedFiles::RemoveFiles(void)
+{
+	int							i;
+	CIndexedFile*				pcIndexedFile;
+	BOOL						bResult;
+
+	bResult = TRUE;
+	for (i = 0; i < mcFiles.NumElements(); i++)
+	{
+		pcIndexedFile = mcFiles.Get(i);
+		bResult &= pcIndexedFile->mcFile.Delete();
+	}
+	bResult &= mcDurableFile.Delete();
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 CIndexedFile* CIndexedFiles::GetOrCreateFile(int iDataSize)
 {
 	int				i;
@@ -280,9 +297,16 @@ CIndexedFile* CIndexedFiles::GetOrCreateFile(int iDataSize)
 	}
 
 	pcIndexedFile = mcFiles.Add();
+	if (!pcIndexedFile)
+	{
+		return NULL;
+	}
+
 	DataFileName(szFileName, szRewriteName, iDataSize, iNumFiles);
 	pcIndexedFile->Init(mpcDurableFileControl, mcFiles.NumElements()-1, szFileName, szRewriteName, iDataSize, iNumFiles);
 	pcIndexedFile->Open(mpcDurableFileControl);
+
+	WriteIndexedFileDescriptors();
 	return pcIndexedFile;
 }
 

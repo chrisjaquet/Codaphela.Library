@@ -40,5 +40,5 @@ public:
 
 
 
-#endif __SHAPE_HIERACHY_H__
+#endif // __SHAPE_HIERACHY_H__
 

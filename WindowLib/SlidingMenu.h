@@ -21,7 +21,6 @@ along with Codaphela WindowLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SLIDING_MENU_H__
 #define __SLIDING_MENU_H__
 #include "Component.h"
-#include "Container.h"
 
 
 class CSlidingMenu : public CContainer

@@ -51,7 +51,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;DEBUG;BREAK_ON_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -81,9 +81,26 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Array.h" />
+    <ClInclude Include="ArrayUnknownPtr.h" />
     <ClInclude Include="Base.h" />
-    <ClInclude Include="DependentObjectSerialiser.h" />
     <ClInclude Include="ChunkFileNames.h" />
+    <ClInclude Include="DependentObjectAdder.h" />
+    <ClInclude Include="DependentReadObject.h" />
+    <ClInclude Include="DependentReadObjects.h" />
+    <ClInclude Include="DependentReadPointer.h" />
+    <ClInclude Include="DependentWriteObject.h" />
+    <ClInclude Include="DistCalculator.h" />
+    <ClInclude Include="DistToRootCalculator.h" />
+    <ClInclude Include="DistCalculatorParameters.h" />
+    <ClInclude Include="DistToStackCalculator.h" />
+    <ClInclude Include="EmbeddedObject.h" />
+    <ClInclude Include="HollowEmbeddedObject.h" />
+    <ClInclude Include="IndexedDataObjectDeserialiser.h" />
+    <ClInclude Include="Null.h" />
+    <ClInclude Include="ObjectAllocator.h" />
+    <ClInclude Include="IndexGenerator.h" />
+    <ClInclude Include="IndexNewOld.h" />
     <ClInclude Include="NamedHollowObject.h" />
     <ClInclude Include="NamedIndexedBlock.h" />
     <ClInclude Include="NamedIndexedSorterSource.h" />
@@ -100,17 +117,28 @@
     <ClInclude Include="ObjectConverterText.h" />
     <ClInclude Include="ObjectFileGeneral.h" />
     <ClInclude Include="ObjectGraphDeserialiser.h" />
-    <ClInclude Include="ObjectMultipleSource.h" />
+    <ClInclude Include="ObjectHeader.h" />
+    <ClInclude Include="ObjectIO.h" />
+    <ClInclude Include="ObjectIOSimple.h" />
+    <ClInclude Include="ObjectPointerArrays.h" />
     <ClInclude Include="ObjectReader.h" />
-    <ClInclude Include="ObjectReaderChunked.h" />
+    <ClInclude Include="ObjectReaderChunkFile.h" />
+    <ClInclude Include="ObjectReaderChunkFileDisk.h" />
+    <ClInclude Include="ObjectReaderIndexed.h" />
     <ClInclude Include="ObjectReaderSimple.h" />
+    <ClInclude Include="ObjectReaderSimpleDisk.h" />
+    <ClInclude Include="ObjectRemapFrom.h" />
+    <ClInclude Include="ObjectSingleSerialiser.h" />
     <ClInclude Include="ObjectSingleSource.h" />
     <ClInclude Include="ObjectSourceChunked.h" />
-    <ClInclude Include="ObjectSourceNative.h" />
     <ClInclude Include="ObjectSourceSimple.h" />
     <ClInclude Include="ObjectSourceText.h" />
     <ClInclude Include="Parameters.h" />
+    <ClInclude Include="PointerContainer.h" />
     <ClInclude Include="SerialisedObject.h" />
+    <ClInclude Include="Set.h" />
+    <ClInclude Include="StackPointer.h" />
+    <ClInclude Include="StackPointers.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Unknown.h" />
     <ClInclude Include="SetType.h" />
@@ -129,13 +157,13 @@
     <ClInclude Include="Objects.h" />
     <ClInclude Include="Root.h" />
     <ClInclude Include="Collection.h" />
-    <ClInclude Include="Set.h" />
-    <ClInclude Include="Array.h" />
+    <ClInclude Include="SetObject.h" />
+    <ClInclude Include="ArrayObject.h" />
     <ClInclude Include="ArrayCommonObject.h" />
     <ClInclude Include="Pointer.h" />
     <ClInclude Include="PointerObject.h" />
     <ClInclude Include="NamedObject.h" />
-    <ClInclude Include="DependentObjects.h" />
+    <ClInclude Include="DependentWriteObjects.h" />
     <ClInclude Include="ObjectGraphSerialiser.h" />
     <ClInclude Include="ObjectDeserialiser.h" />
     <ClInclude Include="ObjectSerialiser.h" />
@@ -177,8 +205,23 @@
     <ClInclude Include="TrackerTemplate.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DependentObjectSerialiser.cpp" />
     <ClCompile Include="ChunkFileNames.cpp" />
+    <ClCompile Include="DependentObjectAdder.cpp" />
+    <ClCompile Include="DependentReadObject.cpp" />
+    <ClCompile Include="DependentReadObjects.cpp" />
+    <ClCompile Include="DependentReadPointer.cpp" />
+    <ClCompile Include="DependentWriteObject.cpp" />
+    <ClCompile Include="DistCalculator.cpp" />
+    <ClCompile Include="DistToRootCalculator.cpp" />
+    <ClCompile Include="DistCalculatorParameters.cpp" />
+    <ClCompile Include="DistToStackCalculator.cpp" />
+    <ClCompile Include="EmbeddedObject.cpp" />
+    <ClCompile Include="HollowEmbeddedObject.cpp" />
+    <ClCompile Include="IndexedDataObjectDeserialiser.cpp" />
+    <ClCompile Include="Null.cpp" />
+    <ClCompile Include="ObjectAllocator.cpp" />
+    <ClCompile Include="IndexGenerator.cpp" />
+    <ClCompile Include="IndexNewOld.cpp" />
     <ClCompile Include="NamedHollowObject.cpp" />
     <ClCompile Include="NamedIndexedBlock.cpp" />
     <ClCompile Include="NamedIndexedData.cpp" />
@@ -190,21 +233,30 @@
     <ClCompile Include="NamedIndexesBlocksLoader.cpp" />
     <ClCompile Include="NamedIndexesFileDumper.cpp" />
     <ClCompile Include="NamedIndexesOptimiser.cpp" />
+    <ClCompile Include="ObjectIO.cpp" />
     <ClCompile Include="ObjectConverter.cpp" />
     <ClCompile Include="ObjectConverterNative.cpp" />
     <ClCompile Include="ObjectConverterText.cpp" />
     <ClCompile Include="ObjectGraphDeserialiser.cpp" />
-    <ClCompile Include="ObjectMultipleSource.cpp" />
+    <ClCompile Include="ObjectHeader.cpp" />
+    <ClCompile Include="ObjectIOSimple.cpp" />
     <ClCompile Include="ObjectReader.cpp" />
-    <ClCompile Include="ObjectReaderChunked.cpp" />
+    <ClCompile Include="ObjectReaderChunkFile.cpp" />
+    <ClCompile Include="ObjectReaderChunkFileDisk.cpp" />
+    <ClCompile Include="ObjectReaderIndexed.cpp" />
     <ClCompile Include="ObjectReaderSimple.cpp" />
+    <ClCompile Include="ObjectReaderSimpleDisk.cpp" />
+    <ClCompile Include="ObjectRemapFrom.cpp" />
+    <ClCompile Include="ObjectSingleSerialiser.cpp" />
     <ClCompile Include="ObjectSingleSource.cpp" />
     <ClCompile Include="ObjectSourceChunked.cpp" />
-    <ClCompile Include="ObjectSourceNative.cpp" />
     <ClCompile Include="ObjectSourceSimple.cpp" />
     <ClCompile Include="ObjectSourceText.cpp" />
     <ClCompile Include="ObjectWriter.cpp" />
+    <ClCompile Include="PointerContainer.cpp" />
     <ClCompile Include="SerialisedObject.cpp" />
+    <ClCompile Include="StackPointer.cpp" />
+    <ClCompile Include="StackPointers.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="Unknown.cpp" />
     <ClCompile Include="SetUnknown.cpp" />
@@ -220,12 +272,12 @@
     <ClCompile Include="Objects.cpp" />
     <ClCompile Include="Root.cpp" />
     <ClCompile Include="Collection.cpp" />
-    <ClCompile Include="Set.cpp" />
-    <ClCompile Include="Array.cpp" />
+    <ClCompile Include="SetObject.cpp" />
+    <ClCompile Include="ArrayObject.cpp" />
     <ClCompile Include="ArrayCommonObject.cpp" />
     <ClCompile Include="PointerObject.cpp" />
     <ClCompile Include="NamedObject.cpp" />
-    <ClCompile Include="DependentObjects.cpp" />
+    <ClCompile Include="DependentWriteObjects.cpp" />
     <ClCompile Include="ObjectGraphSerialiser.cpp" />
     <ClCompile Include="ObjectDeserialiser.cpp" />
     <ClCompile Include="ObjectSerialiser.cpp" />

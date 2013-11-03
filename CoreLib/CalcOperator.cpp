@@ -242,8 +242,6 @@ BOOL CCalcOperator::IsBinary(void)
 	case CO_BitwiseOr:
 	case CO_BitwiseXor:
 		return TRUE;
-    default:
-        break;
 	}
 	return FALSE;
 
@@ -265,8 +263,6 @@ BOOL CCalcOperator::IsUnary(void)
 	case CO_UnaryAdd:
 	case CO_UnarySubtract:
 		return TRUE;
-    default:
-        break;
 	}
 	return FALSE;
 }
@@ -284,9 +280,8 @@ BOOL CCalcOperator::IsAmbiguous(void)
 	case CO_Subtract:
 	case CO_UnaryAdd:
 	case CO_UnarySubtract:
-    	return TRUE;
+		return TRUE;
     default:
         break;
 	}
 	return FALSE;
-}

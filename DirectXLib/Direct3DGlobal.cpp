@@ -53,7 +53,7 @@ CD3D	gcD3D;
 
 
 #define D3D_CASE(cas,strng)	case cas: strng->Append(#cas); break
-#define D3D_OR(cas,var,strng)	if (var & cas) strng->Append(#cas "|")
+#define D3D_OR(cas,var,strng)	if (var & cas) strng->Append(#cas##"|")
 
 
 //////////////////////////////////////////////////////////////////////////

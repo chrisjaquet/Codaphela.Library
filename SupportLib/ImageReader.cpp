@@ -91,8 +91,8 @@ BOOL LoadPictureIPicture(CImage *pcImage, char *szFilename)
 	//----------------------------------------------------------------------------------------
 	//	Create A Temporary Bitmap
 	//----------------------------------------------------------------------------------------
-	BITMAPINFO		bi = {0};   										// The Type Of Bitmap We Request
-	unsigned int*	pBits = NULL;										// Pointer To The Bitmap Bits
+	BITMAPINFO		bi = {0};												// The Type Of Bitmap We Request
+	unsigned int*	pBits = NULL;												// Pointer To The Bitmap Bits
 	
 	bi.bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);				// Set Structure Size
 	bi.bmiHeader.biBitCount		= 32;									// 32 Bit

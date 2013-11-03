@@ -21,7 +21,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
 #ifdef WIN32
-#include "Define.h"
 #include <stdio.h>
 #include <windows.h>
 #include "FileUtil.h"

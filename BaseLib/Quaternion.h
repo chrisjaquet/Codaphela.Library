@@ -63,5 +63,5 @@ public:
 void	QuaternionMultiply(SQuaternion* pOut, const SQuaternion* pQ1, const SQuaternion* pQ2);
 
 
-#endif /* __QUATERNION_H__ */
+#endif // __QUATERNION_H__
 

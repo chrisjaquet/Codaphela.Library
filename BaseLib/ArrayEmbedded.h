@@ -44,6 +44,7 @@ protected:
 public:
 	void	Init(void);
 	void	Kill(void);
+	void	ReInit(void);
 
 	M*		Add(void);
 	M*		Add(M* pData);
@@ -60,9 +61,10 @@ public:
 	BOOL	IsEmpty(void);
 	BOOL	IsNotEmpty(void);
 	int		NumElements(void);
-	void	Remove(M* pvElement, int bPreserveOrder = TRUE);
+	BOOL	Remove(M* pvElement, int bPreserveOrder = TRUE);
 	void 	RemoveAt(int iIndex, int bPreserveOrder = TRUE);
 	M*		SafeGet(int iIndex);
+	void	Copy(CArrayEmbedded<M, I>* pcArrayEmbedded);
 	BOOL	TestInternalConsistency(void);
 	void 	Zero(void);
 };
@@ -92,6 +94,19 @@ void CArrayEmbedded<M, I>::Kill(void)
 	{
 		mcArray.Kill();
 	}
+	miUsedElements = 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M, int I>
+void CArrayEmbedded<M, I>::ReInit(void)
+{
+	Kill();
+	Init();
 }
 
 
@@ -232,7 +247,7 @@ M* CArrayEmbedded<M, I>::Get(int iIndex)
 {
 	if (IsEmbedded())
 	{
-		if (iIndex < miChunkSize)
+		if (iIndex < miUsedElements)
 		{
 			return &mam[iIndex];
 		}
@@ -478,7 +493,7 @@ int CArrayEmbedded<M, I>::NumElements(void)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M, int I>
-void CArrayEmbedded<M, I>::Remove(M* pData, int bPreserveOrder)
+BOOL CArrayEmbedded<M, I>::Remove(M* pData, int bPreserveOrder)
 {
 	int		iIndex;
 
@@ -486,6 +501,11 @@ void CArrayEmbedded<M, I>::Remove(M* pData, int bPreserveOrder)
 	if (iIndex != -1)
 	{
 		RemoveAt(iIndex, bPreserveOrder);
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
 	}
 }
 
@@ -499,6 +519,7 @@ void CArrayEmbedded<M, I>::RemoveAt(int iIndex, int bPreserveOrder)
 {
 	void*	pSource;
 	void*	pDest;
+	int		iMove;
 
 	if (IsEmbedded())
 	{
@@ -506,7 +527,12 @@ void CArrayEmbedded<M, I>::RemoveAt(int iIndex, int bPreserveOrder)
 		pSource = RemapSinglePointer(pDest, miElementSize);
 
 		miUsedElements--;
-		memmove(pDest, pSource, miElementSize * (miUsedElements - iIndex));
+
+		iMove = miUsedElements - iIndex;
+		if (iMove > 0)
+		{
+			memmove(pDest, pSource, miElementSize * iMove);
+		}
 	}
 	else
 	{
@@ -531,6 +557,24 @@ M* CArrayEmbedded<M, I>::SafeGet(int iIndex)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M, int I>
+void CArrayEmbedded<M, I>::Copy(CArrayEmbedded<M, I>* pcArrayEmbedded)
+{
+	int		i;
+	int		iNumElements;
+	M*		pvData;
+
+	iNumElements = pcArrayEmbedded->NumElements();
+	for (i = 0; i < iNumElements; i++)
+	{
+		pvData = pcArrayEmbedded->Get(i);
+		Add(pvData);
+	}
+}
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -630,7 +630,7 @@ void CPreprocessor::LogBlocks(CChars* pszBlocksLog)
 	}
 	else
 	{
-		mbLogInlucdes = FALSE;
+		mbLogInlucdes = FALSE; // FIXME - spelling
 		mbLogBlocks = FALSE;
 	}
 }

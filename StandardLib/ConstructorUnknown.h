@@ -21,14 +21,14 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CONSTRUCTOR_UNKNOWN_H__
 #define __CONSTRUCTOR_UNKNOWN_H__
 #include "Unknown.h"
-//#include "MapStringUnknown.h"
+#include "MapStringUnknown.h"
 
 
 class CConstructorUnknown : public CUnknown
 {
 BASE_FUNCTIONS(CConstructorUnknown);
 protected:
-//	CMapStringUnknown	mcConstructorObjects;
+	CMapStringUnknown	mcConstructorObjects;
 
 public:
 	void		Init(void);

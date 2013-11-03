@@ -10,10 +10,11 @@ class CString : public CObject, public CChars
 BASE_FUNCTIONS(CString);
 public:
 	void	Kill(void);
+	void	Class(void);
+	void	KillData(void);
 
 	BOOL	Save(CObjectSerialiser* pcFile);
 	BOOL	Load(CObjectDeserialiser* pcFile);
-
 };
 
 

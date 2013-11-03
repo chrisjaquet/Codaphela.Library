@@ -25,7 +25,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "Define.h"
 #include "PointerRemapper.h"
 #include "ErrorHandler.h"
-#include "FastMemcpy.h"
 
 #include <string.h>
 

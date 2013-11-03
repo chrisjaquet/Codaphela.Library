@@ -90,8 +90,6 @@ BOOL CInputSouceChannel::Compare(void* pvData)
 			return bResult;
 		case ISCC_AlwaysValid:
 			return TRUE;
-        default:
-            break;
 		}
 		return FALSE;
 	}
