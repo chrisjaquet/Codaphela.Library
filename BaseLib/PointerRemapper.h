@@ -24,14 +24,12 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define __POINTER_REMAPPER_H__
 
 
-void*	RemapSinglePointer(const void* pvPtr, int iOffest);
-__inline void* RemapSinglePointer(const void* pvPtr, int iOffest)
+inline void* RemapSinglePointer(const void* pvPtr, int iOffest)
 {
 	return &((char*)pvPtr)[iOffest];
 }
 
-void*	RemapSinglePointer(const void* pvPtr, size_t iOffest);
-__inline void* RemapSinglePointer(const void* pvPtr, size_t iOffest)
+inline void* RemapSinglePointer(const void* pvPtr, size_t iOffest)
 {
 	return &((char*)pvPtr)[iOffest];
 }
