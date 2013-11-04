@@ -2,9 +2,9 @@
 
 INST_DIR="/media/Data0/DevTest/0Libraries/0PreBuilt"
 
-# GENERATOR="Unix Makefiles"
+GENERATOR="Unix Makefiles"
 # GENERATOR="CodeBlocks - Unix Makefiles"
-GENERATOR="Eclipse CDT4 - Unix Makefiles"
+# GENERATOR="Eclipse CDT4 - Unix Makefiles"
 
 echo Generator is ${GENERATOR}
 
