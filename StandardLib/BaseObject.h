@@ -85,6 +85,7 @@ public:
 	virtual	void				Class(void);
 
 			void				Kill(void);
+			void				Kill(BOOL bHeapFromChanged);
 			void				TryKill(BOOL bKillIfNoRoot, BOOL bHeapFromChanged);
 
 	virtual void				KillDontFree(void);
@@ -153,6 +154,7 @@ public:
 			void				ValidateCanFindRoot(void);
 	virtual void				ValidateEmbeddedObjectTos(void) =0;
 	virtual void				ValidateEmbeddedConsistency(void);
+	virtual void				ValidateObjectIdentifiers(void);
 			void				ValidateBaseObjectDetail(void);
 	
 protected:

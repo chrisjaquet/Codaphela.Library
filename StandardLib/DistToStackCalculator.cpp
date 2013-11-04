@@ -6,6 +6,19 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CDistToStackCalculator::Calculate(CBaseObject* pcFromChanged, CDistCalculatorParameters* pcParameters)
+{
+	pcFromChanged->CollectAndClearInvalidDistToRootObjects(pcParameters);
+	ResetObjectsToUnattachedDistToRoot(pcParameters);
+	CalculateFromTouched(pcParameters);
+	pcParameters->ClearTouchedFlags();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CDistToStackCalculator::CalculateFromTouched(CDistCalculatorParameters* pcParameters)
 {
 	int		iNumWithStackPointers;
@@ -20,13 +33,11 @@ void CDistToStackCalculator::CalculateFromTouched(CDistCalculatorParameters* pcP
 	else if (iNumWithStackPointers == pcParameters->NumDetachedFromRoot())
 	{
 		//Kill none of them.
-		ResetObjectsToUnknownDistToStack(pcParameters);
 	}
 	else
 	{
 		InitialiseCompletelyDetached(pcParameters);
 		UpdateDistToStackForAllObjects(pcParameters);
-		ResetObjectsToUnknownDistToStack(pcParameters);
 	}
 }
 
@@ -139,6 +150,29 @@ void CDistToStackCalculator::ResetObjectsToUnknownDistToStack(CDistCalculatorPar
 	{
 		pcBaseObject = pcParameters->GetDetachedFromRoot(i);
 		pcBaseObject->SetDistToStack(UNKNOWN_DIST_TO_STACK);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CDistToStackCalculator::ResetObjectsToUnattachedDistToRoot(CDistCalculatorParameters* pcParameters)
+{
+	int				i;
+	int				iNumTouched;
+	CBaseObject*	pcBaseObject;
+
+	iNumTouched = pcParameters->NumTouched();
+
+	for (i = 0; i < iNumTouched; i++)
+	{
+		pcBaseObject = pcParameters->GetTouched(i);
+		if (pcBaseObject->GetDistToRoot() == CLEARED_DIST_TO_ROOT)
+		{
+			pcBaseObject->SetDistToRoot(UNATTACHED_DIST_TO_ROOT);
+		}
 	}
 }
 

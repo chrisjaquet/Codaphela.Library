@@ -77,16 +77,28 @@ void CBaseObject::Class(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::Kill(void)
 {
+	BOOL					bHeapFromChanged;
+
+	bHeapFromChanged = HasHeapFroms();
+	Kill(bHeapFromChanged);
+
+	mpcObjectsThisIn->ValidateConsistency();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::Kill(BOOL bHeapFromChanged)
+{
 	CDistCalculator*		pcDistCalculator;
 	CArrayBaseObjectPtr*	papcKilled;
-	BOOL					bHeapFromChanged;
 
 	//This method is for the user to forcibly kill an object.
 	//It is not called internally.
 
 	ValidateNotEmbedded(__METHOD__);
-
-	bHeapFromChanged = HasHeapPointers();
 
 	RemoveAllStackFroms();
 	RemoveAllHeapFroms();
@@ -98,8 +110,6 @@ void CBaseObject::Kill(void)
 
 	mpcObjectsThisIn->Remove(papcKilled);
 	pcDistCalculator->Kill();
-
-	mpcObjectsThisIn->ValidateConsistency();
 }
 
 
@@ -358,7 +368,7 @@ void CBaseObject::TryKill(BOOL bKillIfNoRoot, BOOL bHeapFromChanged)
 	}
 	else
 	{
-		bHasHeapPointers = HasHeapPointers();
+		bHasHeapPointers = HasHeapFroms();
 		bHasStackPointers = HasStackPointers();
 
 		//If we removed a stack pointer and have no more stack pointers and have no heap pointers (regardless of whether or not they can find the root)
@@ -1274,6 +1284,7 @@ void CBaseObject::ValidateFlags(void)
 	ValidateFlagNotSet(OBJECT_FLAGS_UNREACHABLE, "OBJECT_FLAGS_UNREACHABLE");
 	ValidateFlagNotSet(OBJECT_FLAGS_CLEARED_DIST_TO_ROOT, "OBJECT_FLAGS_CLEARED_DIST_TO_ROOT");
 	ValidateFlagNotSet(OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT, "OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT");
+	ValidateFlagNotSet(OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED, "OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED");
 
 	ValidateContainerFlag();
 }
@@ -1394,5 +1405,66 @@ void CBaseObject::ValidateEmbeddedConsistency(void)
 	ValidateBaseObjectDetail();
 	ValidateFroms();
 	ValidateTos();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ValidateObjectIdentifiers(void)
+{
+	CChars			sz;
+	CChars			szContainer;
+	CBaseObject*	pcContainer;
+	char*			szName;
+	CBaseObject*	pcThis;
+
+	if (IsNamed())
+	{
+		if (IsEmbedded())
+		{
+			pcContainer = GetEmbeddingContainer();
+
+			szContainer.Init();
+			pcContainer->PrintObject(&szContainer, FALSE);
+
+			sz.Init();
+			PrintObject(&sz, IsEmbedded());
+
+			gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should have a name as it's embedded in object {", szContainer.Text(), "}.", NULL);
+
+			sz.Kill();
+			szContainer.Kill();
+		}
+		else
+		{
+			szName = GetName();
+			pcThis = mpcObjectsThisIn->GetFromMemory(szName);
+			if (pcThis != this)
+			{
+				sz.Init();
+				PrintObject(&sz, IsEmbedded());
+
+				gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} does not match the Named Object in Objects.", NULL);
+				
+				sz.Kill();
+			}
+		}
+	}
+
+	if (!IsEmbedded())
+	{
+		pcThis = mpcObjectsThisIn->GetFromMemory(GetOI());
+		if (pcThis != this)
+		{
+			sz.Init();
+			PrintObject(&sz, IsEmbedded());
+
+			gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} does not match the Object in Objects.", NULL);
+
+			sz.Kill();
+		}
+	}
 }
 

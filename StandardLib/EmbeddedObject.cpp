@@ -30,6 +30,26 @@ CEmbeddedObject::~CEmbeddedObject()
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CEmbeddedObject::Kill(void)
+{
+	NotImplemented(__METHOD__);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CEmbeddedObject::Kill(BOOL bHeapFromChanged)
+{
+	NotImplemented(__METHOD__);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 int CEmbeddedObject::RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* mpcObject)
 {
 	return 0;
@@ -364,7 +384,7 @@ BOOL CEmbeddedObject::HasStackPointers(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CEmbeddedObject::HasHeapPointers(void)
+BOOL CEmbeddedObject::HasHeapFroms(void)
 {
 	int		iNumHeapPointers;
 
@@ -400,7 +420,7 @@ CBaseObject* CEmbeddedObject::GetClosestFromToRoot(void)
 	for (i = 0; i < iNumFroms; i++)
 	{
 		pcFrom = *mapHeapFroms.Get(i);
-		if ((pcFrom->miDistToRoot >= ROOT_DIST_TO_ROOT) && (!pcFrom->TestedForRoot()))  //What the hell is !pcFrom->TestedForRoot() here for?
+		if (pcFrom->miDistToRoot >= ROOT_DIST_TO_ROOT)
 		{
 			if (pcFrom->miDistToRoot < iNearestRoot)
 			{
@@ -601,7 +621,7 @@ void CEmbeddedObject::RemoveStackFromTryKill(CPointer* pcPointer, BOOL bKillIfNo
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::RemoveStackFrom(CPointer* pcPointer)
+void CEmbeddedObject::PrivateRemoveStackFrom(CPointer* pcPointer)
 {
 	CStackPointers*	pcStackPointers;
 
@@ -688,13 +708,17 @@ void CEmbeddedObject::PrintObject(CChars* psz, BOOL bEmbedded)
 	psz->Append(ClassName());
 	psz->Append("(");
 	psz->Append(ClassSize());
-	psz->Append(") ");
+	psz->Append(") Index:");
 	psz->Append(GetOI());
 	if (IsNamed())
 	{
-		psz->Append(" ");
+		psz->Append(" Name:");
 		psz->Append(GetName());
 	}
+	psz->Append(" Froms:");
+	psz->Append(CEmbeddedObject::NumHeapFroms());
+	psz->Append(",");
+	psz->Append(CEmbeddedObject::NumStackFroms());
 	if (bEmbedded)
 	{
 		psz->Append(")");
@@ -829,6 +853,16 @@ void CEmbeddedObject::GetStackFroms(CArrayPointerPtr* papcFroms)
 BOOL CEmbeddedObject::TestRemoveHeapFrom(CBaseObject* pcFromObject)
 {
 	return PrivateRemoveHeapFrom(pcFromObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CEmbeddedObject::TestRemoveStackFrom(CPointer* pcPointer)
+{
+	PrivateRemoveStackFrom(pcPointer);
 }
 
 
