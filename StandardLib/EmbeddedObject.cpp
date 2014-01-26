@@ -225,7 +225,8 @@ void CEmbeddedObject::SetEmbedded(CBaseObject* pcEmbedded)
 void CEmbeddedObject::KillInternalData()
 {
 	mapHeapFroms.Kill();
-	mpcStackFroms = NULL;
+
+	RemoveAllStackFroms();
 }
 
 
@@ -613,10 +614,10 @@ void CEmbeddedObject::RemoveStackFromTryKill(CPointer* pcPointer, BOOL bKillIfNo
 	CStackPointers*	pcStackPointers;
 	CBaseObject*	pcContainer;
 
-	pcStackPointers = GetStackPointers();
-	if (pcStackPointers)
+	if (mpcStackFroms)
 	{
-		if (mpcStackFroms)
+		pcStackPointers = GetStackPointers();
+		if (pcStackPointers)
 		{
 			mpcStackFroms = pcStackPointers->Remove(mpcStackFroms, pcPointer);
 			pcContainer = GetEmbeddingContainer();
