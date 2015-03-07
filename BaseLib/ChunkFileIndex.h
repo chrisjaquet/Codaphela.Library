@@ -32,6 +32,8 @@ struct SChunkIndex
 	int		iName;
 	filePos	iChunkSize;  //Size of data in this chunk
 	filePos	iChunkDataPos;  //Position of chunk data in file
+
+	void Init(filePos iChunkDataPos, int iName, filePos iChunkSize);
 };
 
 
@@ -56,5 +58,5 @@ public:
 };
 
 
-#endif //__CHUNK_INDEX_H__
+#endif // __CHUNK_INDEX_H__
 

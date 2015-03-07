@@ -20,30 +20,75 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __ROOT_H__
 #define __ROOT_H__
-#include "Set.h"
+#include "SetObject.h"
 #include "NamedObject.h"
 #include "Pointer.h"
 
 
+class CObjects;
 class CRoot : public CNamedObject
 {
+friend class CObjects;
+friend class CUnknowns;
 BASE_FUNCTIONS(CRoot);
 protected:
-	CPointer<CSet>	mpObjects;
+	Ptr<CSetObject>		mpObjects;
+	CObjects*			mpcObjectsAllocatingFrom;
 
 public:
-	void	Init(void);
-	void	Kill(void);
+						CRoot();
 
-	void	Add(CPointerObject pObject);
-	void	Remove(CPointerObject pObject);
-	void	RemoveAll(void);
-	BOOL	IsRoot(void);
-	BOOL	IsSubRoot(void);
-	BOOL	Save(CObjectSerialiser* pcFile);
-	BOOL	Load(CObjectDeserialiser* pcFile);
+						Ptr<CRoot>		Init(void);
+						void			Kill(void);
+						void			Class(void);
+						void			KillData(void);
+
+						void			Add(CPointer& pObject);
+						BOOL			Remove(CPointer& pObject);
+						BOOL			Remove(CBaseObject* pcObject);
+						void			RemoveAll(void);
+						BOOL			IsRoot(void);
+						BOOL			IsSubRoot(void);
+
+						BOOL			Save(CObjectSerialiser* pcFile);
+						BOOL			Load(CObjectDeserialiser* pcFile);
+
+						CPointer		Get(int iIndex);
+	template<class M>	Ptr<M>			Get(int iIndex);
+						CPointer		Get(char* szObjectName);
+	template<class M>	Ptr<M>			Get(char* szObjectName);
+						Ptr<CSetObject>	GetAll(void);
+						int				NumObjects(void);
+
+						void			CreateSet(void);
+						void			NullifySet(void);
+						CSetObject*		TestGetSet(void);
+						BOOL			IsSetHollow(void);
 };
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+Ptr<M> CRoot::Get(int iIndex)
+{
+	Ptr<M> pM = Get(iIndex);
+	return pM;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+Ptr<M> CRoot::Get(char* szObjectName)
+{
+	Ptr<M> pM = Get(szObjectName);
+	return pM;
+}
 
 
 #endif // __ROOT_H__

@@ -25,7 +25,7 @@ zlib is Copyright Jean-loup Gailly and Mark Adler
 #define __IMAGE_FILE_TYPE_H__
 
 
-typedef enum EImageType_enum
+typedef enum EImageType
 {
 	IT_Unknown,
 	IT_BMP,  // Windows BMP 24 bit
@@ -39,7 +39,7 @@ typedef enum EImageType_enum
 	IT_RAW,  // Raw file.
 	IT_PNG,  // PNG
 	IT_TIFF, // Tiff
-} EImageType;
+};
 
 
 EImageType GuessImageType(char *szFilename);

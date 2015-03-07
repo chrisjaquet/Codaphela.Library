@@ -82,7 +82,7 @@ BOOL CFiles::AddPackFile(CFileNodeSystemFile* pcFileNodeSystemFile)
 	iLength = mszPackFilesExtension.Length()+1;
 
 	pcPackFiles = mcPackFilesArray.Add();
-	CONSTRUCT(pcPackFiles, CPackFileOffset);
+	new(pcPackFiles) CPackFileOffset();
 
 	szFullName = pcFileNodeSystemFile->GetFullName();
 
@@ -110,7 +110,7 @@ BOOL CFiles::AddPackFiles(void)
 	CFileNodeSystemFile*		pcFileNodeSystemFile;
 	BOOL						bResult;
 
-	mcPackFilesArray.Init();
+	mcPackFilesArray.Init(1);
 
 	aFileNodePtrs.Init(8);
 	mcFileSystem.GetFiles(&aFileNodePtrs, mszPackFilesExtension.Text());
@@ -291,7 +291,7 @@ void CFiles::GetFileNames(CMapStringInt* pcFileNames)
 	pcReturn = StartIteration(&cIter);
 	while (pcReturn)
 	{
-		piValue = pcFileNames->GetWithKey(pcReturn->GetFullName());
+		piValue = pcFileNames->Get(pcReturn->GetFullName());
 		if (!piValue)
 		{
 			iRank = pcReturn->GetFileRank() << 16;

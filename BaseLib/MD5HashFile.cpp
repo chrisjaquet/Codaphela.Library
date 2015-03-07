@@ -20,8 +20,9 @@ along with Codaphela BaseLib.  If not, see <http://www.gnu.org/licenses/>.
 Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
-#include "MD5HashFile.h"
 #include "ConstructorCall.h"
+#include "Chars.h"
+#include "MD5HashFile.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,7 +192,7 @@ filePos CMD5HashFile::Write(const void* pvBuffer, filePos iSize, filePos iCount)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CMD5HashFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CMD5HashFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	if (mbResetMD5OnSeek)
 	{
@@ -238,6 +239,21 @@ filePos CMD5HashFile::Size(void)
 BOOL CMD5HashFile::Flush(void)
 {
 	return mpcFile->Flush();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CMD5HashFile::Delete(void)
+{
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	return mpcFile->Delete();
 }
 
 
@@ -306,7 +322,7 @@ CMD5HashFile* MD5HashFile(CAbstractFile* pcFile)
 {
 	CMD5HashFile* pcHashFile;
 
-	pcHashFile = Malloc(CMD5HashFile);
+	pcHashFile = NewMalloc<CMD5HashFile>();
 	pcHashFile->Init(pcFile);
 	pcHashFile->mbBasicFileMustFree = TRUE;
 	return pcHashFile;

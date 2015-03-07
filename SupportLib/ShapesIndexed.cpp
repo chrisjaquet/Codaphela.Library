@@ -250,7 +250,7 @@ void CPolygonIndexed::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CPolygonIndexed::Save(CFileWriter* pcFile)
 {
-	ReturnOnFalse(pcFile->WriteArraySimple(&maiPositions));
+	ReturnOnFalse(maiPositions.Write(pcFile));
 	return TRUE;
 }
 
@@ -261,7 +261,7 @@ BOOL CPolygonIndexed::Save(CFileWriter* pcFile)
 //////////////////////////////////////////////////////////////////////////
 BOOL CPolygonIndexed::Load(CFileReader* pcFile)
 {
-	ReturnErrorOnFalse(pcFile->ReadArraySimple(&maiPositions));
+	ReturnErrorOnFalse(maiPositions.Read(pcFile));
 	return TRITRUE;
 }
 
@@ -325,7 +325,7 @@ BOOL CConvexHullIndexed::Save(CFileWriter* pcFile)
 	int					i;
 
 
-	ReturnOnFalse(pcFile->WriteArrayTemplateHeader(&mcPolygons));
+	ReturnOnFalse(mcPolygons.WriteAllocatorAndHeader(pcFile));
 	for (i = 0; i < mcPolygons.NumElements(); i++)
 	{
 		pcPolygon = mcPolygons.Get(i);
@@ -346,7 +346,7 @@ BOOL CConvexHullIndexed::Load(CFileReader* pcFile)
 	int					i;
 
 
-	ReturnOnFalse(pcFile->ReadArrayTemplateHeader(&mcPolygons));
+	ReturnOnFalse(mcPolygons.ReadAllocatorAndHeader(pcFile));
 	for (i = 0; i < mcPolygons.NumElements(); i++)
 	{
 		pcPolygon = mcPolygons.Get(i);

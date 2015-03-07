@@ -18,10 +18,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela TestLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include <Time.h>
 #include "BaseLib/Chars.h"
 #include "BaseLib/FileBasic.h"
 #include "BaseLib/Define.h"
-#include "BaseLib/Logger.h"
+#include "BaseLib/Log.h"
 #include "BaseLib/FileCompare.h"
 #include "BaseLib/Float3.h"
 #include "Assert.h"
@@ -35,6 +36,8 @@ int	giTotalTestsRun;
 int	giTotalTestsPassed;
 int	giTotalTestsFailed;
 
+clock_t gClock;
+
 BOOL Fail(void);
 BOOL Pass(void);
 BOOL Fail(char* szExpected, char* szActual, int iLine, char* szFile);
@@ -46,6 +49,7 @@ void ToIntHexString(int i, char* sz);
 void ToLongLongIntString(long long int i, char* sz);
 void ToFloatString(float f, char* sz, int iDecimals);
 void ToFloat3String(SFloat3* psFloat3, char* sz, int iWholeNumbers, int iDecimals);
+void ToDoubleString(double f, char* sz, int iDecimals);
 void ToPointerString(void* pv, char* sz);
 void ToMD5String(unsigned char* puc, char* sz);
 
@@ -54,11 +58,20 @@ void ToMD5String(unsigned char* puc, char* sz);
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void BeginTests(void)
+void PrivateBeginTests(char* szFile)
 {
+	CChars	sz;
+
 	giTestsRun = 0;
 	giTestsPassed = 0;
 	giTestsFailed = 0;
+
+	sz.Init();
+	sz.Append("--------------- ");
+	sz.Append(szFile);
+	sz.Append(" ---------------\n");
+	gcLogger.Add(sz.Text());
+	sz.Kill();
 }
 
 
@@ -71,9 +84,6 @@ void PrivateTestStatistics(char* szFile)
 	CChars	sz;
 
 	sz.Init();
-	sz.Append("--------------- ");
-	sz.Append(szFile);
-	sz.Append(" ---------------\n");
 
 	if (giTestsRun > 0)
 	{
@@ -106,11 +116,14 @@ void PrivateTestStatistics(char* szFile)
 //////////////////////////////////////////////////////////////////////////
 void InitTotalStatistics(void)
 {
+	gClock = clock();
+
 	gcLogger.Init();
 
 	giTotalTestsRun = 0;
 	giTotalTestsPassed = 0;
 	giTotalTestsFailed = 0;
+
 }
 
 
@@ -120,7 +133,10 @@ void InitTotalStatistics(void)
 //////////////////////////////////////////////////////////////////////////
 int TestTotalStatistics(void)
 {
-	CChars	sz;
+	CChars		sz;
+	clock_t		time;
+
+	time = clock() - gClock;
 
 	sz.Init();
 	sz.Append("------------------------------ Total Results ------------------------------\n");
@@ -135,6 +151,11 @@ int TestTotalStatistics(void)
 		sz.AppendNewLine();
 		sz.Append("Total Failed: ");
 		sz.Append(giTotalTestsFailed);
+		sz.AppendNewLine();
+		sz.AppendNewLine();
+		sz.Append("Time Taken: ");
+		sz.Append((float)time / ((float)CLOCKS_PER_SEC));
+		sz.Append("s");
 		sz.AppendNewLine();
 		sz.AppendNewLine();
 
@@ -394,6 +415,30 @@ BOOL PrivateAssertFloat(float fExpected, float fActual, int iDecimals, int iLine
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL PrivateAssertDouble(double fExpected, double fActual, int iDecimals, int iLine, char* szFile)
+{
+	char	szExpected[32];
+	char	szActual[32];
+	double	fTolerance;
+
+	fTolerance = DoubleToleranceForDecimals(iDecimals);
+	if (!DoubleEqual(fExpected, fActual, fTolerance))
+	{
+		ToDoubleString(fExpected, szExpected, iDecimals);
+		ToDoubleString(fActual, szActual, iDecimals);
+		return Fail(szExpected, szActual, iLine, szFile);
+	}
+	else
+	{
+		return Pass();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL PrivateAssertFloat3(SFloat3 fExpected, SFloat3* pfActual, int iDecimals, int iLine, char* szFile)
 {
 	char	szExpected[96];
@@ -617,6 +662,16 @@ BOOL PrivateAssertMD5(unsigned char* pucExpected, unsigned char* pucActual, int 
 {
 	char szExpected[33];
 	char szActual[33];
+
+	if ((pucActual == NULL) && (pucExpected == NULL))
+	{
+		return Pass();
+	}
+	else if (pucActual == NULL)
+	{
+		ToMD5String(pucExpected, szExpected);
+		return Fail(szExpected, "** NULL **", iLine, szFile);
+	}
 
 	if (memcmp(pucExpected, pucActual, 16) != 0)
 	{
@@ -902,6 +957,19 @@ void ToFloat3String(SFloat3* psFloat3, char* sz, int iWholeNumbers, int iDecimal
 	psFloat3->ToString(&c, iWholeNumbers, iDecimals);
 	strcpy(sz, c.Text());
 	c.Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void ToDoubleString(double f, char* sz, int iDecimals)
+{
+	char szFormatter[20];
+
+	sprintf(szFormatter, "%%.%if", iDecimals);
+	sprintf(sz, szFormatter, f);
 }
 
 

@@ -23,6 +23,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/MapStringTemplate.h"
 #include "MapCommon.h"
 
+
 class CMapStringUnknown : public CMapCommon
 {
 BASE_FUNCTIONS(CMapStringUnknown);
@@ -55,7 +56,7 @@ M* CMapStringUnknown::Put(char* szKey)
 
 	if (szKey)
 	{
-        pv = gcUnknowns.Add<M>();
+		pv = gcUnknowns.Add<M>();
 		bResult = Put(szKey, pv);
 		if (bResult)
 		{

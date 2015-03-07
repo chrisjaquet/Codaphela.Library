@@ -66,8 +66,8 @@ void CMeshMaterials::Kill(void)
 BOOL CMeshMaterials::Load(CFileReader* pcFile)
 {
 	ReturnOnFalse(LoadMeshDetail(pcFile));
-	ReturnOnFalse(pcFile->ReadArrayInt(&mcMaterials));
-	ReturnOnFalse(pcFile->ReadArrayInt(&mcFaces));
+	ReturnOnFalse(mcMaterials.Read(pcFile));
+	ReturnOnFalse(mcFaces.Read(pcFile));
 	return TRUE;
 }
 
@@ -79,8 +79,8 @@ BOOL CMeshMaterials::Load(CFileReader* pcFile)
 BOOL CMeshMaterials::Save(CFileWriter* pcFile)
 {
 	ReturnOnFalse(SaveMeshDetail(pcFile));
-	ReturnOnFalse(pcFile->WriteArrayInt(&mcMaterials));
-	ReturnOnFalse(pcFile->WriteArrayInt(&mcFaces));
+	ReturnOnFalse(mcMaterials.Write(pcFile));
+	ReturnOnFalse(mcFaces.Write(pcFile));
 	return TRUE;
 }
 

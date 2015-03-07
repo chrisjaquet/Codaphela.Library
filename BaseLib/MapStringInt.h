@@ -28,15 +28,10 @@ Microsoft Windows is Copyright Microsoft Corporation
 class CMapStringInt : public CMapStringTemplate<int>
 {
 public:
-	int*	GetWithKey(CChars* psKey);
-	int*	GetWithKey(char* szKey);
-	BOOL	GetAtIndex(int iIndex, CChars** ppsKey, int** ppiData);
-	int*	GetWithKeyAssumeDuplicates(CChars* psKey);
-	BOOL	GetWithKeyNextDuplicate(CChars* psLastKey, int iLastIndex, int** ppiData);
-	void	Put(CChars* psKey, int iData);
-	void	Put(char* szKey, int iData);
-	void	PutAllowDuplicates(CChars* psKey, int iData);
-	void	PutAllowDuplicates(char* szKey, int iData);
+	int*	Get(char* szKey);
+	BOOL	Put(char* szKey, int iData);
+
+	char*	GetWithValue(int iData);
 };
 
 

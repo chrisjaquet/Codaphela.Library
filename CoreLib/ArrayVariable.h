@@ -22,11 +22,12 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __ARRAY_VARIABLE_H__
 #define __ARRAY_VARIABLE_H__
-#include "BaseLib/ArrayPointer.h"
+#include "BaseLib/ArrayIntAndPointer.h"
+#include "BaseLib/LinkedListTemplate.h"
 #include "BaseLib/FreeListMaybe.h"
 
 
-typedef CLinkListTemplate<CFreeListMaybe> CLinkListFreeListMaybe;
+typedef CLinkedListTemplate<CFreeListMaybe> CLinkListFreeListMaybe;
 
 
 struct SPointerAndSize
@@ -35,7 +36,7 @@ struct SPointerAndSize
 	unsigned int	iSize;
 };
 
-typedef CArrayTemplate<SPointerAndSize> CArrayPointerAndSize;
+typedef CArrayTemplate<SPointerAndSize> CArrayTypedPointerAndSize;
 
 
 //Remember this class is an *ordered* array.  mcArray is an array of pointers into the freelists.  This is *not* a general memory manager.
@@ -49,11 +50,12 @@ private:
 	void*				PrivateMalloc(int iElementSize);
 
 public:
-	CArrayPointerAndSize	mcArray;
+	CArrayTypedPointerAndSize	mcArray;
 	CLinkListFreeListMaybe	mcFreeLists;
  
 	void	Init(void);
 	void	Init(int iChunkSize);
+	void	ReInit(void);
 	void	Kill(void);
 	void*	Add(int iElementSize);
 	BOOL	Get(int iIndex, void** pvData);

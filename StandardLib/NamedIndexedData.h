@@ -36,6 +36,7 @@ protected:
 public:
 	void 			Init(CIndexedConfig* pcConfig);
 	void 			Kill(void);
+	BOOL			Close(void);
 
 	BOOL			Add(OIndex oi, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp);
 	BOOL			Add(OIndex oi, CChars* szName, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp);
@@ -45,18 +46,30 @@ public:
 
 	BOOL			SetOrAdd(OIndex oi, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp);
 	BOOL			SetOrAdd(OIndex oi, CChars* szName, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp);
+	BOOL			SetOrAdd(OIndex oi, char* szName, void* pvData, unsigned int uiDataSize, unsigned int uiTimeStamp);
 
 	unsigned int	Size(OIndex oi);
 	unsigned int	Flags(OIndex oi);
 	OIndex			GetIndex(CChars* szName);
 	BOOL			Get(OIndex oi, void* pvData);
+	void*			Get(OIndex oi);
+	void*			Get(char* szName);
+
+	BOOL			Contains(OIndex oi);
+	BOOL			Contains(char* szName);
 
 	BOOL			Remove(CChars* szName);
 	BOOL			Remove(OIndex oi);
 
-	BOOL			Flush(void);
+	BOOL			Flush(BOOL bClearCache);
 	void			DurableBegin(void);
 	void			DurableEnd(void);
+
+	long long int	NumObjects(void);
+	int				NumCached(void);
+	int				NumCached(int iSize);
+	long long int	NumNames(void);
+	BOOL			IsCaching(void);
 };
 
 

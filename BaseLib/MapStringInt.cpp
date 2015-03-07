@@ -27,9 +27,9 @@ Microsoft Windows is Copyright Microsoft Corporation
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-int* CMapStringInt::GetWithKey(CChars* psKey)
+int* CMapStringInt::Get(char* szKey)
 {
-	return (CMapStringTemplate<int>::GetWithKey(psKey));
+	return (CMapStringTemplate<int>::Get(szKey));
 }
 
 
@@ -37,9 +37,9 @@ int* CMapStringInt::GetWithKey(CChars* psKey)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-int* CMapStringInt::GetWithKey(char* szKey)
+BOOL CMapStringInt::Put(char* szKey, int iData)
 {
-	return (CMapStringTemplate<int>::GetWithKey(szKey));
+	return CMapStringTemplate<int>::Put(szKey, &iData);
 }
 
 
@@ -47,79 +47,22 @@ int* CMapStringInt::GetWithKey(char* szKey)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CMapStringInt::GetAtIndex(int iIndex, CChars** ppsKey, int** ppiData)
+char* CMapStringInt::GetWithValue(int iData)
 {
-	return CMapStringTemplate<int>::GetAtIndex(iIndex, ppsKey, ppiData);
-}
+	SMapIterator	sIter;
+	char*			szKey;
+	int*			piData;
+	BOOL			bResult;
 
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-int* CMapStringInt::GetWithKeyAssumeDuplicates(CChars* psKey)
-{
-	return CMapStringTemplate<int>::GetWithKeyAssumeDuplicates(psKey);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-BOOL CMapStringInt::GetWithKeyNextDuplicate(CChars* psLastKey, int iLastIndex, int** ppiData)
-{
-	return CMapStringTemplate<int>::GetWithKeyNextDuplicate(psLastKey, iLastIndex, ppiData);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-void CMapStringInt::Put(CChars* psKey, int iData)
-{
-	int*	piData;
-
-	piData = CMapStringTemplate<int>::Put(psKey);
-	if (!piData)
+	bResult = StartIteration(&sIter, (void**)&szKey, (void**)&piData);
+	while (bResult)
 	{
-		piData = CMapStringTemplate<int>::GetWithKey(psKey);
+		if (*piData == iData)
+		{
+			return szKey;
+		}
+		bResult = Iterate(&sIter, (void**)&szKey, (void**)&piData);
 	}
-	*piData = iData;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-void CMapStringInt::Put(char* szKey, int iData)
-{
-	CChars	sz;
-
-	sz.Fake(szKey);
-	Put(&sz, iData);
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-void CMapStringInt::PutAllowDuplicates(CChars* psKey, int iData)
-{
-	CMapStringTemplate<int>::PutAllowDuplicates(psKey, &iData);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-void CMapStringInt::PutAllowDuplicates(char* szKey, int iData)
-{
-	CMapStringTemplate<int>::PutAllowDuplicates(szKey, &iData);
+	return NULL;
 }
 

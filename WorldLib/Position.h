@@ -22,7 +22,7 @@ Microsoft DirectX is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __POSITION_H__
 #define __POSITION_H__
-#include "BaseLib/ArrayPointer.h"
+#include "BaseLib/ArrayIntAndPointer.h"
 #include "BaseLib/ChunkFile.h"
 #include "BaseLib/ArrayTemplate.h"
 #include "BaseLib/GeometricTypes.h"
@@ -75,7 +75,7 @@ class CPosition : public CUnknown
 {
 BASE_FUNCTIONS(CPosition);
 protected:
-	STypedPointer	msType;
+	SIntAndPointer	msType;
 
 public:
 	void 		Init(void);

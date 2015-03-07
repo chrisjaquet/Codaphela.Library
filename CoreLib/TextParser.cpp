@@ -22,7 +22,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #include <math.h>
 #include "BaseLib/Newline.h"
-#include "BaseLib/Logger.h"
+#include "BaseLib/Log.h"
 #include "BaseLib/PointerFunctions.h"
 #include "BaseLib/StringHelper.h"
 #include "TextParser.h"
@@ -154,7 +154,7 @@ void STextPosition::Init(void)
 void SParseState::Init(void)
 {
 	sCurrent.Init();
-	asPrev.Init();
+	asPrev.Init(1);
 }
 
 
@@ -1912,7 +1912,7 @@ void CTextParser::Restart(void)
 	miLine = 0;
 	miColumn = 0;
 	masPositions.Kill();
-	masPositions.Init();
+	masPositions.Init(1);
 	PushPosition();
 	TestEnd();
 }
@@ -2080,7 +2080,7 @@ TRISTATE CTextParser::FindWhiteSpace(void)
 				return TRITRUE;
 			}
 		}
-		if (cCurrent == '/')
+		if (cCurrent = '/')
 		{
 			bStartOfComment = TRUE;
 		}

@@ -29,6 +29,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "AbstractFile.h"
 #include "DiskFile.h"
 #include "FileUtil.h"
+#include "Validation.h"
 
 
 CLogger		gcLogger;
@@ -55,7 +56,19 @@ void CLogger::Init(char* szName)
 	cFileUtil.Delete(szName);
 	Init(DiskFile(szName), szName);
 	mbFreeFile = TRUE;
-	mbEngineOut = TRUE;
+	msConfig.bEngineOut = TRUE;
+
+	msConfig.bBreakOnWarning = FALSE;
+	msConfig.bBreakOnError = FALSE;
+
+#ifdef BREAK_ON_ERROR
+	msConfig.bBreakOnError = TRUE;
+#endif
+
+#ifdef BREAK_ON_WARNING
+	msConfig.bBreakOnError = TRUE;
+	msConfig.bBreakOnWarning = TRUE;
+#endif
 }
 
 
@@ -68,7 +81,7 @@ void CLogger::Init(CAbstractFile* pcFile, char* szName)
 	char	s[512];
 
 	mpcFile = pcFile;
-	mbEnabled = TRUE;
+	msConfig.bEnabled = TRUE;
 
 	if (szName)
 	{
@@ -100,18 +113,21 @@ void CLogger::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogger::Add(char* szText)
 {
-	if (mbEnabled)
+	if (msConfig.bEnabled)
 	{
-		if (mbEngineOut)
+		if (msConfig.bEngineOut)
 		{
 			EngineOutput(szText);
 		}
-		mpcFile->Open(EFM_ReadWrite_Create);
-		mpcFile->Seek(0, EFSO_END);
 		if (mpcFile)
 		{
-			mpcFile->Write(szText, (int)strlen(szText), 1);
-			mpcFile->Close();
+			mpcFile->Open(EFM_ReadWrite_Create);
+			mpcFile->Seek(0, EFSO_END);
+			if (mpcFile)
+			{
+				mpcFile->Write(szText, (int)strlen(szText), 1);
+				mpcFile->Close();
+			}
 		}
 	}
 }
@@ -124,6 +140,11 @@ void CLogger::Add(char* szText)
 void CLogger::Error(char* szText)
 {
 	Add("ERROR", szText);
+
+	if (msConfig.bBreakOnError)
+	{
+		Break();
+	}
 }
 
 
@@ -166,6 +187,43 @@ void CLogger::Error2(char* szText, ...)
 void CLogger::Warning(char* szText)
 {
 	Add("WARNING", szText);
+
+	if (msConfig.bBreakOnWarning)
+	{
+		Break();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::Info2(char* szText, ...)
+{
+	va_list		vaMarker;
+	char*		sz;
+	CChars		szInfo;
+
+	if (szText)
+	{
+		szInfo.Init(szText);
+		va_start(vaMarker, szText);
+		sz = va_arg(vaMarker, char*);
+		while (sz != NULL)
+		{
+			szInfo.Append(sz);
+			sz = va_arg(vaMarker, char*);
+		}
+		va_end(vaMarker);
+
+		Info(szInfo.Text());
+		szInfo.Kill();
+	}
+	else
+	{
+		Info("");
+	}
 }
 
 
@@ -177,6 +235,39 @@ void CLogger::Info(char* szText)
 {
 	Add("INFO", szText);
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::Debug2(char* szText, ...)
+{
+	va_list		vaMarker;
+	char*		sz;
+	CChars		szInfo;
+
+	if (szText)
+	{
+		szInfo.Init(szText);
+		va_start(vaMarker, szText);
+		sz = va_arg(vaMarker, char*);
+		while (sz != NULL)
+		{
+			szInfo.Append(sz);
+			sz = va_arg(vaMarker, char*);
+		}
+		va_end(vaMarker);
+
+		Debug(szInfo.Text());
+		szInfo.Kill();
+	}
+	else
+	{
+		Debug("");
+	}
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -245,7 +336,7 @@ void CLogger::Add(char* szErrorLevel, char* szText)
 //////////////////////////////////////////////////////////////////////////
 void CLogger::Disable(void)
 {
-	mbEnabled = FALSE;
+	msConfig.bEnabled = FALSE;
 }
 
 
@@ -255,7 +346,7 @@ void CLogger::Disable(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogger::Enable(void)
 {
-	mbEnabled = TRUE;
+	msConfig.bEnabled = TRUE;
 }
 
 
@@ -265,5 +356,65 @@ void CLogger::Enable(void)
 //////////////////////////////////////////////////////////////////////////
 void CLogger::SetEngineOutput(BOOL bEngineOut)
 {
-	mbEngineOut = bEngineOut;
+	msConfig.bEngineOut = bEngineOut;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::SetBreakOnError(BOOL bBreakOnError)
+{
+	msConfig.bBreakOnError = bBreakOnError;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::SetBreakOnWarning(BOOL bBreakOnWarning)
+{
+	msConfig.bBreakOnWarning = bBreakOnWarning;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::SetSilent(void)
+{
+	msConfig.bEnabled = TRUE;
+	msConfig.bBreakOnError = FALSE;
+	msConfig.bBreakOnWarning = FALSE;
+	msConfig.bEngineOut = FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::SetConfig(SLogConfig* psConfig)
+{
+	msConfig.bEnabled = psConfig->bEnabled;
+	msConfig.bBreakOnError = psConfig->bBreakOnError;
+	msConfig.bBreakOnWarning = psConfig->bBreakOnWarning;
+	msConfig.bEngineOut = psConfig->bEngineOut;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CLogger::GetConfig(SLogConfig* psConfig)
+{
+	psConfig->bEnabled = msConfig.bEnabled;
+	psConfig->bBreakOnError = msConfig.bBreakOnError;
+	psConfig->bBreakOnWarning = msConfig.bBreakOnWarning;
+	psConfig->bEngineOut = msConfig.bEngineOut;
+}
+

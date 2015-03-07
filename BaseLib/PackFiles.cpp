@@ -230,7 +230,7 @@ BOOL CPackFiles::PrivateSeek(CPackFileNode* psPackFile, filePos iOffset, int iSe
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CPackFiles::Seek(CPackFileNode* psPackFile, filePos iOffset, int iSeekOrigin)
+BOOL CPackFiles::Seek(CPackFileNode* psPackFile, filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	//Can only seek in read mode.
 	if (meMode == PFM_Read)
@@ -724,7 +724,10 @@ BOOL CPackFiles::ReadNode(void)
 
 	sz.Init();
 
-	ReturnOnFalse(mcFile.ReadString(&sz));
+	if (!sz.ReadString(&mcFile))
+	{
+		return FALSE;
+	}
 
 	pcNode = AddFile(sz.Text());
 	sz.Kill();
@@ -867,7 +870,7 @@ BOOL CPackFiles::RecurseWriteUnwrittenNames(CFileNodePackFileNode* pcNode, CChar
 		if (!pcNode->File()->IsNameWritten())
 		{
 			szPath.Init(pszPath->Text(1));
-			ReturnOnFalse(mcFile.WriteString(&szPath));
+			ReturnOnFalse(szPath.WriteString(&mcFile));
 			szPath.Kill();
 			return pcNode->File()->Save(&mcFile);
 		}

@@ -21,15 +21,21 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __COLLECTION_H__
 #define __COLLECTION_H__
 #include "BaseObject.h"
+#include "StackPointers.h"
 
 
+//Note: This class has no fields.
+class CObjects;
 class CCollection : public CBaseObject
 {
 BASE_FUNCTIONS(CCollection);
 public:
-			void	Kill(void);
-			BOOL	IsCollection(void);
-	virtual void	RemoveAll(void) =0;
+			void			Init(void);
+			void			Kill(void);
+			BOOL			IsCollection(void);
+			BOOL			IsObject(void);
+	virtual void			RemoveAll(void) =0;
+			CBaseObject*	Dehollow(void);
 };
 
 

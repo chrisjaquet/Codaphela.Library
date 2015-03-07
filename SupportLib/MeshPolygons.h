@@ -21,8 +21,9 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __MESH_POLYGONS_H__
 #define __MESH_POLYGONS_H__
 #include "BaseLib/ChunkFile.h"
-#include "BaseLib/AdditionalTypes.h"
+#include "BaseLib/ArrayIntMinimal.h"
 #include "BaseLib/ArrayTemplate.h"
+#include "BaseLib/Float3.h"
 #include "MeshDetail.h"
 
 
@@ -31,8 +32,8 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 class CMeshPolygon
 {
 public:
-	CArraySimpleInt	maiFaces;  //In polygon
-	int				miName;
+	CArrayIntMinimal	maiFaces;  //In polygon
+	int					miName;
 
 public:
 	void 		Init(int iName);
@@ -44,7 +45,7 @@ public:
 typedef CArrayTemplate<CMeshPolygon> CArrayMeshPolygon;
 
 
-//Every face in a mesh should be refered to by a polygon (mcPolygons).
+//Every face in a mesh should be referred to by a polygon (mcPolygons).
 //maiFacesToPolygons is the reverse mapping.  Given a face one can get the polygon it's a part of.
 class CMeshEdgeVisibility;
 class CMeshConnectivity;

@@ -23,7 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __TEXT_FILE_H__
 #define __TEXT_FILE_H__
 #include "FileBasic.h"
-#include "AdditionalTypes.h"
+#include "ArrayIntMinimal.h"
 #include "Define.h"
 #include "Chars.h"
 
@@ -35,6 +35,7 @@ public:
 	CChars		mszFileName;
 
 	void	Init(void);
+	void	Init(char* szText);
 	void	Kill(void);
 	void	KillExceptBuffer(void);
     BOOL	Read(char* szFileName);

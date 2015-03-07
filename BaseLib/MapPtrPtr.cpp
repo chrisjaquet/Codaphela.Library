@@ -20,6 +20,7 @@ along with Codaphela BaseLib.  If not, see <http://www.gnu.org/licenses/>.
 Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
+#include "PointerFunctions.h"
 #include "MapPtrPtr.h"
 
 
@@ -27,10 +28,21 @@ Microsoft Windows is Copyright Microsoft Corporation
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-void* CMapPtrPtr::GetWithKey(void* pvKey)
+void CMapPtrPtr::Init(CMallocator* pcMalloc, int iChunkSize)
+{
+	CMapBlock::Init(pcMalloc, iChunkSize, &ComparePtrPtr, TRUE);
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+void* CMapPtrPtr::Get(void* pvKey)
 {
 	void** ppvResult;
-	ppvResult = (CMapPtrTemplate<void*>::GetWithKey(pvKey));
+
+	ppvResult = CMapTemplate<void*, void*>::Get(&pvKey);
 	if (ppvResult)
 	{
 		return *ppvResult;
@@ -43,9 +55,9 @@ void* CMapPtrPtr::GetWithKey(void* pvKey)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-void CMapPtrPtr::GetAtIndex(int iIndex, void*** pppvKey, void*** pppvData)
+BOOL CMapPtrPtr::Put(void* pvKey, void*  psData)
 {
-	CMapPtrTemplate<void*>::GetAtIndex(iIndex, pppvKey, pppvData);
+	return CMapTemplate<void*, void*>::Put(&pvKey, &psData);
 }
 
 
@@ -53,8 +65,8 @@ void CMapPtrPtr::GetAtIndex(int iIndex, void*** pppvKey, void*** pppvData)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-void CMapPtrPtr::Put(void* pvKey, void* pvData)
+BOOL CMapPtrPtr::Remove(void* pvKey)
 {
-	CMapPtrTemplate<void*>::Put(pvKey, &pvData);
+	return CMapTemplate<void*, void*>::Remove(&pvKey);
 }
 

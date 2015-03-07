@@ -23,30 +23,31 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #include "BaseLib/FileWriter.h"
 #include "BaseLib/MemoryFile.h"
 #include "BaseObject.h"
-#include "PointerObject.h"
+#include "ObjectSingleSerialiser.h"
 
 
 class CObjectSerialiser : public CFileWriter
 {
 protected:
-	CBaseObject*			mpcThis;
-	CMemoryFile*			mpcMemory;
-	CFileBasic				mcFile;
+	CBaseObject*				mpcThis;
+	CMemoryFile*				mpcMemory;
+	CFileBasic					mcFile;
+	CObjectSingleSerialiser*	mpcSerialiser;
 
 public:
-			void			Init(CBaseObject* pcObject);
-	virtual void			Kill(void);
-			BOOL			Save(void);
+	void			Init(CObjectSingleSerialiser* pcSerialiser, CBaseObject* pcObject);
+	void			Kill(void);
+	BOOL			Save(void);
+	
+	BOOL			WritePointer(CPointer& pObject);
+	BOOL			WriteIdentifier(CBaseObject* pcBaseObject);
+	BOOL			WriteDependent(CEmbeddedObject* pcBaseObject);
 
-	virtual BOOL			WritePointer(CPointerObject pObject);
-			BOOL			WriteHeader(CBaseObject* pcBaseObject);
-	virtual BOOL			WriteDependent(CBaseObject* pcBaseObject);
-
-			void*			GetData(void);
-			int				GetLength(void);
+	void*			GetData(void);
+	int				GetLength(void);
 
 protected:
-			filePos			Write(const void* pvSource, filePos iSize, filePos iCount);
+	filePos			Write(const void* pvSource, filePos iSize, filePos iCount);
 };
 
 

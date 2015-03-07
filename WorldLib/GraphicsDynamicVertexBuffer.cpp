@@ -173,7 +173,7 @@ BOOL CGraphicsDynamicVertexBuffer::Unlock(void)
 //////////////////////////////////////////////////////////////////////////
 void CGraphicsDynamicVertexBufferArray::Init(void)
 {
-	__CArrayGraphicsDynamicVertexBuffers::Init();
+	CArrayTemplateMinimal<CGraphicsDynamicVertexBuffer>::Init();
 }
 
 
@@ -191,7 +191,7 @@ void CGraphicsDynamicVertexBufferArray::Kill(void)
 		psVertexBuffer = Get(i);
 		psVertexBuffer->Kill();
 	}
-	__CArrayGraphicsDynamicVertexBuffers::Kill();
+	CArrayTemplateMinimal<CGraphicsDynamicVertexBuffer>::Kill();
 }
 
 
@@ -255,7 +255,7 @@ void CGraphicsDynamicVertexBufferArray::RemoveVertexBuffer(int iD3DVertexType)
 	{
 		psVertexBuffer->Kill();
 		
-		iNum = ((int)((size_t)psVertexBuffer) - (int)((size_t)pvArray)) / sizeof(CGraphicsDynamicVertexBuffer);
+		iNum = ((int)((size_t)psVertexBuffer) - (int)((size_t)mpvArray)) / sizeof(CGraphicsDynamicVertexBuffer);
 		RemoveAt(iNum);  //The order is not preserved which means that anything indexing
 						 //miUsedElements must now index iNum instead.
 		

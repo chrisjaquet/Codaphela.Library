@@ -26,7 +26,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "IndexedFile.h"
 #include "BaseLib/ChunkFile.h"
 #include "BaseLib/Chars.h"
-#include "BaseLib/FreeList.h"
 #include "IndexedDescriptors.h"
 
 
@@ -45,6 +44,8 @@ public:
 	void						Kill(void);
 	BOOL						Open(void);
 	BOOL						Close(void);
+
+	BOOL						RemoveFiles(void);
 
 	void						InitIndexedFileDescriptors(void);
 	BOOL						ReadIndexedFileDescriptors(void);

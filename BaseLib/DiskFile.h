@@ -23,6 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __DISK_FILE_H__
 #define __DISK_FILE_H__
 #include <stdio.h>
+#include "Chars.h"
 #include "ArrayChar.h"
 #include "AbstractFile.h"
 
@@ -40,17 +41,18 @@ public:
 	BOOL		Close(void);
 	BOOL		Create(void);
 	filePos		Read(void* pvBuffer, filePos iSize, filePos iCount);
-	BOOL		Seek(filePos iOffset, int iSeekOrigin);
+	BOOL		Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin);
 	filePos		Write(const void* pvBuffer, filePos iSize, filePos iCount);
 	filePos		Tell(void);
 	BOOL		Eof(void);
 	BOOL		IsOpen(void);
 	filePos		Size(void);
 	BOOL		Flush(void);
+	BOOL		Delete(void);
 };
 
 
-//Helper function to make createing basic files easier.
+//Helper function to make creating basic files easier.
 CDiskFile* DiskFile(char* szName);
 
 

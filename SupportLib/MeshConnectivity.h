@@ -20,7 +20,7 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __MESH_CONNECTIVITY_H__
 #define __MESH_CONNECTIVITY_H__
-#include "StandardLib/StandardHeader.h"
+#include "StandardLib/NamedObject.h"
 #include "MeshFaceReturn.h"
 #include "MeshCorner.h"
 #include "MeshEdge.h"
@@ -37,8 +37,8 @@ typedef CArrayTemplate<CMeshFace>		CArrayFace;
 struct CCornerEdgesMap
 {
 	//int	iSmallCornerIndex;  //Implied by position in array.
-	CArraySimpleInt		maiLargerCornerIndex;
-	CArraySimpleInt		maiEdgeIndex;  //Same size as maiLargerCornerIndex.  
+	CArrayIntMinimal		maiLargerCornerIndex;
+	CArrayIntMinimal		maiEdgeIndex;  //Same size as maiLargerCornerIndex.  
 
 	void Init(void);
 	void Kill(void);

@@ -20,32 +20,40 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __POINTER_H__
 #define __POINTER_H__
+#include "BaseLib/Log.h"
+#include "BaseLib/Define.h"
 #include "PointerObject.h"
+#include "EmbeddedObject.h"
 
 
 class CObject;
-template<class M>
-class CPointer : public CPointerObject
+
+template<class M = CEmbeddedObject>
+class Ptr : public CPointer
 {
 public:
-				CPointer();
-	void 		Init(CObject* pcEmbedding);
-	void		operator = (M* ptr);
-	void		operator = (CPointer<M> pcPointer);
-	void		operator = (CPointerObject pcPointer);
-	M*			operator -> ();
-	M*			operator & ();
+			Ptr();
+			Ptr(CEmbeddedObject* pcObject);
+			Ptr(CPointer& cPointer);
+			~Ptr();
+
+	void	operator = (CEmbeddedObject* pcObject);
+	void	operator = (CPointer& pcPointer);
+	void	operator = (Ptr& pcPointer);
+	M*		operator -> ();
+	M*		operator & ();
 };
 
 
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-CPointer<M>::CPointer()
+Ptr<M>::Ptr()
 {
-	//Calls CPointerObject()
 }
 
 
@@ -54,9 +62,14 @@ CPointer<M>::CPointer()
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CPointer<M>::Init(CObject* pcEmbedding)
+Ptr<M>::Ptr(CPointer& cPointer)
 {
-	CPointerObject::Init(pcEmbedding);
+	LOG_POINTER_DEBUG();
+
+	mpcEmbedding = NULL;
+	mpcObject = NULL;
+
+	PointTo(cPointer.mpcObject, FALSE);
 }
 
 
@@ -65,10 +78,23 @@ void CPointer<M>::Init(CObject* pcEmbedding)
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CPointer<M>::operator = (M* ptr)
+Ptr<M>::Ptr(CEmbeddedObject* pcObject)
 {
-	//This operator override exists only to allow NULL assignment.
-	PointTo(ptr);
+	LOG_POINTER_DEBUG();
+
+	mpcEmbedding = NULL;
+	mpcObject = NULL;
+
+	PointTo(pcObject, FALSE);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+Ptr<M>::~Ptr()
+{
 }
 
 
@@ -77,9 +103,11 @@ void CPointer<M>::operator = (M* ptr)
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CPointer<M>::operator = (CPointer<M> pcPointer)
+void Ptr<M>::operator = (CEmbeddedObject* pcObject)
 {
-	PointTo(pcPointer.mpcObject);
+	LOG_POINTER_DEBUG();
+
+	PointTo(pcObject, TRUE);
 }
 
 
@@ -88,9 +116,11 @@ void CPointer<M>::operator = (CPointer<M> pcPointer)
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CPointer<M>::operator = (CPointerObject pcPointer)
+void Ptr<M>::operator = (CPointer& pcPointer)
 {
-	PointTo(pcPointer.mpcObject);
+	LOG_POINTER_DEBUG();
+
+	PointTo(pcPointer.mpcObject, TRUE);
 }
 
 
@@ -99,19 +129,33 @@ void CPointer<M>::operator = (CPointerObject pcPointer)
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-M* CPointer<M>::operator -> ()
+void Ptr<M>::operator = (Ptr& pcPointer)
 {
-	return (M*)mpcObject;
+	LOG_POINTER_DEBUG();
+
+	PointTo(pcPointer.mpcObject, TRUE);
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-M* CPointer<M>::operator & ()
+M* Ptr<M>::operator -> ()
 {
-	return (M*)mpcObject;
+	return (M*)Dereference();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+M* Ptr<M>::operator & ()
+{
+	return (M*)Dereference();
 }
 
 

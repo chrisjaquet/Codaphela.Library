@@ -20,25 +20,26 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __ARRAY_H__
 #define __ARRAY_H__
-#include "ArrayUnknown.h"
-#include "ArrayCommonObject.h"
-#include "PointerObject.h"
 #include "Pointer.h"
+#include "ArrayObject.h"
+#include "BaseObject.h"
 
 
-class CArray : public CArrayCommonObject
+template<class M = CBaseObject>
+class CArray : public CArrayObject
 {
 BASE_FUNCTIONS(CArray);
 public:
-	void 			Init(int iChunkSize = ARRAY_COMMOM_CHUNK_SIZE);
-	void 			Kill(void);
+	Ptr<CArray<M>>	Init(int iChunkSize = ARRAY_COMMOM_CHUNK_SIZE);
+	void			Kill(void);
 
-	void			Insert(int iIndex, CPointerObject pObject);
-	CPointerObject	Get(int iIndex);
-	void			Set(int iIndex, CPointerObject pObject);
-
-	template<class M>
-	CPointer<M>		Get(int iIndex);
+	void			Add(Ptr<M> pObject);
+	void			AddAll(Ptr<CArrayCommonObject> pcArray);
+	void			Insert(int iIndex, Ptr<M> pObject);
+	Ptr<M>			Get(int iIndex);
+	void			Set(int iIndex, Ptr<M> pObject);
+	BOOL			RemoveAt(int iIndex);
+	BOOL			Remove(Ptr<M> pObject);
 };
 
 
@@ -47,9 +48,98 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-CPointer<M> CArray::Get(int iIndex)
+Ptr<CArray<M>> CArray<M>::Init(int iChunkSize)
 {
-	return (M*)Get(iIndex);
+	CArrayObject::Init(iChunkSize);
+	return Ptr<CArray<M>>(this);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CArray<M>::Kill(void)
+{
+	CArrayObject::Kill();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CArray<M>::Add(Ptr<M> pObject)
+{
+	CArrayObject::Add(pObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CArray<M>::AddAll(Ptr<CArrayCommonObject> pcArray)
+{
+	pcArray->ClassName();
+	CArrayObject::AddAll((CArrayCommonObject*)pcArray.Dereference());
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CArray<M>::Insert(int iIndex, Ptr<M> pObject)
+{
+	CArrayObject::Insert(iIndex, pObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void CArray<M>::Set(int iIndex, Ptr<M> pObject)
+{
+	CArrayObject::Set(iIndex, pObject);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+Ptr<M> CArray<M>::Get(int iIndex)
+{
+	return CArrayObject::Get(iIndex);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+BOOL CArray<M>::RemoveAt(int iIndex)
+{
+	return CArrayObject::RemoveAt(iIndex);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+BOOL CArray<M>::Remove(Ptr<M> pObject)
+{
+	return CArrayObject::Remove(pObject);
 }
 
 

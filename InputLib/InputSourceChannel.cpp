@@ -90,8 +90,6 @@ BOOL CInputSouceChannel::Compare(void* pvData)
 			return bResult;
 		case ISCC_AlwaysValid:
 			return TRUE;
-        default:
-            break;
 		}
 		return FALSE;
 	}
@@ -148,8 +146,6 @@ void CInputSouceChannel::ToString(CChars* psz)
 	case ISCC_AlwaysValid:
 		psz->Append("ISCC_AlwaysValid: ");
 		break;
-    default:
-        break;
 	}
 	psz->AppendNewLine();
 

@@ -48,6 +48,20 @@ void CArrayVariable::Init(int iChunkSize)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void CArrayVariable::ReInit(void)
+{
+	int		iChunkSize;
+	
+	iChunkSize = mcArray.ChunkSize();
+	Kill();
+	Init(iChunkSize);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CArrayVariable::Kill(void)
 {
 	int					i;
@@ -257,7 +271,7 @@ CFreeListMaybe* CArrayVariable::GetFreeListForSize(int iSize)
 	psFreelist = mcFreeLists.GetHead();
 	while (psFreelist)
 	{
-		if (psFreelist->miElementSize == iSize)
+		if (psFreelist->GetElementSize() == iSize)
 		{
 			return psFreelist;
 		}

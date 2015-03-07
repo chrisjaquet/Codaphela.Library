@@ -1,7 +1,7 @@
 #ifndef __SHAPE_HIERACHY_H__
 #define __SHAPE_HIERACHY_H__
 #include "Shapes.h"
-#include "CoreLib/TreeTemplate.h"
+#include "CoreLib\TreeTemplate.h"
 
 
 enum EExactness
@@ -40,5 +40,5 @@ public:
 
 
 
-#endif __SHAPE_HIERACHY_H__
+#endif // __SHAPE_HIERACHY_H__
 

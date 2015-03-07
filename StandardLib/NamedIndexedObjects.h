@@ -20,6 +20,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __NAMED_INDEX_OBJECTS_H__
 #define __NAMED_INDEX_OBJECTS_H__
+#include "BaseLib/IndexTreeBlock.h"
 #include "IndexedObjects.h"
 
 
@@ -29,21 +30,25 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 class CNamedIndexedObjects
 {
 protected:
-	CASCIITree			mcNames;
-	CIndexedObjects		mcObjects;
+	CIndexTreeBlock		mcNames;
+	CIndexedObjects		mcIndexedObjects;
 
 public:
-	void			Init(void);
-	void			Kill(void);
-	CBaseObject*	Get(OIndex oi);
-	CBaseObject*	Get(char* szName);
-	void			AddWithID(CBaseObject* pvObject, OIndex oi);
-	BOOL			AddWithIDAndName(CBaseObject* pvObject, OIndex oi, char* szName);
-	void			Remove(OIndex oi);
+	void				Init(void);
+	void				Kill(void);
+	void				ReInit(void);
+	CBaseObject*		Get(OIndex oi);
+	CBaseObject*		Get(char* szName);
+	BOOL				AddWithID(CBaseObject* pvObject, OIndex oi);
+	BOOL				AddWithIDAndName(CBaseObject* pvObject, OIndex oi, char* szName);
+	BOOL				RemoveIndex(OIndex oi);
+	BOOL				RemoveName(char* szName);
+	OIndex				NumIndexed(void);
+	int					NumNames(void);
 
-protected:
-	void			Add(OIndex oi, CBaseObject* pvMemory);
-
+	CIndexedObjects*	GetObjects(void);
+	CBaseObject*		StartIteration(SIndexesIterator* psIter);
+	CBaseObject*		Iterate(SIndexesIterator* psIter);
 };
 
 

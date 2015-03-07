@@ -23,6 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 #include "Define.h"
+#include "LogConfig.h"
 
 
 class CAbstractFile;
@@ -30,9 +31,8 @@ class CLogger
 {
 protected:
 	CAbstractFile*	mpcFile;
-	BOOL			mbEnabled;
 	BOOL			mbFreeFile;
-	BOOL			mbEngineOut;
+	SLogConfig		msConfig;
 
 public:
 	void Init(void);
@@ -45,15 +45,22 @@ public:
 	void Error2(char* szText, ...);
 	void Warning(char* szText);
 	void Info(char* szText);
+	void Info2(char* szText, ...);
 	void Debug(char* szText);
+	void Debug2(char* szText, ...);
 	void Disable(void);
 	void Enable(void);
 	void SetEngineOutput(BOOL bEngineOut);
+	void SetBreakOnError(BOOL bBreakOnError);
+	void SetBreakOnWarning(BOOL bBreakOnWarning);
+	void SetSilent(void);
+	void SetConfig(SLogConfig* psConfig);
+	void GetConfig(SLogConfig* psConfig);
 };
 
 
 extern CLogger gcLogger;
 
 
-#endif //__LOGGER_H__
+#endif // __LOGGER_H__
 

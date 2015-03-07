@@ -21,7 +21,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 ** ------------------------------------------------------------------------ **/
 #ifdef WIN32
-#include "Define.h"
 #include <stdio.h>
 #include <windows.h>
 #include "FileUtil.h"
@@ -110,6 +109,76 @@ BOOL CFileUtil::RemoveDir(char* szPathName)
 	szDirectory.Kill();
 	szFindName.Kill();
 	return bDeleted;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CFileUtil::CopyDir(char* szSource, char* szDest)
+{
+	WIN32_FIND_DATA		sFindData;
+	CChars				szFindName;
+	CChars				szSourceTemp;
+	CChars				szDestTemp;
+	HANDLE				hFindHandle;
+	BOOL				bContinue;
+	BOOL				bValid;
+	CChars				szSourceDirectory;
+	CChars				szDestDirectory;
+
+	szSourceDirectory.Init(szSource);
+	RemoveFileSeparator(&szSourceDirectory);
+	szDestDirectory.Init(szDest);
+	RemoveFileSeparator(&szDestDirectory);
+
+	szFindName.Init(szSource);
+	AppendToPath(&szFindName, "*.*");
+
+	hFindHandle = FindFirstFile(szFindName.Text(), &sFindData);
+	bContinue = (hFindHandle != INVALID_HANDLE_VALUE);
+	while (bContinue)
+	{
+		bValid = TRUE;
+		if (sFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (!((strcmp(sFindData.cFileName, ".") == 0) || (strcmp(sFindData.cFileName, "..") == 0)))
+			{
+				szSourceTemp.Init(szSourceDirectory);
+				szDestTemp.Init(szDestDirectory);
+
+				AppendToPath(&szSourceTemp, sFindData.cFileName);
+				AppendToPath(&szDestTemp, sFindData.cFileName);
+				
+				MakeDir(szDestTemp.Text());
+				CopyDir(szSourceTemp.Text(), szDestTemp.Text());
+
+				szSourceTemp.Kill();
+				szDestTemp.Kill();
+			}
+		}
+		else
+		{
+			szSourceTemp.Init(szSourceDirectory);
+			szDestTemp.Init(szDestDirectory);
+
+			AppendToPath(&szSourceTemp, sFindData.cFileName);
+			AppendToPath(&szDestTemp, sFindData.cFileName);
+
+			Copy(szSourceTemp.Text(), szDestTemp.Text());
+			
+			szSourceTemp.Kill();
+			szDestTemp.Kill();
+		}
+		bContinue = FindNextFile(hFindHandle, &sFindData);
+	}
+	FindClose(hFindHandle);
+
+	szSourceDirectory.Kill();
+	szDestDirectory.Kill();
+	szFindName.Kill();
+	return TRUE;
 }
 
 

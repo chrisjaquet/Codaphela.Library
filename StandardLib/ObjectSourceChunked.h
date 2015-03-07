@@ -1,19 +1,34 @@
 #ifndef __OBJECT_SOURCE_CHUNKED_H__
 #define __OBJECT_SOURCE_CHUNKED_H__
-#include "ObjectMultipleSource.h"
-#include "ObjectSourceNative.h"
+#include "ChunkFileNames.h"
+#include "ObjectSource.h"
 
 
-class CObjectSourceChunked : public CObjectMultipleSource, public CObjectSourceNative
+class CObjectReader;
+class CObjectReaderChunkFile;
+class CObjectSourceChunked : public CObjectSource
 {
 BASE_FUNCTIONS(CObjectSourceChunked);
-public:
-			void			Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName);
-			void			Kill(void);
+protected:
+	CArrayString				mcNames;
+	CChunkFileNames				mcChunkFile;
+	CObjectReaderChunkFile*		mpcReader;
 
-			BOOL			Contains(char* szFullName);
-	virtual CPointerObject	Convert(char* szFullName);
-			BOOL			IsChunked(void);
+public:
+	BOOL			Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName);
+	void			Kill(void);
+
+	BOOL			ReadNames(void);
+	BOOL			Contains(char* szFullName);
+	CBaseObject*	Convert(char* szFullName);
+	BOOL			IsChunked(void);
+	BOOL			IsNative(void);
+	BOOL			IsMultiSource(void);
+
+	char*			GetName(int iIndex);
+	int				NumNames(void);
+
+	CObjectReader*	GetReader(void);
 };
 
 

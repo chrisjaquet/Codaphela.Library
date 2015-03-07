@@ -148,11 +148,11 @@ void CopyActionCriteria(UInputChordCriteria* puDest, UInputChordCriteria* puSour
 
 	if (puSource->eType.eAction == BAA_Active)
 	{
-		puDest->cActive.Init((CInputSourceEvaluator*)pcContext->mmppEvaluators.GetWithKey(puSource->cActive.mpcEvaluator));
+		puDest->cActive.Init((CInputSourceEvaluator*)pcContext->mmppEvaluators.Get(puSource->cActive.mpcEvaluator));
 	}
 	else if (puSource->eType.eAction == BAA_Inactive)
 	{
-		puDest->cInactive.Init((CInputSourceEvaluator*)pcContext->mmppEvaluators.GetWithKey(puSource->cInactive.mpcEvaluator));
+		puDest->cInactive.Init((CInputSourceEvaluator*)pcContext->mmppEvaluators.Get(puSource->cInactive.mpcEvaluator));
 	}
 	else if (puSource->eType.eAction == BAA_Group)
 	{
@@ -185,7 +185,7 @@ void CInputChord::Copy(CInputChord* pcSource, CInputDeviceCopyContext* pcContext
 {
 	CInputChordDesc*	pcChordDesc;
 
-	pcChordDesc = (CInputChordDesc*)pcContext->mmppChords.GetWithKey(mpcDesc);
+	pcChordDesc = (CInputChordDesc*)pcContext->mmppChords.Get(mpcDesc);
 	Init(NULL, pcInputChords, pcChordDesc);
 
 	mpcAction = pcSource->mpcAction;
@@ -317,8 +317,6 @@ UInputChordCriteria* FindFirstActionCriteria(UInputChordCriteria* puCriteria)
 				return puFound;
 			}
 		}
-    default:
-        break;
 	}
 	return NULL;
 }
@@ -384,8 +382,6 @@ int FindLongestAction(UInputChordCriteria* puCriteria)
 				iLongest = iCurrent;
 			}
 		}
-    default:
-        break;
 	}
 	return iLongest;
 }
@@ -514,8 +510,6 @@ int MatchActionEvent(UInputChordCriteria* puCriteria, CArrayInputDeviceTimeValue
 			iTotalCount += iCount;
 		}
 		return iTotalCount;
-    default:
-        break;
 	}
 	return 0;
 }

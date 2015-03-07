@@ -67,8 +67,8 @@ void CMeshColours::Kill(void)
 BOOL CMeshColours::Load(CFileReader* pcFile)
 {
 	ReturnOnFalse(LoadMeshDetail(pcFile));
-	ReturnOnFalse(pcFile->ReadArrayTemplate(&mcFaces));
-	ReturnOnFalse(pcFile->ReadArrayInt(&mcColours));
+	ReturnOnFalse(mcFaces.Read(pcFile));
+	ReturnOnFalse(mcColours.Read(pcFile));
 	return TRUE;
 }
 
@@ -80,8 +80,8 @@ BOOL CMeshColours::Load(CFileReader* pcFile)
 BOOL CMeshColours::Save(CFileWriter* pcFile)
 {
 	ReturnOnFalse(SaveMeshDetail(pcFile));
-	ReturnOnFalse(pcFile->WriteArrayTemplate(&mcFaces));
-	ReturnOnFalse(pcFile->WriteArrayInt(&mcColours));
+	ReturnOnFalse(mcFaces.Write(pcFile));
+	ReturnOnFalse(mcColours.Write(pcFile));
 	return TRUE;
 }
 

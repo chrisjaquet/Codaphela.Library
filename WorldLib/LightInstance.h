@@ -24,7 +24,7 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #define __LIGHT_INSTANCE_H__
 #include "DirectXLib/Direct3DGlobal.h"
 #include "StandardLib/StandardHeader.h"
-#include "BaseLib/ArraySimple.h"
+#include "BaseLib/ArrayTemplateMinimal.h"
 
 
 #define LIGHT_PLEASANT	(0.125f)
@@ -55,7 +55,7 @@ public:
 };
 
 
-typedef CArraySimple<CLightInstance*> CArrayPtrLight;
+typedef CArrayTemplate<CLightInstance*> CArrayPtrLight;
 
 
 #endif //__LIGHT_INSTANCE_H__

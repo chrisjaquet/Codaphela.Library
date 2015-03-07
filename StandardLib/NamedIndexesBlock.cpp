@@ -159,6 +159,16 @@ BOOL CNamedIndexesBlock::IsCached(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CNamedIndexesBlock::IsNotCached(void)
+{
+	return mpvCachePos == NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexesBlock::AddUnsafe(OIndex oi, CChars* szName)
 {
 	CArrayBlock			avFakeBlock;
@@ -172,7 +182,7 @@ BOOL CNamedIndexesBlock::AddUnsafe(OIndex oi, CChars* szName)
 
 	memset_fast(&sBlock, 0, miBlockWidth);
 	sBlock.Set(szName->Text(), oi);
-	avFakeBlock.Fake(mpvCachePos, miBlockWidth, (int)miUsedBlocks, (int)miBlockChunkSize);
+	avFakeBlock.Fake(miBlockWidth, mpvCachePos, (int)miUsedBlocks, (int)miBlockChunkSize);
 	
 	//It's safe to insert into a faked array because we know there is at least one free element in the chunk
 	//That is: miBlockChunkSize - miUsedBlocks >= 1
@@ -215,7 +225,7 @@ OIndex CNamedIndexesBlock::GetIndex(CChars* szName)
 
 	strcpy(sBlock.Name(), szName->Text());
 
-	avFakeBlock.Fake(mpvCachePos, miBlockWidth, (int)miUsedBlocks, (int)miBlockChunkSize);
+	avFakeBlock.Fake(miBlockWidth, mpvCachePos, (int)miUsedBlocks, (int)miBlockChunkSize);
 
 	bResult = avFakeBlock.FindInSorted(&sBlock, &CompareNamedIndexedBlock, &iIndex);
 	if (bResult)
@@ -243,7 +253,7 @@ BOOL CNamedIndexesBlock::Remove(CChars* szName)
 	
 	strcpy(sBlock.Name(), szName->Text());
 
-	avFakeBlock.Fake(mpvCachePos, miBlockWidth, (int)miUsedBlocks, (int)miBlockChunkSize);
+	avFakeBlock.Fake(miBlockWidth, mpvCachePos, (int)miUsedBlocks, (int)miBlockChunkSize);
 
 	if (avFakeBlock.FindInSorted(&sBlock, &CompareNamedIndexedBlock, &iIndex))
 	{
@@ -444,7 +454,7 @@ void CNamedIndexesBlock::Dump(void)
 
 	if (IsCached())
 	{
-		avFakeBlock.Fake(mpvCachePos, miBlockWidth, (int)miUsedBlocks, (int)miBlockChunkSize);
+		avFakeBlock.Fake(miBlockWidth, mpvCachePos, (int)miUsedBlocks, (int)miBlockChunkSize);
 		Dump(&avFakeBlock);
 	}
 	else
@@ -496,7 +506,16 @@ void CNamedIndexesBlock::Dump(CArrayBlock* pavFakeBlock)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-filePos CNamedIndexesBlock::UsedNames(void) { return miUsedBlocks; }
+filePos CNamedIndexesBlock::UsedNames(void) 
+{ 
+	return miUsedBlocks; 
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 int CNamedIndexesBlock::GetBlockWidth(void) { return miBlockWidth; }
 filePos CNamedIndexesBlock::GetNumBlocks(void) { return miBlockChunkSize; }
 filePos CNamedIndexesBlock::GetUsedBlocks(void) { return miUsedBlocks; }

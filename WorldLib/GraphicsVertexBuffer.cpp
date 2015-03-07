@@ -268,7 +268,7 @@ BOOL CVertexBufferExtended::PrivateReleaseAndCopy(void* pvDest)
 //////////////////////////////////////////////////////////////////////////
 void CGraphicsVertexBufferArray::Init(void)
 {
-	__CGraphicsArrayVertexBuffers::Init();
+	CArrayTemplateMinimal<CVertexBufferExtended>::Init();
 }
 
 
@@ -286,7 +286,7 @@ void CGraphicsVertexBufferArray::Kill(void)
 		psVertexBuffer = Get(i);
 		psVertexBuffer->Kill();
 	}
-	__CGraphicsArrayVertexBuffers::Kill();
+	CArrayTemplateMinimal<CVertexBufferExtended>::Kill();
 }
 
 
@@ -372,7 +372,7 @@ void CGraphicsVertexBufferArray::RemoveVertexBuffer(int iD3DVertexType)
 	{
 		psVertexBuffer->Kill();
 		
-		iNum = ((int)((size_t)psVertexBuffer) - (int)((size_t)pvArray)) / sizeof(CVertexBufferExtended);
+		iNum = ((int)((size_t)psVertexBuffer) - (int)((size_t)mpvArray)) / sizeof(CVertexBufferExtended);
 		RemoveAt(iNum);  //The order is not preserved which means that anything indexing
 						 //miUsedElements must now index iNum instead.
 		

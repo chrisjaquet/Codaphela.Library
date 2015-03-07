@@ -22,20 +22,19 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __CONNECTION_H__
 #include "BaseLib/DataTypes.h"
 #include "BaseLib/ArrayTemplate.h"
-#include "BaseLib/LinkListTemplate.h"
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArrayBlock.h"
-#include "BaseLib/ArraySimple.h"
+#include "BaseLib/ArrayTemplateMinimal.h"
 #include "BaseLib/ChunkFile.h"
-#include "BaseLib/AdditionalTypes.h"
-#include "StandardLib/StandardHeader.h"
-#include "StandardLib/TrackerTemplate.h"
+#include "BaseLib/ArrayIntMinimal.h"
+#include "BaseLib/Float4x4.h"
+#include "StandardLib/NamedObject.h"
 
 
-class CConnection : public CStandardTrackerObject
+class CConnection : public CNamedObject
 {
+BASE_FUNCTIONS(CConnection);
 public:
-	BASE_FUNCTIONS(CConnection);
 
 	SFloat4x4			msWorldMatrix;
 	SFloat4x4			msLocalMatrix;  //It's possible to work this out given a parent matrix.
@@ -44,15 +43,12 @@ public:
 	BOOL				mbParity;
 
 	void 	Init(void);
-	void 	Kill(void);
-	BOOL	Load(CFileReader* pcFile);
-	BOOL	LoadSpecific(CFileReader* pcFile, int iChunkNum);;
-	BOOL	Save(CFileWriter* pcFile);
+	void 	KillData(void);
+
+	BOOL	Load(CObjectDeserialiser* pcFile);
+	BOOL	Save(CObjectSerialiser* pcFile);
 	void	Copy(CConnection* pcConnection);
 };
-
-
-typedef CTrackerTemplate<CConnection> CConnectionTracker;
 
 
 #endif //__CONNECTION_H__

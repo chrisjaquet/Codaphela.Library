@@ -25,38 +25,56 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "BaseLib/FreeList.h"
 #include "IndexedGeneral.h"
 
-
+//OIndex is 64 bits equals 8 chars (of combinations each).
 #define INDEXED_LEVELS_IN_LEVEL	256
 #define MAX_INDEXED_LEVEL_DEPTH	7
 
 
 struct SIndexedLevel
 {
-	struct SIndexedLevel*   apsLevels[INDEXED_LEVELS_IN_LEVEL];  //Points
+	(SIndexedLevel*)	apsLevels[INDEXED_LEVELS_IN_LEVEL];  //Points
 
 	void Init(void);
 	BOOL IsEmpty(void);
 };
 
 
-typedef CFreeList<SIndexedLevel>	CFreeListIndexedObjectsLevel;
+struct SIndexesIterator
+{
+	(SIndexedLevel*)	apsLevels[MAX_INDEXED_LEVEL_DEPTH+1];
+	int					aiIndex[MAX_INDEXED_LEVEL_DEPTH+1];
+	OIndex				oi;
+
+	void Init(SIndexedLevel* psTop);
+};
 
 
 class CIndexes
 {
 protected:
-	CFreeListIndexedObjectsLevel	mcLevels;
-	SIndexedLevel					msTop;
+	CFreeList		mcLevels;
+	SIndexedLevel	msTop;
 
 public:
 	void			Init(int iChunkSize);
 	void			Kill(void);
 	void*			Get(OIndex oi);
-	void			Add(OIndex oi, void* pvMemory);
+	BOOL			Add(OIndex oi, void* pvMemory);
+	BOOL			AddOverwriteExisting(OIndex oi, void* pvMemory, void** pvExisting);
 	BOOL			Remove(OIndex oi);
 
 	int				TestNumLevels(void);
 	unsigned int	TestByteSize(void);
+	BOOL			TestTopIsEmpty(void);
+
+	OIndex			NumIndexed(void);
+	OIndex			StartIteration(SIndexesIterator* psIter);
+	OIndex			Iterate(SIndexesIterator* psIter);
+
+protected:
+	OIndex			RecurseNumIndexed(SIndexedLevel* psLevel, int iLevel);
+	SIndexedLevel*	CreateLevels(OIndex oi);
+	OIndex			BackIterate(int iInitialLevel, SIndexesIterator* psIter);
 };
 
 

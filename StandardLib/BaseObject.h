@@ -20,86 +20,180 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __BASE_OBJECT_H__
 #define __BASE_OBJECT_H__
-#include "BaseLib/ArrayEmbedded.h"
 #include "CoreLib/IndexedGeneral.h"
-#include "Unknown.h"
-
-
-class CBaseObject;
-typedef CArrayTemplate<CBaseObject*>		CArrayBaseObjectPtr;
-typedef CArrayEmbedded<CBaseObject*, 32>	CArrayEmbeddedBaseObjectPtr;
+#include "EmbeddedObject.h"
 
 
 //Tested for root is only valid whilst the scene graph is calling CanFindRoot.  It stops the graph from walking already tested objects.
-#define OBJECT_FLAGS_TESTED_FOR_ROOT	0x02
+#define OBJECT_FLAGS_TESTED_FOR_ROOT			  0x02
 
 //Invalidated is set when the object on the file system is changed and must be reloaded.  This objects does not use it.
-#define OBJECT_FLAGS_INVALIDATED		0x04
+#define OBJECT_FLAGS_INVALIDATED				  0x04
 
+//Dirty must be manually set when an object needs to be written from memory to indexed data.  Objects are - by default always dirty.
+#define OBJECT_FLAGS_DIRTY						  0x08
+
+//Debug flag marking whether or not an object has had kill called on it.  An object that is killed should be removed from Memory so an object with this flag set is broken.
+#define OBJECT_FLAGS_KILLED						  0x10
+
+//Debug flag marking whether or not an object has had it's graph dumped yet.
+#define OBJECT_FLAGS_DUMPED						  0x20
+
+//This object cannot be reached and is marked for killing.
+#define OBJECT_FLAGS_UNREACHABLE				  0x40
+
+//Tested for sanity is only valid whilst the scene graph is calling ValidateConsistency.  It stops the graph from walking already tested objects.
+#define OBJECT_FLAGS_TESTED_FOR_SANITY			  0x80
+
+//Object initialisation life-cycle
+#define OBJECT_FLAGS_CALLED_CONSTRUCTOR			 0x100
+#define OBJECT_FLAGS_CALLED_ALLOCATE			 0x200
+#define OBJECT_FLAGS_CALLED_INIT				 0x400
+#define OBJECT_FLAGS_CALLED_CLASS				 0x800
+
+#define OBJECT_FLAGS_CLEARED_DIST_TO_ROOT		0x1000
+#define OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT	0x2000
+#define OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED	0x4000
+#define OBJECT_FLAGS_DIST_FROM_WALKED			0x8000
 
 class CObjectDeserialiser;
 class CObjectSerialiser;
-class CBaseObject : public CUnknown
+class CObjects;
+class CObjectRemapFrom;
+class CBaseObject : public CEmbeddedObject
 {
 template<class M>
+friend class Ptr;
 friend class CPointer;
-friend class CPointerObject;
 friend class CArrayCommonObject;
 friend class CObject;
-friend class CArray;
+friend class CObjects;
+friend class CObjectRemapFrom;
+friend class CEmbeddedObject;
 
 BASE_FUNCTIONS(CBaseObject);
 protected:
-	int									miDistToRoot;
-	OIndex								moi;
-	CArrayEmbedded<CBaseObject*, 6>		mapFroms;  //Objects that 'this' is pointed from.  
-	int									miFlags;
+	OIndex				moi;
+	CObjects*			mpcObjectsThisIn;
+	int					miDistToRoot;
+	int					miDistToStack;
+	unsigned short int	miFlags;
+	unsigned short int  miNumEmbedded;
+	unsigned short int	miPreInits;
+	unsigned short int	miPostInits;
 
 public:
-							CBaseObject();
-			void			Kill(void);
+								CBaseObject();
+								~CBaseObject();
 
-	virtual BOOL			Save(CObjectSerialiser* pcFile) =0;
-	virtual BOOL			Load(CObjectDeserialiser* pcFile) =0;
+	virtual void				Allocate(CObjects* pcObjects);
+	virtual	void				Class(void);
 
-			OIndex			GetOI(void);
-			void			SetObjectID(OIndex oi);
+			void				PreInit(void);
+			void				PostInit(void);
+	virtual void				Initialised(void);
 
-			BOOL			HasFroms(void);
-			int				NumFroms(void);
-			CBaseObject*	GetFrom(int iFrom);
-	virtual int				NumTos(void) =0;
+			void				Kill(void);
+			void				Kill(BOOL bHeapFromChanged);
+			void				TryKill(BOOL bKillIfNoRoot, BOOL bHeapFromChanged);
 
-	virtual BOOL			IsRoot(void);
-	virtual BOOL			IsSubRoot(void);
-			BOOL			IsUnknown(void);
-	virtual BOOL			IsHollow(void);
-	virtual BOOL			IsCollection(void) =0;
-	virtual BOOL			IsNamed(void);
-			BOOL			IsInvalidated(void);
+	virtual void				KillDontFree(void);
+	virtual void				KillData(void) =0;
 
-	virtual char*			GetName(void);
+			OIndex				GetOI(void);
+			void				SetObjectID(OIndex oi);
+			void				ClearIndex(void);
 
-	virtual void			SetDistToRoot(int iDistToRoot) =0;
-			int				DistToRoot(void);
-			BOOL			TestedForRoot(void);
-	virtual void			GetTos(CArrayBaseObjectPtr* papcTos) =0;
-			CBaseObject* 	TestGetTo(int iToIndex);
+	virtual BOOL				IsRoot(void);
+	virtual BOOL				IsSubRoot(void);
+			BOOL				IsUnknown(void);
+			BOOL				IsHollow(void);
+	virtual BOOL				IsCollection(void) =0;
+	virtual BOOL				IsObject(void) =0;
+	virtual BOOL				IsNamed(void);
+			BOOL				IsInvalidated(void);
+	virtual BOOL				IsDirty(void);
+			BOOL				IsUpdateAttachedPointerTosDistToRoot(void);
+			BOOL				IsInitialised(void);
+			BOOL				HasClass(void);
 
+	virtual char*				GetName(void);
+	virtual void				SetName(char* szName);
+			int					SerialisedSize(void);
+
+			unsigned short int	GetNumEmbedded(void);
+
+	virtual void				SetPointerTosExpectedDistToRoot(int iDistToRoot) =0;
+			void				SetDirty(void);
+			int					GetDistToRoot(void);
+			int					GetDistToStack(void);
+	virtual BOOL				SetDistToRoot(int iDistToRoot);
+			BOOL				TestedForRoot(void);
+	virtual void				RemoveAllPointerTosDontKill(void) =0;
+	virtual void				RemoveAllPointerTos(void) =0;
+			void				UpdateAttachedTosDistToRoot(CDistCalculatorParameters* pcParameters);
+			void				CollectValidDistStartingObjectsAndSetClearedToRoot(CBaseObject* pcTo, CDistCalculatorParameters* pcParameters);
+			void				CollectAndClearInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
+	virtual BOOL				IsDistToRootValid(void);
+			int					CollectDetachedAndSetDistToStackZero(CDistCalculatorParameters* pcParameters);
+			int					CollectDetachedFroms(CDistCalculatorParameters* pcParameters);
+
+			void				AddExpectedDistToRoot(CEmbeddedObject* pcPointedTo, int iExpectedDist, CDistCalculatorParameters* pcParameters);
+			void				ClearDistTouchedFlags(void);
+			BOOL				HasDistTouchedFlag(void);
+
+			BOOL				TestedForSanity(void);
+			CObjects*			GetObjects(void);
+			CStackPointers*		GetStackPointers(void);
+	virtual void				SetDistToStack(int iDistToStack);
+
+	virtual BOOL				ContainsPointerTo(CEmbeddedObject* pcEmbedded);
+			CEmbeddedObject* 	TestGetPointerTo(int iToIndex);
+			int 				TestGetNumEmbeddedFromFlags(void);
+			void				ClearFlagNumEmbedded(void);
+	virtual void				SetFlag(int iFlag, int iFlagValue);
+			int					GetFlags(void);
+			BOOL				CanFindRoot(void);
+			BOOL				CanFindRootThroughValidPath(void);
+
+			void				DumpFroms(void);
+			void				DumpPointerTos(void);
+			void				Dump(void);
+
+			void				ValidateFlagSet(int iFlag, char* szFlag);
+			void				ValidateFlagNotSet(int iFlag, char* szFlag);
+			void				ValidateContainerFlag(void);
+			void				ValidateFlags(void);
+			void				ValidateDistToRoot(void);
+			void				ValidateIndex(void);
+			void				ValidateObjectsThisIn(void);
+			void				ValidateCanFindRoot(void);
+	virtual void				BaseValidatePointerTos(void) =0;
+	virtual void				ValidateEmbeddedConsistency(void);
+	virtual void				ValidateObjectIdentifiers(void);
+			void				ValidateBaseObjectDetail(void);
+			void				ValidateAllocation(void);
+			void				ValidateHasClass(void);
+			void				ValidateInitCalled(void);
+	
 protected:
-	virtual void			RemoveAllTos(CArrayEmbeddedBaseObjectPtr* papcFromsChanged) =0;
-			void			AddFrom(CBaseObject* pcFrom);
-			void			RemoveFrom(CBaseObject* pcFrom);
-			void			RemoveEmbeddedFrom(CBaseObject* pcFrom);
-			void			PotentiallySetDistToRoot(CBaseObject* pcTos, int iExpectedDistToRoot);
-			void			FixDistToRoot(void);
-			void			FixDistToRoot(CArrayEmbeddedBaseObjectPtr* papcFromsChanged);
-			BOOL			CanFindRoot(void);
-			CBaseObject*	ClearDistToSubRoot(void);
-	virtual void			CollectedThoseToBeKilled(CArrayBaseObjectPtr* papcKilled) =0;
-			void			MarkForKilling(CArrayBaseObjectPtr* papcKilled);
-			void			KillCollected(CArrayBaseObjectPtr* papcKilled);
-			void			KillThisGraph(void);
+	virtual void				KillIdentifiers(void);
+			void				KillInternalData(void);
+			int					RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew) =0;
+			BOOL				RemoveToFrom(CEmbeddedObject* pcPointedTo);
+	virtual void				BaseRemoveAllPointerTosDontKill(void) =0;
+			void				SetExpectedDistToRoot(int iExpectedDistToRoot);
+			void				SetCalculatedDistToRoot(void);
+			int					CalculateDistToRootFromPointedFroms(void);
+	virtual int					CalculateDistToRootFromPointedFroms(int iDistToRoot);
+			void				CollectThoseToBeKilled(CArrayBlockObjectPtr* papcKilled);
+			BOOL				IsBaseObject(void);
+			unsigned short int	GetNumEmbeddedFromFlags(void);
+			void				SetFlagNumEmbedded(int iNumEmbedded);
+			BOOL				IsMarkedUnreachable(void);
+			void				ReplaceOneWithX(char* szDest, char* szMask);
+			void				ContainerPreInit(void);
+			void				ContainerPostInit(void);
 };
 
 

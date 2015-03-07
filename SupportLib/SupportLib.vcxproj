@@ -92,6 +92,7 @@
   <ItemGroup>
     <ClInclude Include="CopyPaste.h" />
     <ClInclude Include="ChannelTypes.h" />
+    <ClInclude Include="FakeTracker.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="TrackerTypes.h" />
     <ClInclude Include="VertexArray.h" />
@@ -245,6 +246,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CopyPaste_Windows.cpp" />
+    <ClCompile Include="FakeTracker.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="VertexChannel.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -386,6 +388,9 @@
     <ClCompile Include="ShapeHelper.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Triangle.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Objectification.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -68,30 +68,32 @@ CObjectSource* CObjectConverterText::CreateSource(CAbstractFile* pcFile, char* s
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectConverterText::Convert(CAbstractFile* pcFile, char* szFileName)
+CBaseObject* CObjectConverterText::Convert(CObjectSource* pcSource, char* szObjectName)
 {
 	CTextFile			cTextFile;
-	CPointer<CString>	pcString;
+	Ptr<CString>		pcString;
 	BOOL				bResult;
+	CObjectSourceText*	pcSourceText;
 
+	pcSourceText = (CObjectSourceText*)pcSource;
 	cTextFile.Init();
 
-	bResult = cTextFile.Read(pcFile);
+	bResult = cTextFile.Read(pcSource->GetFile());
 	if (!bResult)
 	{
 		cTextFile.Kill();
-		return gcObjects.Null();
+		return NULL;
 	}
 
 	pcString = OMalloc(CString);
 	
 	if (!pcString)
 	{
-		return ONull;
+		return NULL;
 	}
 	pcString->Init(cTextFile.Text());
 
 	cTextFile.Kill();
-	return pcString;
+	return (CBaseObject*)pcString.Return();
 }
 

@@ -153,7 +153,7 @@ filePos CDiskFile::Read(void* pvBuffer, filePos iSize, filePos iCount)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDiskFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CDiskFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	int		iResult;
 
@@ -240,6 +240,23 @@ BOOL CDiskFile::Flush(void)
 
 
 //////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CDiskFile::Delete(void)
+{
+	CFileUtil	cFileUtil;
+
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	return cFileUtil.Delete(mszFileName.Text());
+}
+
+
+//////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
@@ -247,7 +264,7 @@ CDiskFile* DiskFile(char* szName)
 {
 	CDiskFile* pcDiskFile;
 
-	pcDiskFile = Malloc(CDiskFile);
+	pcDiskFile = NewMalloc<CDiskFile>();
 	pcDiskFile->Init(szName);
 	pcDiskFile->mbBasicFileMustFree = TRUE;
 	return pcDiskFile;

@@ -1,15 +1,27 @@
+#include "BaseLib/ChunkFileFile.h"
 #include "Objects.h"
+#include "ObjectConverterNative.h"
+#include "ObjectFileGeneral.h"
+#include "ObjectReaderChunkFile.h"
 #include "ObjectSourceChunked.h"
-#include "ObjectConverterText.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjectSourceChunked::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
+BOOL CObjectSourceChunked::Init(CObjectConverter* pcConverter, CAbstractFile* pcFile, char* szFileName)
 {
-	CObjectMultipleSource::Init(pcConverter, pcFile, szFileName);
+	CObjectSource::Init(pcConverter, pcFile, szFileName);
+
+	mcChunkFile.Init(mpcFile);
+	mcNames.Init(8);
+
+	ReturnOnFalse(mcChunkFile.ReadOpen());
+	ReturnOnFalse(ReadNames());
+
+	mpcReader = NULL;
+	return mcChunkFile.StackDepth() == 1;
 }
 
 
@@ -19,7 +31,12 @@ void CObjectSourceChunked::Init(CObjectConverter* pcConverter, CAbstractFile* pc
 //////////////////////////////////////////////////////////////////////////
 void CObjectSourceChunked::Kill(void)
 {
-	CObjectMultipleSource::Kill();
+	mcChunkFile.ReadClose();
+	mcChunkFile.Kill();
+
+	mcNames.Kill();
+
+	CObjectSource::Kill();
 }
 
 
@@ -27,11 +44,45 @@ void CObjectSourceChunked::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject CObjectSourceChunked::Convert(char* szFullName)
+BOOL CObjectSourceChunked::ReadNames(void)
 {
-	return ONull;
+	SChunkFileNameIterator	sIter;
+	char*					szName;
+
+	szName = mcChunkFile.StartNameIteration(&sIter);
+	while (szName)
+	{
+		if (!sIter.szValue.StartsWith(OBJECT_UNNAMED_FILE))
+		{
+			mcNames.Add(szName);
+		}
+		szName = mcChunkFile.IterateName(&sIter);
+	}
+	mcChunkFile.StopIteration(&sIter);
+
+
+	mcNames.QuickSort(TRUE);
+
+	return TRUE;
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CBaseObject* CObjectSourceChunked::Convert(char* szFullName)
+{
+	CBaseObject*	pvObject;
+
+	mpcReader = UMalloc(CObjectReaderChunkFile);
+	mpcReader->Init(&mcChunkFile);
+
+	pvObject = mpcConverter->Convert(this, szFullName);
+	mpcReader->Kill();
+
+	return pvObject;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -39,7 +90,40 @@ CPointerObject CObjectSourceChunked::Convert(char* szFullName)
 //////////////////////////////////////////////////////////////////////////
 BOOL CObjectSourceChunked::Contains(char* szFullName)
 {
-	return CObjectMultipleSource::Contains(szFullName);
+	int		iIndex;
+
+	iIndex = mcNames.FindInSorted(szFullName, FALSE);
+	return iIndex != -1;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+char* CObjectSourceChunked::GetName(int iIndex)
+{
+	return mcNames.Get(iIndex)->Text();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CObjectSourceChunked::NumNames(void)
+{
+	return mcNames.NumElements();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectSourceChunked::IsMultiSource(void)
+{
+	return TRUE;
 }
 
 
@@ -50,5 +134,25 @@ BOOL CObjectSourceChunked::Contains(char* szFullName)
 BOOL CObjectSourceChunked::IsChunked(void)
 {
 	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CObjectSourceChunked::IsNative(void)
+{
+	return TRUE; 
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CObjectReader* CObjectSourceChunked::GetReader(void)
+{
+	return mpcReader;
 }
 

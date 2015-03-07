@@ -19,6 +19,8 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include "Connection.h"
+#include "StandardLib/ObjectDeserialiser.h"
+#include "StandardLib/ObjectSerialiser.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,7 +29,6 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////////
 void CConnection::Init(void)
 {
-	CStandardTrackerObject::Init();
 	msWorldMatrix.Init();
 	msLocalMatrix.Init();
 	mbSelected = FALSE;
@@ -40,21 +41,9 @@ void CConnection::Init(void)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-void CConnection::Kill(void)
+void CConnection::KillData(void)
 {	
 	mbSelected = 0;
-	CStandardTrackerObject::Kill();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CConnection::Load(CFileReader* pcFile)
-{
-	//Fixes: ambiguous access of 'Load'
-	return CStandardTrackerObject::Load(pcFile);
 }
 
 
@@ -62,10 +51,8 @@ BOOL CConnection::Load(CFileReader* pcFile)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CConnection::LoadSpecific(CFileReader* pcFile, int iChunkNum)
+BOOL CConnection::Load(CObjectDeserialiser* pcFile)
 {
-	ReturnOnFalse(BeginLoadStandardTrackerObject(pcFile, iChunkNum));
-
 	//Read in the matrix.
 	if (!msWorldMatrix.Load(pcFile))
 	{
@@ -85,8 +72,7 @@ BOOL CConnection::LoadSpecific(CFileReader* pcFile, int iChunkNum)
 	ReturnOnFalse(pcFile->ReadInt(&mbSelected));
 	ReturnOnFalse(pcFile->ReadInt(&mbTopLevel));
 	ReturnOnFalse(pcFile->ReadInt(&mbParity));
-	
-	return EndLoadStandardTrackerObject(pcFile);
+	return TRUE;
 }
 
 
@@ -94,11 +80,8 @@ BOOL CConnection::LoadSpecific(CFileReader* pcFile, int iChunkNum)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CConnection::Save(CFileWriter* pcFile)
+BOOL CConnection::Save(CObjectSerialiser* pcFile)
 {
-	ReturnOnFalse(BeginSaveStandardTrackerObject(pcFile));
-
-
 	//Write out the actual matrix.
 	if (!msWorldMatrix.Save(pcFile))
 	{
@@ -115,8 +98,7 @@ BOOL CConnection::Save(CFileWriter* pcFile)
 	ReturnOnFalse(pcFile->WriteInt(mbSelected));
 	ReturnOnFalse(pcFile->WriteInt(mbTopLevel));
 	ReturnOnFalse(pcFile->WriteInt(mbParity));
-
-	return EndSaveStandardTrackerObject(pcFile);
+	return TRUE;
 }
 
 
@@ -127,7 +109,6 @@ BOOL CConnection::Save(CFileWriter* pcFile)
 void CConnection::Copy(CConnection* pcConnection)
 {
 	Init();
-	SetID(pcConnection->miUniqueID);
 	memcpy(&msWorldMatrix, &pcConnection->msWorldMatrix, sizeof(SFloat4x4));
 	memcpy(&msLocalMatrix, &pcConnection->msLocalMatrix, sizeof(SFloat4x4));
 }

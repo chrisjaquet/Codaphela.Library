@@ -73,7 +73,7 @@ void CMemoryFile::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CMemoryFile::Open(EFileMode eFileMode)
 {
-	if ((eFileMode == EFM_ReadWrite) || (eFileMode == EFM_Write_Create) || (eFileMode == EFM_ReadWrite_Create))
+	if (IsFileModeWritable(eFileMode))
 	{
 		mbFakeArray = FALSE;
 		iFlags = _IOREAD | _IOWRT;
@@ -83,7 +83,7 @@ BOOL CMemoryFile::Open(EFileMode eFileMode)
 		}
 		iPos = 0;
 	}
-	else if ((eFileMode == EFM_Read) || (eFileMode == EFM_Read_Create))
+	else if (IsFileModeReadOnly(eFileMode))
 	{
 		mbFakeArray = TRUE;
 		iFlags = _IOREAD;
@@ -92,7 +92,6 @@ BOOL CMemoryFile::Open(EFileMode eFileMode)
 			cArray.ReInit();
 			cArray.Fake((char*)mpvInitialMem, miInitialLength);
 		}
-		cArray.SetAllocateSize(MEMORY_FILE_CHUNK_SIZE);
 		iPos = 0;
 	}
 	else
@@ -176,17 +175,17 @@ filePos CMemoryFile::Read(void* pvBuffer, filePos iSize, filePos iCount)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CMemoryFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CMemoryFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
-	if (iSeekOrigin == SEEK_SET)
+	if (iSeekOrigin == EFSO_SET)
 	{
 		iPos = iOffset;
 	}
-	else if (iSeekOrigin == SEEK_END)
+	else if (iSeekOrigin == EFSO_END)
 	{
 		iPos = cArray.NumElements() + iOffset;
 	}
-	else if (iSeekOrigin == SEEK_CUR)
+	else if (iSeekOrigin == EFSO_CURRENT)
 	{
 		iPos += iOffset;
 	}
@@ -305,6 +304,22 @@ BOOL CMemoryFile::Flush(void)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
+BOOL CMemoryFile::Delete(void)
+{
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	cArray.ReInit();
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
 void* CMemoryFile::GetBufferPointer(void)
 {
 	return (void*)cArray.GetData();
@@ -351,7 +366,7 @@ CMemoryFile* MemoryFile(void)
 {
 	CMemoryFile* pcMemoryFile;
 
-	pcMemoryFile = Malloc(CMemoryFile);
+	pcMemoryFile = NewMalloc<CMemoryFile>();
 	pcMemoryFile->Init();
 	pcMemoryFile->mbBasicFileMustFree = TRUE;
 	return pcMemoryFile;
@@ -366,7 +381,7 @@ CMemoryFile* MemoryFile(void* pvInitialMem, int iInitialLength)
 {
 	CMemoryFile*	pcMemoryFile;
 
-	pcMemoryFile = Malloc(CMemoryFile)
+	pcMemoryFile = NewMalloc<CMemoryFile>();
 	pcMemoryFile->Init(pvInitialMem, iInitialLength);
 	pcMemoryFile->mbBasicFileMustFree = TRUE;
 	return pcMemoryFile;

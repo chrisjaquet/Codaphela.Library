@@ -275,7 +275,7 @@ filePos CBufferedFile::Write(const void* pvSource, filePos iSize, filePos iCount
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CBufferedFile::Seek(filePos iOffset, int iSeekOrigin)
+BOOL CBufferedFile::Seek(filePos iOffset, EFileSeekOrigin iSeekOrigin)
 {
 	BOOL	bResult;
 
@@ -340,6 +340,21 @@ BOOL CBufferedFile::Flush(void)
 	bResult = WriteUnwritten();
 	bResult &= mpcFile->Flush();
 	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+BOOL CBufferedFile::Delete(void)
+{
+	if (IsOpen())
+	{
+		return FALSE;
+	}
+
+	return mpcFile->Delete();
 }
 
 
@@ -436,7 +451,7 @@ CBufferedFile* BufferedFile(CAbstractFile* pcFile, int iBufferSize)
 {
 	CBufferedFile* pCBufferedFile;
 
-	pCBufferedFile = Malloc(CBufferedFile);
+	pCBufferedFile = NewMalloc<CBufferedFile>();
 	pCBufferedFile->Init(pcFile, iBufferSize);
 	pCBufferedFile->mbBasicFileMustFree = TRUE;
 	return pCBufferedFile;

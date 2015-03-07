@@ -41,19 +41,12 @@ class CTreeTemplate
 {
 protected:
 	STNode*	mpsRoot;
-
-	void	RecursiveFreeNodes(STNode* pNode);
-	void	RecursiveAddNodeForCreate(CTreeTemplate<M>* pcTreeSource, M* pvData1Source, M* pvData2Dest);
-void	ReplaceLeafWithTree(CTreeTemplate<M>* pcTree, STNode* psNode);
-	void*	MemoryAllocate(int iMemSize);
-	void	Free(void* pvMem);
-	STNode*	PrivateFindLeftChild(STNode* psNodeHeader);
-	int		CountElements();
-
-public:
-	int		miLevel;  //Level is only valid during traversals
 	int		miNumElements;
 
+public:
+	int		miLevel;  //Level is only valid during traversals.  WTF? A traversal object should hold this.
+
+public:
 	void	Init(void);
 	void	Kill(void);
 	void	Copy(CTreeTemplate* pcTreeSrc);
@@ -109,7 +102,7 @@ void	InsertTreeOnLeftOfChildren(M* psParent, CTreeTemplate<M>* pcTree);
 void	InsertTreeOnRightOfChildren(M* psParent, CTreeTemplate<M>* pcTree);
 void	InsertTreeOnPath(int* aiPos, int iLevel, CTreeTemplate<M>* pcTree);
 
-	//Comparision functions.
+	//Comparison functions.
 	int		Equals(CTreeTemplate<M>* pcTree);
 	int		Equals(CTreeTemplate<M>* pcTree, int iKeyOffset, int iKeySize);
 
@@ -132,13 +125,20 @@ void	InsertTreeOnPath(int* aiPos, int iLevel, CTreeTemplate<M>* pcTree);
 	int		RemoveBranch(M* psNodeData);
 	void	Remove(M* psNodeData);
 
-	//Get malloc size.
-	int		MallocSize(void);
+	BOOL	WriteTreeTemplate(CFileWriter* pcFileWriter);
+	BOOL	ReadTreeTemplate(CFileReader* pcFileReader);
+
+protected:
+	void*	Malloc(size_t tSize);
+	void*	Realloc(void* pv, size_t tSize);
+	void	Free(void* pv);
+
+	void	RecursiveFreeNodes(STNode* pNode);
+	void	RecursiveAddNodeForCreate(CTreeTemplate<M>* pcTreeSource, M* pvData1Source, M* pvData2Dest);
+	void	ReplaceLeafWithTree(CTreeTemplate<M>* pcTree, STNode* psNode);
+	STNode*	PrivateFindLeftChild(STNode* psNodeHeader);
+	int		CountElements();
 };
-
-
-#define CTreeTemplateDataGetHeader(pvData)		DataGetHeaderMacro<STNode, M>(pvData)
-#define CTreeTemplateHeaderGetData(pvHeader)	HeaderGetDataMacro<STNode, M>(pvHeader)
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,9 +146,9 @@ void	InsertTreeOnPath(int* aiPos, int iLevel, CTreeTemplate<M>* pcTree);
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void* CTreeTemplate<M>::MemoryAllocate(int iMemSize)
+void* CTreeTemplate<M>::Malloc(size_t tSize)
 {
-	return malloc(iMemSize);
+	return malloc(tSize);
 }
 
 
@@ -157,9 +157,21 @@ void* CTreeTemplate<M>::MemoryAllocate(int iMemSize)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void CTreeTemplate<M>::Free(void* pvMem)
+void CTreeTemplate<M>::Free(void* pv)
 {
-	free(pvMem);
+	free(pv);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void* CTreeTemplate<M>::Realloc(void* pv, size_t tSize)
+{
+	pv = realloc(pv, tSize);
+	return pv;
 }
 
 
@@ -183,7 +195,7 @@ void CTreeTemplate<M>::Init(void)
 template<class M>
 void CTreeTemplate<M>::Copy(CTreeTemplate<M>* pcTreeSrc)
 {
-	InitTreeFromNode(pcTreeSrc, CTreeTemplateHeaderGetData(pcTreeSrc->mpsRoot));
+	InitTreeFromNode(pcTreeSrc, HeaderGetData<STNode, M>(pcTreeSrc->mpsRoot));
 }
 
 
@@ -208,7 +220,7 @@ M* CTreeTemplate<M>::TraversePath(int* aiPos, int iLevel)
 			psNode = psNode->psAcross;
 		}
 	}
-	return CTreeTemplateHeaderGetData(psNode);
+	return HeaderGetData<STNode, M>(psNode);
 }
 
 
@@ -247,8 +259,8 @@ void CTreeTemplate<M>::InsertDetachedOnRightOfChildren(M* psParent, M* psChild)
 	STNode* 	psPos;
 	STNode* 	psNode;
 
-	psPos = CTreeTemplateDataGetHeader(psParent);
-	psNode = CTreeTemplateDataGetHeader(psChild);
+	psPos = DataGetHeader<STNode, M>(psParent);
+	psNode = DataGetHeader<STNode, M>(psChild);
 	temp = psPos;
 	if (psPos->psUp != NULL)
 	{
@@ -303,8 +315,8 @@ void CTreeTemplate<M>::InsertDetachedOnLeftOfChildren(M* psParent, M* psChild)
 	STNode*		psPos;
 	STNode*		psNode;
 
-	psPos = CTreeTemplateDataGetHeader(psParent);
-	psNode = CTreeTemplateDataGetHeader(psChild);
+	psPos = DataGetHeader<STNode, M>(psParent);
+	psNode = DataGetHeader<STNode, M>(psChild);
 	if (psPos->psUp != NULL)
 	{
 		temp = psPos;
@@ -360,8 +372,8 @@ void CTreeTemplate<M>::InsertDetachedAtChildNum(M* psParent, int iChildNum, M* p
 	STNode*		psNode;
 	int			count;
 
-	psPos = CTreeTemplateDataGetHeader(psParent);
-	psNode = CTreeTemplateDataGetHeader(psChild);
+	psPos = DataGetHeader<STNode, M>(psParent);
+	psNode = DataGetHeader<STNode, M>(psChild);
 	if (psPos->psUp!=NULL)
 	{
 
@@ -369,7 +381,7 @@ void CTreeTemplate<M>::InsertDetachedAtChildNum(M* psParent, int iChildNum, M* p
 
 		if (iChildNum == 0)
 		{
-			InsertDetachedOnLeftOfChildren(CTreeTemplateHeaderGetData(psPos), CTreeTemplateHeaderGetData(psNode));
+			InsertDetachedOnLeftOfChildren(HeaderGetData<STNode, M>(psPos), HeaderGetData<STNode, M>(psNode));
 			return;
 		}
 		psDown = psPos;
@@ -432,7 +444,7 @@ void CTreeTemplate<M>::InsertDetachedOnPath(int* aiPos, int iLevel, M* psData)
 	if (iLevel == 0)
 	{
 		//Setup the root psNode
-		psNode = CTreeTemplateDataGetHeader(psData);
+		psNode = DataGetHeader<STNode, M>(psData);
 		mpsRoot = psNode;
 		psNode->psAcross = NULL;
 		psNode->psUp = NULL;
@@ -502,7 +514,7 @@ template<class M>
 M* CTreeTemplate<M>::StartTraversal(void)
 {
 	miLevel = 0;
-	return CTreeTemplateHeaderGetData(mpsRoot);
+	return HeaderGetData<STNode, M>(mpsRoot);
 }
 
 
@@ -526,7 +538,7 @@ M* CTreeTemplate<M>::TraverseSubTreeFrom(M* psSubRoot, M* psCurrent)
 {
 	STNode*	psSubrRootHeader;
 
-	psSubrRootHeader = CTreeTemplateDataGetHeader(psSubRoot);
+	psSubrRootHeader = DataGetHeader<STNode, M>(psSubRoot);
 	return TraverseSubTreeFrom(psSubrRootHeader, psCurrent);
 }
 
@@ -536,7 +548,7 @@ M* CTreeTemplate<M>::TraverseSubTreeFrom(STNode* psSubRoot, M* psCurrent)
 {
 	STNode*		psNode;
 
-	psNode = CTreeTemplateDataGetHeader(psCurrent);
+	psNode = DataGetHeader<STNode, M>(psCurrent);
 	if (psNode->psUp != NULL)
 	{
 		psNode = psNode->psUp;
@@ -555,7 +567,7 @@ M* CTreeTemplate<M>::TraverseSubTreeFrom(STNode* psSubRoot, M* psCurrent)
 		}
 		psNode = psNode->psAcross;
 	}
-	return CTreeTemplateHeaderGetData(psNode);
+	return HeaderGetData<STNode, M>(psNode);
 }
 
 
@@ -602,7 +614,7 @@ int CTreeTemplate<M>::GetNumChildren(M *psParent)
 	STNode	*psTemp;
 	STNode	*psPos;
 
-	psPos = CTreeTemplateDataGetHeader(psParent);
+	psPos = DataGetHeader<STNode, M>(psParent);
 	iNumChildren = 0;
 	psTemp = psPos;
 	if (psPos->psUp != NULL)
@@ -626,7 +638,7 @@ int CTreeTemplate<M>::GetNumChildren(M *psParent)
 template<class M>
 M* CTreeTemplate<M>::GetRoot(void)
 {
-	return CTreeTemplateHeaderGetData(mpsRoot);
+	return HeaderGetData<STNode, M>(mpsRoot);
 }
 
 
@@ -640,7 +652,7 @@ M* CTreeTemplate<M>::GetChildNum(M* psParent, int iChildNum)
 	int			i;
 	STNode*		psPos;
 
-	psPos = CTreeTemplateDataGetHeader(psParent);
+	psPos = DataGetHeader<STNode, M>(psParent);
 	psPos = psPos->psUp;  //First child
 	if (psPos == NULL)
 	{
@@ -655,7 +667,7 @@ M* CTreeTemplate<M>::GetChildNum(M* psParent, int iChildNum)
 			return NULL;
 		}
 	}
-	return CTreeTemplateHeaderGetData(psPos);
+	return HeaderGetData<STNode, M>(psPos);
 }
 
 
@@ -679,8 +691,8 @@ M* CTreeTemplate<M>::GetDown(M* psPos)
 {
 	STNode*	psNode;
 
-	psNode = CTreeTemplateDataGetHeader(psPos);
-	return CTreeTemplateHeaderGetData(psNode->psDown);
+	psNode = DataGetHeader<STNode, M>(psPos);
+	return HeaderGetData<STNode, M>(psNode->psDown);
 }
 
 
@@ -693,8 +705,8 @@ M* CTreeTemplate<M>::GetUp(M* psPos)
 {
 	STNode*	psNode;
 
-	psNode = CTreeTemplateDataGetHeader(psPos);
-	return CTreeTemplateHeaderGetData(psNode->psUp);
+	psNode = DataGetHeader<STNode, M>(psPos);
+	return HeaderGetData<STNode, M>(psNode->psUp);
 }
 
 
@@ -707,8 +719,8 @@ M* CTreeTemplate<M>::GetRight(M* psPos)
 {
 	STNode*	psNode;
 
-	psNode = CTreeTemplateDataGetHeader(psPos);
-	return CTreeTemplateHeaderGetData(psNode->psAcross);
+	psNode = DataGetHeader<STNode, M>(psPos);
+	return HeaderGetData<STNode, M>(psNode->psAcross);
 }
 
 
@@ -722,7 +734,7 @@ int CTreeTemplate<M>::GetNodeDepth(M* psNode)
 	int			i;
 	STNode*		psPos;
 
-	psPos = CTreeTemplateDataGetHeader(psNode);
+	psPos = DataGetHeader<STNode, M>(psNode);
 	i = 0;
 	while (psPos != mpsRoot)
 	{
@@ -744,7 +756,7 @@ int CTreeTemplate<M>::GetChildNum(M* psChild)
 	int			iChildNum;
 	STNode*		psPos;
 
-	psPos = CTreeTemplateDataGetHeader(psChild);
+	psPos = DataGetHeader<STNode, M>(psChild);
 
 	//Copy the psPosition of psPos.
 	psNode = psPos;
@@ -786,11 +798,11 @@ int CTreeTemplate<M>::GetPathTo(int* aiPath, M* psData)
 	STNode*		psPos;
 
 	iDistFromRoot = GetNodeDepth(psData);
-	psPos = CTreeTemplateDataGetHeader(psData);
+	psPos = DataGetHeader<STNode, M>(psData);
 
 	for (i = iDistFromRoot-1; i >= 0; i--)
 	{
-		aiPath[i] = GetChildNum(CTreeTemplateHeaderGetData(psPos));
+		aiPath[i] = GetChildNum(HeaderGetData<STNode, M>(psPos));
 		psPos = psPos->psDown;
 	}
 
@@ -881,7 +893,7 @@ void CTreeTemplate<M>::InitTreeFromNode(CTreeTemplate<M>* pcTreeSource, M* psNod
 	M*			pvData2;
 	STNode*		pNode;
 
-	pNode = CTreeTemplateDataGetHeader(psNodeSource);
+	pNode = DataGetHeader<STNode, M>(psNodeSource);
 	if (pNode != NULL)
 	{
 		Init();
@@ -934,8 +946,8 @@ void CTreeTemplate<M>::InsertDetachedOnUp(M* psPosData, M* psNewData)
 	STNode*		psNew;
 	STNode*		psOld;
 
-	psPos = CTreeTemplateDataGetHeader(psPosData);
-	psNew = CTreeTemplateDataGetHeader(psNewData);
+	psPos = DataGetHeader<STNode, M>(psPosData);
+	psNew = DataGetHeader<STNode, M>(psNewData);
 
 	psOld = psPos->psUp;
 
@@ -985,8 +997,8 @@ void CTreeTemplate<M>::InsertDetachedOnAcross(M* psPosData, M* psNewData)
 	STNode*		psNew;
 	STNode*		psOld;
 
-	psPos = CTreeTemplateDataGetHeader(psPosData);
-	psNew = CTreeTemplateDataGetHeader(psNewData);
+	psPos = DataGetHeader<STNode, M>(psPosData);
+	psNew = DataGetHeader<STNode, M>(psNewData);
 
 	psOld = psPos->psAcross;
 
@@ -1029,7 +1041,7 @@ void CTreeTemplate<M>::FreeDetached(M* psNodeData)
 {
 	STNode*		psNodeHeader;
 
-	psNodeHeader = CTreeTemplateDataGetHeader(psNodeData);
+	psNodeHeader = DataGetHeader<STNode, M>(psNodeData);
 	if (psNodeHeader)
 	{
 		Free(psNodeHeader);
@@ -1046,8 +1058,8 @@ M* CTreeTemplate<M>::AllocateDetached(void)
 {
 	STNode*		psNode;
 
-	psNode = (STNode*)MemoryAllocate(sizeof(STNode) + sizeof(M));
-	return CTreeTemplateHeaderGetData(psNode);
+	psNode = (STNode*)Malloc(sizeof(STNode) + sizeof(M));
+	return HeaderGetData<STNode, M>(psNode);
 }
 
 
@@ -1136,7 +1148,7 @@ void CTreeTemplate<M>::Detach(M* psNodeData)
 
 	if (psNodeData)
 	{
-		psNodeHeader = CTreeTemplateDataGetHeader(psNodeData);
+		psNodeHeader = DataGetHeader<STNode, M>(psNodeData);
 		Detach(psNodeHeader);
 	}
 }
@@ -1151,7 +1163,7 @@ BOOL CTreeTemplate<M>::RemoveLeaf(M* psNodeData)
 {
 	STNode*		psNodeHeader;
 
-	psNodeHeader = CTreeTemplateDataGetHeader(psNodeData);
+	psNodeHeader = DataGetHeader<STNode, M>(psNodeData);
 	if ((psNodeData == NULL) || (psNodeHeader->psUp))
 	{
 		//This wasn't a leaf so we can't detach it.
@@ -1205,7 +1217,7 @@ void CTreeTemplate<M>::DetachTree(CTreeTemplate<M>* pcDestTree, M* psNodeData)
 {
 	STNode*		psNodeHeader;
 
-	psNodeHeader = CTreeTemplateDataGetHeader(psNodeData);
+	psNodeHeader = DataGetHeader<STNode, M>(psNodeData);
 	Detach(psNodeHeader, TRUE);
 
 	//Initialise the destination tree.
@@ -1311,11 +1323,121 @@ void CTreeTemplate<M>::InsertTreeOnPath(int* aiPos, int iLevel, CTreeTemplate<M>
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-int CTreeTemplate<M>::MallocSize(void)
+BOOL CTreeTemplate<M>::WriteTreeTemplate(CFileWriter* pcFileWriter)
 {
-	return miNumElements * (sizeof(M) + sizeof(STNode));
+	M*		pvData;
+	int		iElementSize;
+	int		iPathSize;
+	int		aiPath[1024];
+
+	iElementSize = sizeof(M);
+	if (!pcFileWriter->WriteData(&iElementSize, sizeof(int))) 
+	{ 
+		return FALSE; 
+	}
+
+	if (!pcFileWriter->WriteData(this, sizeof(CTreeTemplate<M>))) 
+	{ 
+		return FALSE; 
+	}
+
+	if (NumElements() != 0)
+	{
+		pvData = StartTraversal();
+		while (pvData != NULL)
+		{
+			iPathSize = GetPathTo(aiPath, pvData);
+			if (iPathSize >= 1024)
+			{
+				return FALSE; 
+			}
+			if (!pcFileWriter->WriteData(&iPathSize, sizeof(int))) 
+			{ 
+				return FALSE; 
+			}
+
+			if (iPathSize != 0)
+			{
+				if (!pcFileWriter->WriteData(aiPath, sizeof(int) * iPathSize)) 
+				{ 
+					return FALSE; 
+				}
+			}
+			if (!pcFileWriter->WriteData(pvData, sizeof(M)))
+			{ 
+				return FALSE; 
+			}
+
+			pvData = TraverseFrom(pvData);
+		}
+	}
+	return TRUE;
 }
 
 
-#endif //__TREE_TEMPLATE_H__
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+BOOL CTreeTemplate<M>::ReadTreeTemplate(CFileReader* pcFileReader)
+{
+	M*			pvData[2];
+	int			iElementSize;
+	int			i;
+	int			iPathSize[2];
+	int			aiPath[2][1024];
+	int			iNumElements;
+	int			iPathNum;
+	int			iOldPath;
+
+	if (!pcFileReader->ReadData(&iElementSize, sizeof(int))) 
+	{ 
+		return FALSE; 
+	}
+
+	if (iElementSize != sizeof(M))
+	{
+		return FALSE;
+	}
+
+	if (!pcFileReader->ReadData(this, sizeof(CTreeTemplate<M>))) 
+	{ 
+		return FALSE; 
+	}
+
+	iNumElements = NumElements();
+	iPathNum = 0;
+	iOldPath = 0;
+	Init();
+
+	for (i = 0; i < iNumElements; i++)
+	{
+		if (!pcFileReader->ReadData(&iPathSize[iPathNum], sizeof(int))) 
+		{ 
+			return FALSE; 
+		}
+
+		if (iPathSize[iPathNum] != 0)
+		{
+			if (!pcFileReader->ReadData(aiPath[iPathNum], sizeof(int) * iPathSize[iPathNum])) 
+			{ 
+				return FALSE; 
+			}
+		}
+		pvData[iPathNum] = InsertOnPath(aiPath[iPathNum], iPathSize[iPathNum], aiPath[iOldPath], iPathSize[iOldPath], pvData[iOldPath]);
+		if (!pcFileReader->ReadData(pvData[iPathNum], sizeof(M))) 
+		{ 
+			return FALSE; 
+		}
+
+		iOldPath = iPathNum;
+		iPathNum++;
+		iPathNum = iPathNum % 2;
+	}
+	return TRUE;
+}
+
+
+#endif // __TREE_TEMPLATE_H__
 

@@ -7,17 +7,45 @@
 //////////////////////////////////////////////////////////////////////////
 BOOL CSerialisedObject::IsNamed(void)
 {
-	return *((int*)&mszType) == OBJECT_POINTER_NAMED;
+	BOOL bNamed;
+
+	bNamed = *((int*)&mszType) == OBJECT_POINTER_NAMED;
+	if (!bNamed)
+	{
+		return FALSE;
+	}
+
+	if (msName.miLength == 1)
+	{
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////
+////
+////////////////////////////////////////////////////////////////////////////
 BOOL CSerialisedObject::IsIndexed(void)
 {
-	return *((int*)&mszType) == OBJECT_POINTER_ID;
+	BOOL bIndexed;
+	BOOL bNamed;
+
+	bIndexed = *((int*)&mszType) == OBJECT_POINTER_ID;
+	if (bIndexed)
+	{
+		return TRUE;
+	}
+
+	bNamed = *((int*)&mszType) == OBJECT_POINTER_NAMED;
+	if (bNamed && msName.miLength == 1)
+	{
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 
@@ -37,7 +65,7 @@ BOOL CSerialisedObject::IsVoid(void)
 //////////////////////////////////////////////////////////////////////////
 char* CSerialisedObject::GetName(void)
 {
-	return aUnion.name.msz;
+	return msName.msz;
 }
 
 
@@ -47,7 +75,7 @@ char* CSerialisedObject::GetName(void)
 //////////////////////////////////////////////////////////////////////////
 OIndex CSerialisedObject::GetIndex(void)
 {
-	return aUnion.moi;
+	return moi;
 }
 
 
@@ -58,5 +86,15 @@ OIndex CSerialisedObject::GetIndex(void)
 int CSerialisedObject::GetLength(void)
 {
 	return miLength;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CSerialisedObject::SetLength(int iLength)
+{
+	miLength = iLength;
 }
 

@@ -28,7 +28,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "FileIO.h"
 #include "FileBasic.h"
 #include "MapStringInt.h"
-#include "ASCIITree.h"
 #include "ChunkStack.h"
 
 
@@ -67,6 +66,10 @@ public:
 
 	BOOL	WriteChunkBegin(void);
 	BOOL	WriteChunkEnd(char* szChunkName);
+
+	int		StackDepth(void);
+	filePos	ChunkSize(void);
+	filePos	ChunkStart(void);
 
 protected:
 	int		FindFirstChunkWithID(int iName);

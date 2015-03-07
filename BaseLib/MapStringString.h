@@ -25,28 +25,14 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "MapStringTemplate.h"
 
 
-
-template class CMapStringTemplate<CChars>;
-
-
-class CMapStringString : public CMapStringTemplate<CChars>
+class CMapStringString : public CMapStringBlock
 {
 public:
-	CChars*	PrivateAllocateNode(char* szKey, char* szValue);
-	void	PrivateFreeNode(CChars* psKey);
-
-	void	Kill(void);
-	void	Put(CChars* psKey, CChars* psValue);
-	void	Put(char* psKey, char* psValue);
-	CChars* GetWithKey(CChars* psKey);
-	char*	GetWithKey(char* psKey);
-	BOOL	GetAtIndex(int iIndex, CChars** ppsKey, CChars** ppsData);
-	void	Remove(CChars* szKey);
-	void	Remove(char* szKey);
-
+	BOOL	Put(char* szKey, char* szValue);
+	char*	Get(char* szKey);
 	void	Dump(void);
 };
 
 
-#endif //__MAP_STRING_STRING_H__
+#endif // __MAP_STRING_STRING_H__
 

@@ -32,7 +32,7 @@ protected:
 
 public:
 						CUnknown(void);
-			void		PreInit(CUnknowns* pcUnknowns);
+			void		SetUnknowns(CUnknowns* pcUnknowns);
 	virtual void 		Kill(void);
 
 	virtual BOOL		IsUnknown(void);
@@ -43,6 +43,7 @@ public:
 	virtual int			Compare(CUnknown* pcRight);
 			CUnknowns*	GetUnknownsThisIn(void);
 			void		SetNotInUnknowns(void);
+			void		NotImplemented(char* szMethod);
 };
 
 

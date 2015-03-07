@@ -25,7 +25,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "Define.h"
 #include "DataTypes.h"
 #include "ArrayInt.h"
-#include "LinkListTemplate.h"
+#include "LinkedListTemplate.h"
 #include "StringHelper.h"
 
 
@@ -39,7 +39,7 @@ struct SEnumeratorIterator
 };
 
 
-typedef CLinkListTemplate<SENode>  CLinkListSENode;
+typedef CLinkedListTemplate<SENode>  CLinkListSENode;
 
 //Do not confuse the enumerator with a map.  The enumerator is designed for fast access based on an integer (which is not an index)
 template<class M>
@@ -50,21 +50,9 @@ public:
 	CLinkListSENode		mcList;
 	BOOL				mbCaseSensitive;
 
-	void*		MemoryAllocate(int iSize);
-	void		Free(void* pvMem);
-
+public:
 	void		Init(void);
 	void		Kill(void);
-	void		PrivateAllocateNodeData(SENode* psNode, int iLen);
-	int			PrivateAddGetNode(char* szName, M* pvData, int iDataSize, int iKeySize, int iNum, BOOL bReplace, SENode** pcThisNode);
-	SENode*		PrivateGetWithKey(char* szName, M* pvKey, int iKeySize, SENode* psStartNode);
-	SENode*		PrivateGetWithKey(char* szName, int iNameLen, M* pvKey, int iKeySize, SENode* psStartNode);
-	int			PrivateGetNextID(int iNum);
-	void		PrivateInsertID(SENode* psNode);
-	void		PrivateRemoveID(SENode* psNode);
-	void		PrivateRemove(SENode* psNode);
-	BOOL		PrivateCompare(char* szName, M* pvKey, int iKeySize, SENode* psNode);
-	BOOL		PrivateCompare(char* szName, int iNameLen, M* pvKey, int iKeySize, SENode* psNode);
 	int			Get(char* szName, M** pvData);
 	int			Get(char* szName, int iNameLen, M** pvData);
 	int			GetNumMatchingWithKey(char* szName, M* pvKey, int iKeySize);
@@ -82,6 +70,22 @@ public:
 	void		QuickSort(void);
 	void		BubbleSort(void);
 	void		RecreateIDArray(void);
+	void		AllocateNodeData(SENode* psNode, int iLen);
+
+protected:
+	void*		Malloc(size_t tSize);
+	void*		Realloc(void* pv, size_t iMemSize);
+	void		Free(void* pv);
+
+	int			PrivateAddGetNode(char* szName, M* pvData, int iDataSize, int iKeySize, int iNum, BOOL bReplace, SENode** pcThisNode);
+	SENode*		PrivateGetWithKey(char* szName, M* pvKey, int iKeySize, SENode* psStartNode);
+	SENode*		PrivateGetWithKey(char* szName, int iNameLen, M* pvKey, int iKeySize, SENode* psStartNode);
+	int			PrivateGetNextID(int iNum);
+	void		PrivateInsertID(SENode* psNode);
+	void		PrivateRemoveID(SENode* psNode);
+	void		PrivateRemove(SENode* psNode);
+	BOOL		PrivateCompare(char* szName, M* pvKey, int iKeySize, SENode* psNode);
+	BOOL		PrivateCompare(char* szName, int iNameLen, M* pvKey, int iKeySize, SENode* psNode);
 };
 
 
@@ -89,9 +93,14 @@ template<class M>
 class CEnumeratorTemplate : public __CEnumeratorTemplate<M>
 {
 public:
-	int			Add(char* szName, M* pvData, int iNum);
-	int			Add(char* szName, M* pvData, int iKeySize, int iNum, BOOL bReplace = TRUE);
-	int			Add(char* szName, int iNameLen, M* pvData, int iKeySize, int iNum, BOOL bReplace = TRUE);
+	int		Add(char* szName, M* pvData, int iNum);
+	int		Add(char* szName, M* pvData, int iKeySize, int iNum, BOOL bReplace = TRUE);
+	int		Add(char* szName, int iNameLen, M* pvData, int iKeySize, int iNum, BOOL bReplace = TRUE);
+
+	BOOL	WriteEnumeratorBlock(CFileWriter* pcFileWriter);
+	BOOL	ReadEnumeratorBlock(CFileReader* pcFileReader);
+	BOOL	WriteEnumeratorTemplate(CFileWriter* pcFileWriter);
+	BOOL	ReadEnumeratorTemplate(CFileReader* pcFileReader);
 };
 
 
@@ -100,9 +109,9 @@ public:
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void* __CEnumeratorTemplate<M>::MemoryAllocate(int iMemSize)
+void* __CEnumeratorTemplate<M>::Malloc(size_t tSize)
 {
-	return malloc(iMemSize);
+	return malloc(tSize);
 }
 
 
@@ -111,9 +120,21 @@ void* __CEnumeratorTemplate<M>::MemoryAllocate(int iMemSize)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void __CEnumeratorTemplate<M>::Free(void* pvMem)
+void __CEnumeratorTemplate<M>::Free(void* pv)
 {
-	free(pvMem);
+	free(pv);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+void* __CEnumeratorTemplate<M>::Realloc(void* pv, size_t tSize)
+{
+	pv = realloc(pv, tSize);
+	return pv;
 }
 
 
@@ -167,12 +188,12 @@ void __CEnumeratorTemplate<M>::Kill(void)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-void __CEnumeratorTemplate<M>::PrivateAllocateNodeData(SENode* psNode, int iLen)
+void __CEnumeratorTemplate<M>::AllocateNodeData(SENode* psNode, int iLen)
 {
-	psNode->szName = (char*)MemoryAllocate(iLen);
+	psNode->szName = (char*)Malloc(iLen);
 	if (psNode->iDataSize)
 	{
-		psNode->pvData = MemoryAllocate(psNode->iDataSize);
+		psNode->pvData = Malloc(psNode->iDataSize);
 	}
 	else
 	{
@@ -227,7 +248,7 @@ int __CEnumeratorTemplate<M>::PrivateAddGetNode(char* szName, M* pvData, int iDa
 			{
 				if (psNode->pvData == NULL)
 				{
-					psNode->pvData = MemoryAllocate(iDataSize);
+					psNode->pvData = Malloc(iDataSize);
 				}
 				psNode->iFlags = ENUMERATOR_MANAGED;
 
@@ -287,7 +308,7 @@ int __CEnumeratorTemplate<M>::PrivateAddGetNode(char* szName, M* pvData, int iDa
 		psNode->iNum = PrivateGetNextID(iNum);
 		psNode->iDataSize = iDataSize;
 
-		PrivateAllocateNodeData(psNode, iLen);
+		AllocateNodeData(psNode, iLen);
 
 		if (iDataSize)
 		{
@@ -925,11 +946,11 @@ void __CEnumeratorTemplate<M>::QuickSort(void)
 
 	if (mbCaseSensitive)
 	{
-		this->mcList.QuickSort(AlphabeticalComparisionCallbackCaseSensitive);
+		mcList.QuickSort(AlphabeticalComparisionCallbackCaseSensitive);
 	}
 	else
 	{
-		this->mcList.QuickSort(AlphabeticalComparisionCallbackCaseInsensitive);
+		mcList.QuickSort(AlphabeticalComparisionCallbackCaseInsensitive);
 	}
 	RecreateIDArray();
 }
@@ -993,5 +1014,126 @@ int CEnumeratorTemplate<M>::Add(char* szName, int iNameLen, M* pvData, int iKeyS
 }
 
 
-#endif //__TEMPLATE_ENUMERATOR_H__
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+BOOL CEnumeratorTemplate<M>::WriteEnumeratorTemplate(CFileWriter* pcFileWriter)
+{
+	return WriteEnumeratorBlock(pcFileWriter);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>	
+BOOL CEnumeratorTemplate<M>::ReadEnumeratorTemplate(CFileReader* pcFileReader)
+{
+	return ReadEnumeratorBlock(pcFileReader);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>	
+BOOL CEnumeratorTemplate<M>::WriteEnumeratorBlock(CFileWriter* pcFileWriter)
+{
+	SENode*		psNode;
+
+	if (!pcFileWriter->WriteData(&mbCaseSensitive, sizeof(BOOL))) 
+	{ 
+		return FALSE; 
+	}
+
+	if (!mcIDArray.Write(pcFileWriter))
+	{
+		return FALSE;
+	}
+
+	if (!mcList.WriteLinkedListTemplate(pcFileWriter))
+	{
+
+		return FALSE;
+	}
+
+	psNode = mcList.GetHead();
+	while (psNode)
+	{
+		if (!pcFileWriter->WriteString(psNode->szName))
+		{
+			return FALSE;
+		}
+
+		if (psNode->iDataSize)
+		{
+			if (!pcFileWriter->WriteData(psNode->pvData, psNode->iDataSize))
+			{
+				return FALSE;
+			}
+		}
+		psNode = mcList.GetNext(psNode);
+	}
+	return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>	
+BOOL CEnumeratorTemplate<M>::ReadEnumeratorBlock(CFileReader* pcFileReader)
+{
+	SENode*		psNode;
+	int			iReadSize;
+
+	if (!pcFileReader->ReadData(&mbCaseSensitive, sizeof(BOOL))) 
+	{ 
+		return FALSE; 
+	}
+
+	if (!mcIDArray.Read(pcFileReader))
+	{
+		return FALSE;
+	}
+
+	if (!mcList.ReadLinkedListTemplate(pcFileReader))
+	{
+		return FALSE;
+	}
+
+	psNode = mcList.GetHead();
+	while (psNode)
+	{
+		//Actually this is copied from ReadString because I need the string length first.
+		if (!pcFileReader->ReadData(&iReadSize, sizeof(int))) 
+		{ 
+			return FALSE; 
+		}
+
+		AllocateNodeData(psNode, iReadSize);
+		if (!pcFileReader->ReadData(psNode->szName, iReadSize)) 
+		{ 
+			return FALSE; 
+		}
+
+		if (psNode->iDataSize)
+		{
+			if (!pcFileReader->ReadData(psNode->pvData, psNode->iDataSize))
+			{ 
+				return FALSE; 
+			}
+		}
+		psNode = mcList.GetNext(psNode);
+	}
+	return TRUE;
+}
+
+
+#endif // __TEMPLATE_ENUMERATOR_H__
 

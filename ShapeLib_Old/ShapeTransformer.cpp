@@ -1,5 +1,5 @@
 #include "ShapeTransformer.h"
-#include "BaseLib/FastFunctions.h"
+#include "CoreLib/FastFunctions.h"
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -45,15 +45,48 @@ void CFreeListMaybe::Kill(void)
 	if (mpcFreeList != NULL)
 	{
 		mpcFreeList->Kill();
-		free(mpcFreeList);
+		Free(mpcFreeList);
 	}
 	if (mpcLinkList != NULL)
 	{
 		mpcLinkList->Kill();
-		free(mpcLinkList);
+		Free(mpcLinkList);
 	}
 	mpcLinkList = NULL;
 	mpcFreeList = NULL;
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void* CFreeListMaybe::Malloc(size_t tSize)
+{
+	return malloc(tSize);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void* CFreeListMaybe::Realloc(void* pv, size_t tSize)
+{
+	pv = realloc(pv, tSize);
+	return pv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CFreeListMaybe::Free(void* pv)
+{
+	free(pv);
 }
 
 
@@ -71,14 +104,14 @@ void* CFreeListMaybe::Add(void)
 	{
 		if (mpcLinkList->NumElements() != NUM_ELEMENTS_BEFORE_FREELIST)
 		{
-			return mpcLinkList->InsertAfterTail(miElementSize, 0);
+			return mpcLinkList->InsertAfterTail(miElementSize);
 		}
 		else
 		{
-			return PrivateCreateFreeList();
+			return CreateFreeList();
 		}
 	}
-	return PrivateCreateLinkList();
+	return CreateLinkList();
 }
 
 
@@ -86,11 +119,11 @@ void* CFreeListMaybe::Add(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void* CFreeListMaybe::PrivateCreateLinkList(void)
+void* CFreeListMaybe::CreateLinkList(void)
 {
-	mpcLinkList = (CLinkListBlock*)malloc(sizeof(CLinkListBlock));
+	mpcLinkList = (CLinkedListBlock*)Malloc(sizeof(CLinkedListBlock));
 	mpcLinkList->Init();
-	return mpcLinkList->InsertAfterTail(miElementSize, 0);
+	return mpcLinkList->InsertAfterTail(miElementSize);
 }
 
 
@@ -98,9 +131,9 @@ void* CFreeListMaybe::PrivateCreateLinkList(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void* CFreeListMaybe::PrivateCreateFreeList(void)
+void* CFreeListMaybe::CreateFreeList(void)
 {
-	mpcFreeList = (CFreeListBlock*)malloc(sizeof(CFreeListBlock));
+	mpcFreeList = (CFreeList*)Malloc(sizeof(CFreeList));
 	mpcFreeList->Init(miChunkSize, miElementSize);
 	return mpcFreeList->Add();
 }
@@ -110,13 +143,13 @@ void* CFreeListMaybe::PrivateCreateFreeList(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void* CFreeListMaybe::AddUseFreelist(int iChunkSize)
+void* CFreeListMaybe::AddUseFreeList(int iChunkSize)
 {
 	if (mpcFreeList)
 	{
 		return mpcFreeList->Add();
 	}
-	return PrivateCreateFreeList();
+	return CreateFreeList();
 }
 
 
@@ -124,13 +157,13 @@ void* CFreeListMaybe::AddUseFreelist(int iChunkSize)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void* CFreeListMaybe::AddUseMalloc(void)
+void* CFreeListMaybe::AddUseLinkedList(void)
 {
 	if (mpcLinkList)
 	{
-		return mpcLinkList->InsertAfterTail(miElementSize, 0);
+		return mpcLinkList->InsertAfterTail(miElementSize);
 	}
-	return PrivateCreateLinkList();
+	return CreateLinkList();
 }
 
 
@@ -157,7 +190,6 @@ void CFreeListMaybe::Remove(void* pvElement)
 }
 
 
-
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -173,5 +205,15 @@ BOOL CFreeListMaybe::SafeRemove(void* pvElement)
 		return TRUE;
 	}
 	return FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CFreeListMaybe::GetElementSize(void)
+{
+	return miElementSize;
 }
 

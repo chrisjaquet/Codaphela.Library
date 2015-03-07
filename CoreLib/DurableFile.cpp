@@ -49,8 +49,8 @@ void CDurableFile::Init(BOOL bDurable, char* szFileName, char* szRewriteName)
 
 	mcWrites.Init(COMMAND_CHUNK_SIZE);
 
-	mpcPrimaryFile = Malloc(CFileBasic);
-	mpcRewriteFile = Malloc(CFileBasic);
+	mpcPrimaryFile = NewMalloc<CFileBasic>();
+	mpcRewriteFile = NewMalloc<CFileBasic>();
 
 	if (szFileName)
 	{
@@ -270,6 +270,36 @@ BOOL CDurableFile::Rewrite(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CDurableFile::Delete(void)
+{
+	CFileUtil	cFileUtil;
+	BOOL		bResult;
+
+	if (mbBegun)
+	{
+		return FALSE;
+	}
+	else
+	{
+		Close();
+		if (mbDurable)
+		{
+			bResult = cFileUtil.Delete(mszFileName.Text());
+			bResult &= cFileUtil.Delete(mszRewriteName.Text());
+			return bResult;
+		}
+		else
+		{
+			return cFileUtil.Delete(mszFileName.Text());
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CDurableFile::PrivateWrite(CFileBasic* pcFile)
 {
 	int							i;
@@ -428,7 +458,7 @@ filePos CDurableFile::Write(EFileSeekOrigin eOrigin, filePos iDistance, const vo
 filePos CDurableFile::Write(const void* pvSource, filePos iSize, filePos iCount)
 {
 	SDurableFileCommandWrite*	psCommand;
-	CArrayPointer				apvOverlapping;
+	CArrayIntAndPointer				apvOverlapping;
 	BOOL						bAny;
 	void*						pvData;
 	filePos						iByteLength;
@@ -478,7 +508,7 @@ filePos CDurableFile::Write(const void* pvSource, filePos iSize, filePos iCount)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDurableFile::AmalgamateOverlappingWrites(CArrayPointer* papvOverlapping, const void* pvSource, filePos iPosition, filePos iLength)
+BOOL CDurableFile::AmalgamateOverlappingWrites(CArrayIntAndPointer* papvOverlapping, const void* pvSource, filePos iPosition, filePos iLength)
 {
 	filePos						iStart;
 	filePos						iEnd;  //Inclusive;
@@ -573,7 +603,7 @@ filePos CDurableFile::Read(EFileSeekOrigin eOrigin, filePos iDistance, void* pvD
 //////////////////////////////////////////////////////////////////////////
 filePos CDurableFile::Read(void* pvDest, filePos iSize, filePos iCount)
 {
-	CArrayPointer				apvOverlapping;
+	CArrayIntAndPointer				apvOverlapping;
 	BOOL						bAny;
 	int							i;
 	BOOL						bHoles;
@@ -737,16 +767,16 @@ int CompareDurableWrite(const void* pv1, const void* pv2)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDurableFile::FindHoles(CArrayPointer* papvOverlapping, filePos iPosition, filePos iLength)
+BOOL CDurableFile::FindHoles(CArrayIntAndPointer* papvOverlapping, filePos iPosition, filePos iLength)
 {
-	CArrayPointer				apvOverlappingSorted;
+	CArrayIntAndPointer				apvOverlappingSorted;
 	int							i;
 	SDurableFileCommandWrite*	psWrite;
 	int							eCommand;
 	BOOL						bHoles;
 	filePos						iEnd;
 
-	apvOverlappingSorted.Init();
+	apvOverlappingSorted.Init(1);
 	apvOverlappingSorted.Copy(papvOverlapping);
 	apvOverlappingSorted.QuickSort(CompareDurableWrite);
 
@@ -789,7 +819,7 @@ BOOL CDurableFile::FindHoles(CArrayPointer* papvOverlapping, filePos iPosition, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CDurableFile::FindTouchingWriteCommands(CArrayPointer* papvOverlapping, filePos iPosition, filePos iLength, BOOL bMustOverlap)
+BOOL CDurableFile::FindTouchingWriteCommands(CArrayIntAndPointer* papvOverlapping, filePos iPosition, filePos iLength, BOOL bMustOverlap)
 {
 	int							i;
 	SDurableFileCommandWrite*	psWrite;

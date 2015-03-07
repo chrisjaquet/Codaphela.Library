@@ -51,7 +51,7 @@ void CMeshPolygon::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CMeshPolygon::Save(CFileWriter* pcFile)
 {
-	ReturnOnFalse(pcFile->WriteArraySimple(&maiFaces));
+	ReturnOnFalse(maiFaces.Write(pcFile));
 	return TRUE;
 }
 
@@ -62,7 +62,7 @@ BOOL CMeshPolygon::Save(CFileWriter* pcFile)
 //////////////////////////////////////////////////////////////////////////
 BOOL CMeshPolygon::Load(CFileReader* pcFile)
 {
-	ReturnOnFalse(pcFile->ReadArraySimple(&maiFaces));
+	ReturnOnFalse(maiFaces.Read(pcFile));
 	return TRITRUE;
 }
 
@@ -112,7 +112,7 @@ BOOL CMeshPolygons::Save(CFileWriter* pcFile)
 	int				i;
 	CMeshPolygon*	psPolygon;
 
-	ReturnOnFalse(pcFile->WriteArrayTemplateHeader(&mcPolygons));	
+	ReturnOnFalse(mcPolygons.WriteAllocatorAndHeader(pcFile));	
 
 	for (i = 0; i < mcPolygons.NumElements(); i++)
 	{
@@ -120,7 +120,7 @@ BOOL CMeshPolygons::Save(CFileWriter* pcFile)
 		ReturnOnFalse(psPolygon->Save(pcFile));
 	}
 
-	ReturnOnFalse(pcFile->WriteArrayInt(&maiFacesToPolygons));
+	ReturnOnFalse(maiFacesToPolygons.Write(pcFile));
 	return TRUE;
 }
 
@@ -134,8 +134,7 @@ BOOL CMeshPolygons::Load(CFileReader* pcFile)
 	int				i;
 	CMeshPolygon*	psPolygon;
 
-	ReturnOnFalse(pcFile->ReadArrayTemplateHeader(&mcPolygons));
-	mcPolygons.InitFromHeader();
+	ReturnOnFalse(mcPolygons.ReadAllocatorAndHeader(pcFile));
 
 	for (i = 0; i < mcPolygons.NumElements(); i++)
 	{
@@ -143,7 +142,7 @@ BOOL CMeshPolygons::Load(CFileReader* pcFile)
 		ReturnOnFalse(psPolygon->Load(pcFile));
 	}
 
-	ReturnOnFalse(pcFile->ReadArrayInt(&maiFacesToPolygons));
+	ReturnOnFalse(maiFacesToPolygons.Read(pcFile));
 	return TRUE;
 }
 
@@ -393,7 +392,7 @@ void CMeshPolygons::GeneratePolygonFromEdgeSelection(CMeshConnectivity* pcConn, 
 
 	pcPolygon = Add(1);
 	iPolygonIndex = mcPolygons.NumElements()-1;
-	aiStack.Init();
+	aiStack.Init(1);
 	aiStack.Push(&iFaceIndex);
 
 	for (;;)

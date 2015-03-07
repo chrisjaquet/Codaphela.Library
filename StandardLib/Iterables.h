@@ -22,11 +22,8 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __ITERABLES_H__
 #include "BaseLib/FreeList.h"
 #include "BaseLib/Chars.h"
-#include "BaseLib/LinkListTemplate.h"
+#include "BaseLib/LinkedListTemplate.h"
 #include "Unknown.h"
-
-
-typedef CFreeList<CUnknown*>	CFreeListUnknownPtr;
 
 
 class CIterableList;
@@ -50,8 +47,8 @@ public:
 class CIterableList
 {
 public:
-	CFreeListUnknownPtr	mcFreeListPtrs;
-	CChars				mszName;
+	CFreeList	mcFreeListPtrs;
+	CChars		mszName;
 
 	void		Init(char* szName);
 	void		Kill(void);
@@ -67,7 +64,7 @@ public:
 };
 
 
-typedef CLinkListTemplate<CIterableList>	CLinkListIterableList;
+typedef CLinkedListTemplate<CIterableList>	CLinkListIterableList;
 
 
 class CIterables

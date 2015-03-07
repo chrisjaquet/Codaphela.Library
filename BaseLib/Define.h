@@ -23,6 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
 
+
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -53,15 +54,15 @@ Microsoft Windows is Copyright Microsoft Corporation
 #endif
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <memory.h>
 #include "Bool.h"
 #define ENGINE_SIZE_T size_t
 #define FILE_SEPARATOR "\\"
 #define _FS_ FILE_SEPARATOR
 #define OTHER_OS_FILE_SEPARATOR "/"
+#define __ENGINE_FUNCTION__ __FUNCTION__
+#define __ENGINE_PRETTY_FUNCTION__ __FUNCSIG__
 #define __ENGINE_DECORATED_FUNCTION__ __FUNCDNAME__
-#define __ENGINE_PRETTY_FUNCTION__ __FUNCTION__
 #endif // _MSC_VER
 
 
@@ -96,7 +97,6 @@ typedef int BOOL;
 #define TRUE 1
 #define engine_stricmp(p,q) strcmpi(p,q)
 #define ENGINE_SIZE_T size_t
-#define EngineOutput(p)	printf(p)
 //#define MAX_PATH 260
 //#define _IOREAD         0x0001
 //#define _IOWRT          0x0002

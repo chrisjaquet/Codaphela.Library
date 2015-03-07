@@ -1,45 +1,138 @@
-/** ---------------- COPYRIGHT NOTICE, DISCLAIMER, and LICENSE ------------- **
-
-Copyright (c) 2009 Andrew Paterson
-
-This file is part of The Codaphela Project: Codaphela BaseLib
-
-Codaphela BaseLib is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Codaphela BaseLib is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with Codaphela BaseLib.  If not, see <http://www.gnu.org/licenses/>.
-
-Microsoft Windows is Copyright Microsoft Corporation
-
-** ------------------------------------------------------------------------ **/
-#ifndef __ARRAY_BLOCK_H__
-#define __ARRAY_BLOCK_H__
-#include "DataTypes.h"
-#include "ArrayTemplate.h"
+#ifndef __ARRAY_BASE_H__
+#define __ARRAY_BASE_H__
+#include "FastMemset.h"
+#include "PointerRemapper.h"
+#include "FastFunctions.h"
+#include "Mallocator.h"
+#include "FileIO.h"
 
 
-//This is an where the sizeof the elements are not know at compile time.
-//It is not an array of void*
-class CArrayBlock : public __CArrayTemplate<void>
+struct SArrayTemplateHeader
 {
-public:
-	void	Init(int iSize);
-	void	Init(int iSize, int iChunkSize);
-	void 	Allocate(int iSize, int iChunkSize);
-	void 	Allocate(int iSize, int iChunkSize, int iNumElements);
-	void 	ReInit(void);
-	void	Fake(void* pvData, int iSize, int iNum, int iChunkSize = 1);
-	void	FakeSetUsedElements(int iUsedElements);
+	int			miElementSize;
+	int			miUsedElements;
+	int			miChunkSize;
 };
 
 
-#endif // __ARRAY_BLOCK_H__
+class CArrayBlock : protected SArrayTemplateHeader
+{
+protected:
+	int				miNumElements;
+	void*			mpvArray;
+	CMallocator*	mpcMalloc;
+
+public:
+	void 	Init(int iElementSize, int iChunkSize);
+	void 	Init(CMallocator* pcMalloc, int iElementSize, int iChunkSize);
+	void 	Allocate(CMallocator* pcMalloc, int iElementSize, int iNumElements);
+	void 	Allocate(CMallocator* pcMalloc, int iElementSize, int iChunkSize, int iNumElements);
+	void 	ReInit(int iChunkSize = 0);
+
+	void 	Finalise(void);
+	void	Fake(int iElementSize, void* pvData, int iNum, int iChunkSize = 1);
+
+	void 	Kill(void);
+
+	void 	SetAllocateSize(int iSize);
+	void	FakeSetUsedElements(int iUsedElements);
+
+	int		NumElements(void);
+	BOOL	IsEmpty(void);
+	BOOL	IsNotEmpty(void);
+	int		AllocatedElements(void);
+	int 	ElementSize(void);
+
+	void*	Add(void);
+	void*	Add(void* pvData);
+	void* 	AddGetIndex(int* piIndex);
+	int 	AddIfUnique(void* pData);
+	int 	AddIfUniqueKey(void* pData, int iKeyOffset, int iKeySize);
+
+	void	BatchInsertElements(int iFirstIndex, int iNumInBatch, int iNumBatches, int iStrideToNextBatch);
+	void	BatchRemoveElements(int iFirstIndex, int iNumInBatch, int iNumBatches, int iStrideToNextBatch);
+
+	BOOL 	Copy(CArrayBlock* pcTemplateArray);
+
+	void*	Get(int iIndex);
+	void*	SafeGet(int iIndex);
+	int		GetAdjustedIndex(int iIndex);
+	void*	GetData(void);
+	void	GetHeader(SArrayTemplateHeader* psHeader);
+	int		GetIndex(void* pvElement);
+	void*	Tail(void);
+
+	void	InsertArrayAfterEnd(CArrayBlock* pcTemplateArray);
+	void	InsertArrayAt(CArrayBlock* pcTemplateArray, int iIndex);
+	void	InsertArrayBeforeStart(CArrayBlock* pcTemplateArray);
+	void* 	InsertAt(int iIndex);
+	void* 	InsertAt(void* pvData, int iIndex);
+	void	InsertBlockAfterEnd(void* paElements, int iLength);
+	void	InsertBlockAt(void* paElements, int iIndex, int iLength);
+	void	InsertBlockBeforeStart(void* paElements, int iLength);
+	int		InsertIntoSorted(int(*)(const void*, const void*), void* pvElement, BOOL bOverwriteExisting);
+	void*	InsertNumElementsAt(int iNumElements, int iIndex);
+
+	void	Pop(void* pvData);
+	void	Pop(void);
+	void 	Push(void* pvElement);
+	void*	Push(void);
+	void 	PushCopy(void);
+
+	void	GrowByChunk(void);
+	int		GrowByNumElements(int iNumElements);
+	void*	GrowToAtLeastNumElements(int iNumElements, BOOL bClear = FALSE, int iClear = 0);  //ie:  Don't shrink the array.
+	int		GrowToNumElements(int iNumElements);  //Can shrink the array.  Should probably call this resize.
+
+	void	BubbleSort(int(*)(const void*, const void*));
+	void	QuickSort(int(*)(const void*, const void*));
+	void	Reverse(void);
+
+	BOOL	Contains(void* pData);
+	BOOL	Equals(CArrayBlock* pcTemplateArray);
+	int 	Find(void* pData);
+	BOOL	FindInSorted(void* pData, int(*)(const void*, const void*), int* piIndex);
+	int		FindWithIntKey(int iKey);
+	int		FindWithIntKey(int iKey, int iKeyOffset);
+	int 	FindWithKey(void* pData, int iKeyOffset, int iKeySize);
+
+	void 	RemoveAt(int iIndex, int bPreserveOrder = TRUE);
+	void	RemoveAt(int* paiIndex, int iNumElements, BOOL bPreserveOrder = TRUE);
+	void	RemoveAtNoDeallocate(int iIndex, int bPreserveOrder);
+	void	RemoveRange(int iStartIndex, int iEndIndexExclusive, BOOL bPreserveOrder = TRUE);
+	void 	RemoveTail(void);
+
+	void	Set(int iIndex, void* pvData);
+	BOOL	SafeSet(int iIndex, void* pvData);
+	void	Swap(int iIndex1, int iIndex2);
+	void	Unuse(void);
+	void 	Zero(void);
+
+	int 	ByteSize(void);
+	int		ChunkSize(void);
+	void	SetUsedElements(int iNumElements);
+
+	BOOL	WriteHeader(CFileWriter* pcFileWriter);
+	BOOL	ReadHeader(CFileReader* pcFileReader, CMallocator* pcMalloc);
+	BOOL	WriteAllocatorAndHeader(CFileWriter* pcFileWriter);
+	BOOL	ReadAllocatorAndHeader(CFileReader* pcFileReader);
+	BOOL	Write(CFileWriter* pcFileWriter);
+	BOOL	Read(CFileReader* pcFileReader);
+
+protected:
+	void*	Malloc(size_t tSize);
+	void*	Realloc(void* pv, size_t iMemSize);
+	void	Free(void* pv);
+
+	BOOL	BinarySearch(void* pData, int iLeft, int iRight, int(*)(const void*, const void*), int* piIndex);
+	void	CopyArrayInto(CArrayBlock* pcTemplateArray, int iIndex);
+	void	CopyBlockInto(void* paElements, int iLength, int iIndex);
+	void	PrivateRemoveAt(int iIndex, BOOL bPreserveOrder, int iDataSize);
+	void	PrivateRemoveRange(int iStartIndex, int iEndIndexExclusive, int bPreserveOrder, int iDataSize);
+	void	RemoveAtNoDeallocate(int iIndex, BOOL bPreserveOrder, int iDataSize);
+	void 	SetArraySize(int iNumElements);
+};
+
+
+#endif // __ARRAY_BASE_H__
 

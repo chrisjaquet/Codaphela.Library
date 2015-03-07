@@ -27,46 +27,44 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 struct STUNode
 {
-	SUnknownType	sType;
-	STNode			sTNode;
+	int		iSize;
+	STNode	sTNode;
 };
 
 
 typedef CTreeTemplate<void> __CTreeBlock;
 class CTreeBlock : public __CTreeBlock
 {
-private:
-	void	RecursiveFreeNodes(STNode *psNode);
-
 public:
 	void	Kill(void);
-	int		GetNodeType(void* psData);
+
 	int		GetNodeSize(void* psData);
-	void	GetNodeTypeAndSize(void* pvData, SUnknownType* psType);
-	void	SetNodeTypeAndSize(void* pvData, SUnknownType* psType);
-	void*	InsertRoot(int iDataSize, int iDataType);
-	void*	InsertOnRightOfChildren(void* psParent, int iDataSize, int iDataType);
-	void*	InsertOnLeftOfChildren(void* psParent, int iDataSize, int iDataType);
-	void*	InsertOnPath(int* aiPos, int iLevel, int iDataSize, int iDataType);
-	void*	InsertOnPath(int* aiPos, int iLevel, int iDataSize, int iDataType, int* aiOldPos, int iOldLevel, void* psOldNode);
-	void*	InsertAtChildNum(void* psParent, int iChildNum, int iDataSize, int iDataType);
-	void*	InsertOnUp(void* psPos, int iDataSize, int iDataType);
-	void*	InsertOnAcross(void* psPos, int iDataSize, int iDataType);
-	void	FreeDetached(void* psNodeData);
-	void*	AllocateDetached(int iDataSize, int iDataType);
+
+	void*	InsertRoot(int iDataSize);
+	void*	InsertOnRightOfChildren(void* psParent, int iDataSize);
+	void*	InsertOnLeftOfChildren(void* psParent, int iDataSize);
+	void*	InsertOnPath(int* aiPos, int iLevel, int iDataSize);
+	void*	InsertOnPath(int* aiPos, int iLevel, int iDataSize, int* aiOldPos, int iOldLevel, void* psOldNode);
+	void*	InsertAtChildNum(void* psParent, int iChildNum, int iDataSize);
+	void*	InsertOnUp(void* psPos, int iDataSize);
+	void*	InsertOnAcross(void* psPos, int iDataSize);
+
 	void	Detach(void* psNodeData);
 	BOOL	RemoveLeaf(void* psNodeData);
 	int		RemoveBranch(void* psNodeData);
 	void	Remove(void* psNodeData);
 
-	//Get malloc size.
-	int		MallocSize(void);
+	int		ByteSize(void);
+	
+	BOOL	WriteTreeUnknown(CFileWriter* pcFileWriter);
+	BOOL	ReadTreeUnknown(CFileReader* pcFileReader);
+
+protected:
+	void	FreeDetached(void* psNodeData);
+	void*	AllocateDetached(int iDataSize);
+	void	RecursiveFreeNodes(STNode *psNode);
 };
 
 
-#define CTreeUnknownDataGetHeader(pvData)	DataGetHeaderMacro<STUNode, void>(pvData)
-#define CTreeUnknownHeaderGetData(pvHeader)	HeaderGetDataMacro<STUNode, void>(pvHeader)
-
-
-#endif //__TREE_BLOCK_H__
+#endif // __TREE_BLOCK_H__
 

@@ -18,8 +18,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
+#include "BaseLib/Define.h"
+#include "BaseLib/Log.h"
 #include "Object.h"
 #include "HollowObject.h"
+#include "ObjectDeserialiser.h"
+#include "ObjectRemapFrom.h"
 #include "PointerObject.h"
 
 
@@ -27,10 +31,34 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject::CPointerObject()
+void LogPointerDebug(CPointer* pvThis, char* szMethod)
 {
-	mpcObject = NULL;
-	mpcEmbedding = NULL;
+#ifdef DEBUG_POINTER
+#ifdef DEBUG
+	char*	szEmbeddingClass;
+	char*	szEmbeddingName;
+	char*	szEmbeddingIndex;
+	char*	szEmbeddingAddress;
+
+	CObject*	pcEmbedding;
+
+	pcEmbedding = pvThis->Embedding();
+	if (pcEmbedding != NULL)
+	{
+		szEmbeddingClass = pcEmbedding->ClassName();
+		szEmbeddingIndex = IndexToString(pcEmbedding->GetOI());
+		szEmbeddingName = pcEmbedding->GetName();
+		szEmbeddingAddress = PointerToString(pcEmbedding);
+		gcLogger.Debug2(PointerToString(pvThis), "->", szMethod, " [Embedding ", szEmbeddingClass, ": ", szEmbeddingIndex, " ", szEmbeddingName, " (", szEmbeddingAddress, ")]", NULL);
+	}
+	else
+	{
+		gcLogger.Debug2(PointerToString(pvThis), "->", szMethod, " [Embedding NULL]", NULL);
+	}
+
+	
+#endif // DEBUG
+#endif // DEBUG_POINTER
 }
 
 
@@ -38,10 +66,12 @@ CPointerObject::CPointerObject()
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::Clear(void)
+CPointer::CPointer()
 {
 	mpcObject = NULL;
 	mpcEmbedding = NULL;
+
+	LOG_POINTER_DEBUG();
 }
 
 
@@ -49,35 +79,175 @@ void CPointerObject::Clear(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::Init(CObject* pcEmbedding)
+CPointer::CPointer(CPointer& cPointer)
+{
+	mpcEmbedding = NULL;
+	mpcObject = NULL;
+
+	LOG_POINTER_DEBUG();
+
+	PointTo(cPointer.mpcObject, FALSE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CPointer::CPointer(CEmbeddedObject* pcObject)
+{
+	mpcEmbedding = NULL;
+	mpcObject = NULL;
+
+	LOG_POINTER_DEBUG();
+
+	PointTo(pcObject, FALSE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CPointer::~CPointer()
+{
+	LOG_POINTER_DEBUG();
+
+	if (mpcObject)
+	{
+		mpcObject->RemoveStackFromTryKill(this, FALSE);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::operator = (CEmbeddedObject* pcObject)
+{
+	LOG_POINTER_DEBUG();
+
+	PointTo(pcObject, TRUE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::operator = (CPointer& pcPointer)
+{
+	LOG_POINTER_DEBUG();
+
+	PointTo(pcPointer.mpcObject, TRUE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CEmbeddedObject* CPointer::operator -> ()
+{
+	if ((mpcObject) && (mpcObject->IsHollow()))
+	{
+		mpcObject = mpcObject->Dehollow();
+	}
+	return mpcObject;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CEmbeddedObject* CPointer::operator & ()
+{
+	if ((mpcObject) && (mpcObject->IsHollow()))
+	{
+		mpcObject = mpcObject->Dehollow();
+	}
+	return mpcObject;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPointer::operator ! ()
+{
+	return mpcObject == NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::UnsafeClearObject(void)
+{
+	mpcObject = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::SetEmbedding(CObject* pcEmbedding)
 {
 	mpcEmbedding = pcEmbedding;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::UnsafePointTo(CEmbeddedObject* pcNewObject)
+{
+	mpcObject = pcNewObject;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::PointTo(CBaseObject* pcObject)
+void CPointer::PointTo(CEmbeddedObject* pcNewObject, BOOL bKillIfNoRoot)
 {
-	if (mpcObject != pcObject)
+	CEmbeddedObject*	pcOldObject;
+
+	if (mpcObject != pcNewObject)
 	{
-		if (mpcObject)
-		{
-			if (mpcEmbedding)
+		pcOldObject = mpcObject;
+		mpcObject = pcNewObject;
+
+		if (IsEmbeddingAllocatedInObjects())
+		{			
+			if (pcOldObject)
 			{
-				mpcEmbedding->RemoveTo(mpcObject);
-				mpcObject->RemoveEmbeddedFrom(mpcEmbedding);
+				if (mpcObject)
+				{
+					mpcObject->AddHeapFrom(mpcEmbedding, FALSE);
+				}
+				pcOldObject->RemoveHeapFrom(mpcEmbedding, TRUE);
+			}
+			else if (mpcObject)
+			{
+				mpcObject->AddHeapFrom(mpcEmbedding, TRUE);
 			}
 		}
-		mpcObject = pcObject;
-		if (mpcObject)
+		else
 		{
-			mpcObject->AddFrom(mpcEmbedding);
-			if (mpcEmbedding)
+			if (pcOldObject)
 			{
-				mpcEmbedding->AddTo(mpcObject);
+				pcOldObject->RemoveStackFromTryKill(this, bKillIfNoRoot);
+			}
+
+			if (mpcObject)
+			{
+				mpcObject->AddStackFrom(this);
 			}
 		}
 	}
@@ -88,59 +258,26 @@ void CPointerObject::PointTo(CBaseObject* pcObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointerObject::operator = (CBaseObject* ptr)
+CEmbeddedObject* CPointer::Return(void)
 {
-	//This operator override exists only to allow NULL assignment.
-	PointTo(ptr);
+	CEmbeddedObject*	pOldObject;
+
+	//Call this method when you need to return a pointers object but no other 
+	//pointers point to the object and this pointers destructor must not destroy the object.
+
+	pOldObject = mpcObject;
+	mpcObject->PrivateRemoveStackFrom(this);
+	mpcObject = NULL;
+	return pOldObject;
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CPointerObject::operator = (CPointerObject pcPointer)
-{
-	PointTo(pcPointer.mpcObject);
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CBaseObject* CPointerObject::operator -> ()
-{
-	Dehollow();
-	return mpcObject;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-CBaseObject* CPointerObject::operator & ()
-{
-	Dehollow();
-	return mpcObject;
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::operator ! ()
-{
-	return mpcObject == NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::IsNotNull(void)
+BOOL CPointer::IsNotNull(void)
 {
 	return mpcObject != NULL;
 }
@@ -150,7 +287,7 @@ BOOL CPointerObject::IsNotNull(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::IsNull(void)
+BOOL CPointer::IsNull(void)
 {
 	return mpcObject == NULL;
 }
@@ -160,9 +297,9 @@ BOOL CPointerObject::IsNull(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CPointerObject*	CPointerObject::This(void)
+CPointer* CPointer::This(void)
 {
-	//This method should only *ever* be used by CObjectDeserialiser
+	//This method should only *ever* be called whilst in the Load method on a CObject
 	return this;
 }
 
@@ -171,27 +308,341 @@ CPointerObject*	CPointerObject::This(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CPointerObject::Dehollow(void)
+CEmbeddedObject* CPointer::Object(void)
 {
-	CHollowObject*	pcHollow;
+	return mpcObject;
+}
 
-	if(mpcObject)
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CEmbeddedObject** CPointer::ObjectPtr(void)
+{
+	return &mpcObject;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CBaseObject* CPointer::BaseObject(void)
+{
+	if (mpcObject && mpcObject->IsBaseObject())
 	{
-		if (mpcObject->IsHollow())
+		return (CBaseObject*)mpcObject;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CObject* CPointer::Embedding(void)
+{
+	return mpcEmbedding;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CEmbeddedObject* CPointer::Dereference(void)
+{
+	if ((mpcObject) && (mpcObject->IsHollow()))
+	{
+		mpcObject = mpcObject->Dehollow();
+	}
+	return mpcObject;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CPointer::MorphInto(CEmbeddedObject* pcNew)
+{
+	CObjectRemapFrom	cRemapper;
+	int					iCount;
+
+	iCount = cRemapper.Remap(mpcObject, pcNew, FALSE);
+
+	return iCount;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPointer::IsHollow(void)
+{
+	if (mpcObject)
+	{
+		return mpcObject->IsHollow();
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPointer::Load(CObjectDeserialiser* pcFile)
+{
+	if (mpcObject)
+	{
+		if (!mpcObject->IsHollow())
 		{
-			pcHollow = (CHollowObject*)mpcObject;
-			mpcObject = pcHollow->Load();
-			pcHollow->Kill();
-			if (mpcObject)
-			{
-				return TRUE;
-			}
-			else
-			{
-				return FALSE;
-			}
+			return mpcObject->Load(pcFile);
+		}
+		else
+		{
+			return FALSE;
 		}
 	}
-	return TRUE;
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CPointer::GetDistToRoot(void)
+{
+	if (mpcObject)
+	{
+		return mpcObject->GetDistToRoot();
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+OIndex CPointer::GetIndex(void)
+{
+	if (mpcObject)
+	{
+		return mpcObject->GetOI();
+	}
+	else
+	{
+		return NULL_O_INDEX;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+char* CPointer::GetName(void)
+{
+	if (mpcObject && mpcObject->IsNamed())
+	{
+		return mpcObject->GetName();
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPointer::IsNamed(void)
+{
+	if (mpcObject)
+	{
+		return mpcObject->IsNamed();
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+char* CPointer::ClassName(void)
+{
+	if (mpcObject)
+	{
+		return mpcObject->ClassName();
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPointer::IsDirty(void)
+{
+	if (mpcObject)
+	{
+		return mpcObject->IsDirty();
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CPointer::IsEmbeddingAllocatedInObjects(void)
+{
+	if (mpcEmbedding)
+	{
+		return mpcEmbedding->IsAllocatedInObjects();
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::Kill(void)
+{
+	//This method exists so that it's object can be killed without invoking -> and potentially loading it first.
+	if (mpcObject)
+	{
+		return mpcObject->Kill();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::ClearIndex(void)
+{
+	if (mpcObject)
+	{
+		mpcObject->ClearIndex();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::AssignObject(CEmbeddedObject* pcObject)
+{
+	mpcObject = pcObject;
+	if (mpcObject)
+	{
+		mpcObject->AddStackFrom(this);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::AddHeapFrom(CBaseObject* pcFrom)
+{
+	if (mpcObject)
+	{
+		mpcObject->AddHeapFrom(pcFrom, TRUE);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::DumpFroms(void)
+{
+	CBaseObject* pvBaseObject = BaseObject();
+
+	if (pvBaseObject)
+	{
+		pvBaseObject->DumpFroms();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::DumpPointerTos(void)
+{
+	CBaseObject* pvBaseObject = BaseObject();
+
+	if (pvBaseObject)
+	{
+		pvBaseObject->DumpPointerTos();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CPointer::Dump(void)
+{
+	CChars			sz;
+	CBaseObject*	pvBaseObject = BaseObject();
+
+	if (pvBaseObject)
+	{
+		pvBaseObject->Dump();
+	}
+	else
+	{
+		sz.Init("NULL\n");
+		sz.Dump();
+		sz.Kill();
+	}
 }
 

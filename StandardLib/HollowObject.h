@@ -26,11 +26,39 @@ class CHollowObject : public CBaseObject
 {
 BASE_FUNCTIONS(CHollowObject);
 public:
-	void			Kill(void);
-					CHollowObject(void);
-	BOOL			IsHollow(void);
+								CHollowObject(void);
+			void				Init(unsigned short iNumEmbedded);
+			void				Class(void);
+			void				Kill(void);
+			CBaseObject*		Dehollow(void);
 
-	CBaseObject*	Load(void);
+			BOOL				IsHollow(void);
+
+			BOOL				Save(CObjectSerialiser* pcFile);
+			BOOL				Load(CObjectDeserialiser* pcFile);
+			BOOL				IsCollection(void);
+			BOOL				IsObject(void);
+			void				SetPointerTosExpectedDistToRoot(int iDistToRoot);
+			void				GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+			int					NumPointerTos(void);
+			unsigned short int	GetNumEmbedded(void);
+			CEmbeddedObject*	GetEmbeddedObject(unsigned short int iIndex);
+			int					GetEmbeddedIndex(CEmbeddedObject* pcEmbedded);
+			int					NumHeapFroms(void);
+			int					NumStackFroms(void);
+			void				RemoveAllPointerTosDontKill(void);
+			void				RemoveAllPointerTos(void);
+			void				BaseValidatePointerTos(void);
+			void				ValidateConsistency(void);
+
+protected:
+			void				KillInternalData(void);
+			void				KillData(void);
+			int					RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
+			void				RemovePointerTo(CEmbeddedObject* pcTo);
+			void				BaseRemoveAllPointerTosDontKill(void);
+	virtual	CEmbeddedObject*	GetRemappedEmbeddedObject(int iIndex);
+			void				UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
 };
 
 

@@ -23,7 +23,6 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #ifndef __INTERPOLATOR_ARRAY_H__
 #define __INTERPOLATOR_ARRAY_H__
 
-#include <stdlib.h>
 
 //This looks really dodgy and I think all it was for was interpolating colours.
 

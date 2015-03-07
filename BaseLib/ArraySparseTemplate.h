@@ -23,9 +23,10 @@ Microsoft Windows is Copyright Microsoft Corporation
 #ifndef __ARRAY_SPARSE_TEMPLATE_H__
 #define __ARRAY_SPARSE_TEMPLATE_H__
 #include <stdlib.h>
+#include "DataMacro.h"
 #include "Define.h"
 #include "FastMemset.h"
-#include "FreeListBlock.h"
+#include "FreeList.h"
 
 
 struct SSparseNode
@@ -45,25 +46,29 @@ struct SSparseNode
 template<class M>
 class __CArraySparseTemplate
 {
-public:
-	CFreeListBlock	mcNodes;
+private:
+	CFreeList	mcNodes;
 	int				miElementSize;
 	SSparseNode*	mpsRoot;
 
+public:
 	void 			Init(int iChunkSize, int iElementSize);
 	void 			Kill(void);
 	void			Set(int iElementPos, M* pvData);
-	SSparseNode*	PrivateAddNode(int iElementPos, SSparseNode* psParent);
 	SSparseNode*	Search(int iElementPos);
 	M* 				Set(int iElementPos);
 	M*				Get(int iElementPos);
+	void			Dump(void);
+	void			RecurseDump(int iDepth, SSparseNode* psNode, CChars* psz, BOOL bLeft);
+	SSparseNode*	TestGetRoot(void);
+
+private:
+	SSparseNode*	AllocateNode(int iElementPos, SSparseNode* psParent);
 	SSparseNode*	RotateLeft(SSparseNode* psNode);
 	SSparseNode*	RotateRight(SSparseNode* psNode);
 	void			RecurseRebalance(SSparseNode* psNode);
 	void			RecurseIncreaseDepths(SSparseNode* psNode, int iLeafDepth);
 	void			RecurseUpdateDepth(SSparseNode* psNode);
-	void			Dump(void);
-	void			RecurseDump(int iDepth, SSparseNode* psNode, CChars* psz, BOOL bLeft);
 };
 
 
@@ -146,7 +151,7 @@ void __CArraySparseTemplate<M>::Set(int iElementPos, M* pvData)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class M>
-SSparseNode* __CArraySparseTemplate<M>::PrivateAddNode(int iElementPos, SSparseNode* psParent)
+SSparseNode* __CArraySparseTemplate<M>::AllocateNode(int iElementPos, SSparseNode* psParent)
 {
 	SSparseNode*	psNode;
 
@@ -277,26 +282,26 @@ M* __CArraySparseTemplate<M>::Set(int iElementPos)
 		psNode = Search(iElementPos);
 		if (iElementPos < psNode->iIndex)
 		{
-			psNewNode = PrivateAddNode(iElementPos, psNode);
+			psNewNode = AllocateNode(iElementPos, psNode);
 			psNode->psLeft = psNewNode;
 		}
 		else if (iElementPos > psNode->iIndex)
 		{
-			psNewNode = PrivateAddNode(iElementPos, psNode);
+			psNewNode = AllocateNode(iElementPos, psNode);
 			psNode->psRight = psNewNode;
 		}
 		else
 		{
-			return HeaderGetData(SSparseNode, M, psNode);
+			return HeaderGetData<SSparseNode, M>(psNode);
 		}
 		RecurseIncreaseDepths(psNode, 1);
 		RecurseRebalance(psNode);  //Not psNewNode?
-		return HeaderGetData(SSparseNode, M, psNewNode);
+		return HeaderGetData<SSparseNode, M>(psNewNode);
 	}
 	else
 	{
-		mpsRoot = PrivateAddNode(iElementPos, NULL);
-		return HeaderGetData(SSparseNode, M, mpsRoot);
+		mpsRoot = AllocateNode(iElementPos, NULL);
+		return HeaderGetData<SSparseNode, M>(mpsRoot);
 	}
 }
 
@@ -313,7 +318,7 @@ M* __CArraySparseTemplate<M>::Get(int iElementPos)
 	psNode = Search(iElementPos);
 	if (psNode->iIndex == iElementPos)
 	{
-		return HeaderGetData(SSparseNode, M, psNode);
+		return HeaderGetData<SSparseNode, M>(psNode);
 	}
 	return NULL;
 }
@@ -505,6 +510,17 @@ void __CArraySparseTemplate<M>::RecurseDump(int iDepth, SSparseNode* psNode, CCh
 		RecurseDump(iDepth+1, psNode->psLeft, psz, TRUE);
 		RecurseDump(iDepth+1, psNode->psRight, psz, FALSE);
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+template<class M>
+SSparseNode* __CArraySparseTemplate<M>::TestGetRoot(void)
+{
+	return mpsRoot;
 }
 
 

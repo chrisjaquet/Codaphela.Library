@@ -49,11 +49,11 @@ void CListenerCall::AddAllowedClassName(char* szName)
 {
 	CArrayListenerPtr*	pcArray;
 
-	pcArray = mcListeners.GetWithKey(szName);
+	pcArray = mcListeners.Get(szName);
 	if (!pcArray)
 	{
 		pcArray = mcListeners.Put(szName);
-		pcArray->Init();
+		pcArray->Init(1);
 	}
 }
 
@@ -66,13 +66,13 @@ BOOL CListenerCall::RemoveListener(CListener* pcRemoved)
 {
 	int					i;
 	CArrayListenerPtr*	pcArray;
-	CChars*				pszName;
-	int					j;
 	CListener*			pcListener;
+	SMapIterator		sIter;
+	BOOL				bResult;
 
-	for (j = 0; j < mcListeners.NumElements(); j++)
+	bResult = mcListeners.StartIteration(&sIter, NULL, (void**)&pcArray);
+	while (bResult)
 	{
-		mcListeners.GetAtIndex(j, &pszName, &pcArray);
 		for (i = 0; i < pcArray->NumElements(); i++)
 		{
 			pcListener = (*pcArray->Get(i));
@@ -82,6 +82,7 @@ BOOL CListenerCall::RemoveListener(CListener* pcRemoved)
 				return TRUE;
 			}
 		}
+		bResult = mcListeners.Iterate(&sIter, NULL, (void**)&pcArray);
 	}
 	return FALSE;
 }
@@ -97,7 +98,7 @@ void CListenerCall::CallListenersName(char* szClassName, void(CListener::*Listen
 	CListener*			pcListener;
 	CArrayListenerPtr*	pcArray;
 
-	pcArray = mcListeners.GetWithKey(szClassName);
+	pcArray = mcListeners.Get(szClassName);
 	if (pcArray)
 	{
 		for (i = 0; i < pcArray->NumElements(); i++)

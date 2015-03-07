@@ -50,9 +50,11 @@ public:
 	BOOL	Set(CIndexedDataDescriptor* pcDescriptor);
 	BOOL	Remove(OIndex oi);
 
-	void	Save(void);
-	void	Load(void);
+	BOOL	Save(void);
+	BOOL	Load(void);
 	void	UpdateFile(void);
+
+	BOOL	RemoveFile(void);
 
 	OIndex	Length(void);
 	OIndex	NumElements(void);
