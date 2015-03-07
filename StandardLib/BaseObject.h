@@ -25,35 +25,36 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //Tested for root is only valid whilst the scene graph is calling CanFindRoot.  It stops the graph from walking already tested objects.
-#define OBJECT_FLAGS_TESTED_FOR_ROOT		0x02
+#define OBJECT_FLAGS_TESTED_FOR_ROOT			  0x02
 
 //Invalidated is set when the object on the file system is changed and must be reloaded.  This objects does not use it.
-#define OBJECT_FLAGS_INVALIDATED			0x04
+#define OBJECT_FLAGS_INVALIDATED				  0x04
 
 //Dirty must be manually set when an object needs to be written from memory to indexed data.  Objects are - by default always dirty.
-#define OBJECT_FLAGS_DIRTY					0x08
+#define OBJECT_FLAGS_DIRTY						  0x08
 
 //Debug flag marking whether or not an object has had kill called on it.  An object that is killed should be removed from Memory so an object with this flag set is broken.
-#define OBJECT_FLAGS_KILLED					0x10
+#define OBJECT_FLAGS_KILLED						  0x10
 
 //Debug flag marking whether or not an object has had it's graph dumped yet.
-#define OBJECT_FLAGS_DUMPED					0x20
+#define OBJECT_FLAGS_DUMPED						  0x20
 
 //This object cannot be reached and is marked for killing.
-#define OBJECT_FLAGS_UNREACHABLE			0x40
+#define OBJECT_FLAGS_UNREACHABLE				  0x40
 
 //Tested for sanity is only valid whilst the scene graph is calling ValidateConsistency.  It stops the graph from walking already tested objects.
-#define OBJECT_FLAGS_TESTED_FOR_SANITY		0x80
+#define OBJECT_FLAGS_TESTED_FOR_SANITY			  0x80
 
-#define OBJECT_FLAGS_CLEARED_DIST_TO_ROOT			0x10000
-#define OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT		0x20000
-#define OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED		0x40000
-#define OBJECT_FLAGS_DIST_FROM_WALKED				0x80000
+//Object initialisation life-cycle
+#define OBJECT_FLAGS_CALLED_CONSTRUCTOR			 0x100
+#define OBJECT_FLAGS_CALLED_ALLOCATE			 0x200
+#define OBJECT_FLAGS_CALLED_INIT				 0x400
+#define OBJECT_FLAGS_CALLED_CLASS				 0x800
 
-
-//How man embedded objects are in the object.  If you have more than 255 then you need your head smacked.
-#define OBJECT_FLAGS_NUM_EMBEDDED			0x0000FF00
-
+#define OBJECT_FLAGS_CLEARED_DIST_TO_ROOT		0x1000
+#define OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT	0x2000
+#define OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED	0x4000
+#define OBJECT_FLAGS_DIST_FROM_WALKED			0x8000
 
 class CObjectDeserialiser;
 class CObjectSerialiser;
@@ -72,17 +73,25 @@ friend class CEmbeddedObject;
 
 BASE_FUNCTIONS(CBaseObject);
 protected:
-	OIndex		moi;
-	CObjects*	mpcObjectsThisIn;
-	int			miDistToRoot;
-	int			miDistToStack;
-	int			miFlags;
+	OIndex				moi;
+	CObjects*			mpcObjectsThisIn;
+	int					miDistToRoot;
+	int					miDistToStack;
+	unsigned short int	miFlags;
+	unsigned short int  miNumEmbedded;
+	unsigned short int	miPreInits;
+	unsigned short int	miPostInits;
 
 public:
 								CBaseObject();
-	virtual	void				PreInit(CObjects* pcObjects);
-			void				PreInit(void);
+								~CBaseObject();
+
+	virtual void				Allocate(CObjects* pcObjects);
 	virtual	void				Class(void);
+
+			void				PreInit(void);
+			void				PostInit(void);
+	virtual void				Initialised(void);
 
 			void				Kill(void);
 			void				Kill(BOOL bHeapFromChanged);
@@ -104,27 +113,30 @@ public:
 	virtual BOOL				IsNamed(void);
 			BOOL				IsInvalidated(void);
 	virtual BOOL				IsDirty(void);
-			BOOL				IsUpdateAttachedTosDistToRoot(void);
+			BOOL				IsUpdateAttachedPointerTosDistToRoot(void);
+			BOOL				IsInitialised(void);
+			BOOL				HasClass(void);
 
 	virtual char*				GetName(void);
 	virtual void				SetName(char* szName);
 			int					SerialisedSize(void);
 
-			int					GetNumEmbedded(void);
+			unsigned short int	GetNumEmbedded(void);
 
-	virtual void				SetPointedTosExpectedDistToRoot(int iDistToRoot) =0;
+	virtual void				SetPointerTosExpectedDistToRoot(int iDistToRoot) =0;
 			void				SetDirty(void);
 			int					GetDistToRoot(void);
 			int					GetDistToStack(void);
 	virtual BOOL				SetDistToRoot(int iDistToRoot);
 			BOOL				TestedForRoot(void);
-	virtual void				RemoveAllTos(void) =0;
+	virtual void				RemoveAllPointerTosDontKill(void) =0;
+	virtual void				RemoveAllPointerTos(void) =0;
 			void				UpdateAttachedTosDistToRoot(CDistCalculatorParameters* pcParameters);
 			void				CollectValidDistStartingObjectsAndSetClearedToRoot(CBaseObject* pcTo, CDistCalculatorParameters* pcParameters);
 			void				CollectAndClearInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
 	virtual BOOL				IsDistToRootValid(void);
+			int					CollectDetachedAndSetDistToStackZero(CDistCalculatorParameters* pcParameters);
 			int					CollectDetachedFroms(CDistCalculatorParameters* pcParameters);
-			int					CollectEmbeddedObjectDetachedFroms(CDistCalculatorParameters* pcParameters);
 
 			void				AddExpectedDistToRoot(CEmbeddedObject* pcPointedTo, int iExpectedDist, CDistCalculatorParameters* pcParameters);
 			void				ClearDistTouchedFlags(void);
@@ -135,16 +147,20 @@ public:
 			CStackPointers*		GetStackPointers(void);
 	virtual void				SetDistToStack(int iDistToStack);
 
-	virtual BOOL				ContainsTo(CEmbeddedObject* pcEmbedded);
-			CEmbeddedObject* 	TestGetTo(int iToIndex);
-			int					TestGetNumEmbeddedFromFlags(void);
+	virtual BOOL				ContainsPointerTo(CEmbeddedObject* pcEmbedded);
+			CEmbeddedObject* 	TestGetPointerTo(int iToIndex);
+			int 				TestGetNumEmbeddedFromFlags(void);
+			void				ClearFlagNumEmbedded(void);
 	virtual void				SetFlag(int iFlag, int iFlagValue);
 			int					GetFlags(void);
 			BOOL				CanFindRoot(void);
 			BOOL				CanFindRootThroughValidPath(void);
+
 			void				DumpFroms(void);
-			void				DumpTos(void);
+			void				DumpPointerTos(void);
 			void				Dump(void);
+
+			void				ValidateFlagSet(int iFlag, char* szFlag);
 			void				ValidateFlagNotSet(int iFlag, char* szFlag);
 			void				ValidateContainerFlag(void);
 			void				ValidateFlags(void);
@@ -152,26 +168,32 @@ public:
 			void				ValidateIndex(void);
 			void				ValidateObjectsThisIn(void);
 			void				ValidateCanFindRoot(void);
-	virtual void				ValidateEmbeddedObjectTos(void) =0;
+	virtual void				BaseValidatePointerTos(void) =0;
 	virtual void				ValidateEmbeddedConsistency(void);
 	virtual void				ValidateObjectIdentifiers(void);
 			void				ValidateBaseObjectDetail(void);
+			void				ValidateAllocation(void);
+			void				ValidateHasClass(void);
+			void				ValidateInitCalled(void);
 	
 protected:
+	virtual void				KillIdentifiers(void);
 			void				KillInternalData(void);
-	virtual void				Free(void);
-			int					RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew) =0;
+			int					RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew) =0;
 			BOOL				RemoveToFrom(CEmbeddedObject* pcPointedTo);
-	virtual void				RemoveEmbeddedObjectAllTos(void) =0;
+	virtual void				BaseRemoveAllPointerTosDontKill(void) =0;
 			void				SetExpectedDistToRoot(int iExpectedDistToRoot);
 			void				SetCalculatedDistToRoot(void);
 			int					CalculateDistToRootFromPointedFroms(void);
 	virtual int					CalculateDistToRootFromPointedFroms(int iDistToRoot);
-			void				CollectThoseToBeKilled(CArrayBaseObjectPtr* papcKilled);
+			void				CollectThoseToBeKilled(CArrayBlockObjectPtr* papcKilled);
 			BOOL				IsBaseObject(void);
-			int					GetNumEmbeddedFromFlags(void);
+			unsigned short int	GetNumEmbeddedFromFlags(void);
 			void				SetFlagNumEmbedded(int iNumEmbedded);
 			BOOL				IsMarkedUnreachable(void);
+			void				ReplaceOneWithX(char* szDest, char* szMask);
+			void				ContainerPreInit(void);
+			void				ContainerPostInit(void);
 };
 
 

@@ -70,8 +70,8 @@ public:
 	CInputDeviceVariableDesc*	GetVariable(char* szName);
 	CInputDeviceVariableDesc*	AddVariable(char* szName);
 	CInputSourceDesc*			GetSource(char* szFriendlyName);
-	void						GetSources(CArrayPointer* apcDest, CInputCategoryGeneric* pcGeneric);
-	void						GetSources(CArrayPointer* apcDest);
+	void						GetSources(CArrayIntAndPointer* apcDest, CInputCategoryGeneric* pcGeneric);
+	void						GetSources(CArrayIntAndPointer* apcDest);
 	CInputCategory*				GetCategory(void);
 	CInputVirtualDeviceSwitch*	AddVariableSwitch(CInputDeviceVariableValue* pcVariableValue);
 	void						ToString(CChars* psz);

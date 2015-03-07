@@ -22,7 +22,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __FREE_LIST_MAYBE_H__
 #define __FREE_LIST_MAYBE_H__
-#include "FreeListBlock.h"
+#include "FreeList.h"
 
 
 #define NUM_ELEMENTS_BEFORE_FREELIST	16
@@ -31,23 +31,29 @@ Microsoft Windows is Copyright Microsoft Corporation
 
 class CFreeListMaybe
 {
-private:
-	void* PrivateCreateLinkList(void);
-	void* PrivateCreateFreeList(void);
-
-public:
-	CFreeListBlock*	mpcFreeList;
-	CLinkListBlock*	mpcLinkList;
+protected:
+	CFreeList*		mpcFreeList;
+	CLinkedListBlock*	mpcLinkList;
 	int					miElementSize;
 	int					miChunkSize;
 
+public:
 	void	Init(int iElementSize, int iChunkSize = NUM_ELEMENTS_IN_CHUNK);
 	void	Kill(void);
-	void*	Add(void);  //This is a malloc equivalent.
-	void*	AddUseFreelist(int iChunkSize = 0);				//Force usage of a freelist if not yet used.
-	void*	AddUseMalloc(void);  //Just for completeness.
+	void*	Add(void);
+	void*	AddUseFreeList(int iChunkSize = 0);				//Force usage of a free list if not yet used.
+	void*	AddUseLinkedList(void);  //Just for completeness.
 	void	Remove(void* pvElement);
 	BOOL	SafeRemove(void* pvElement);  //Make sure to only remove elements which we have allocated.
+	int		GetElementSize(void);
+
+protected:
+	void*	Malloc(size_t tSize);
+	void*	Realloc(void* pv, size_t iMemSize);
+	void	Free(void* pv);
+
+	void*	CreateLinkList(void);
+	void*	CreateFreeList(void);
 };
 
 

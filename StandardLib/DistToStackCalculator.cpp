@@ -128,7 +128,7 @@ int CDistToStackCalculator::CollectDetachedAndSetDistToStackZero(CDistCalculator
 	for (i = 0; i < pcParameters->NumTouched(); i++)
 	{
 		pcBaseObject = pcParameters->GetTouched(i);
-		iNumWithStackPointers += pcBaseObject->CollectDetachedFroms(pcParameters);
+		iNumWithStackPointers += pcBaseObject->CollectDetachedAndSetDistToStackZero(pcParameters);
 	}
 
 	return iNumWithStackPointers;
@@ -149,7 +149,10 @@ void CDistToStackCalculator::ResetObjectsToUnknownDistToStack(CDistCalculatorPar
 	for (i = 0; i < iNumDetached; i++)
 	{
 		pcBaseObject = pcParameters->GetDetachedFromRoot(i);
-		pcBaseObject->SetDistToStack(UNKNOWN_DIST_TO_STACK);
+		if (pcBaseObject->IsAllocatedInObjects())
+		{
+			pcBaseObject->SetDistToStack(UNKNOWN_DIST_TO_STACK);
+		}
 	}
 }
 

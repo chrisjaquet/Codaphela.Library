@@ -25,30 +25,33 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "MemoryHeader.h"
 
 
+typedef CLinkedListTemplate<CFreeList> CLinkListFreeList;
+
+
+struct SMemoryParams
+{
+	int				iDefaultAlignment;
+	unsigned int	uiFreeListSizeLimit;
+	int				iFreeListParams;
+};
+
+
 class CMemory
 {
 private:
-	CFreeListBlock*		GetOrAddFreeList(unsigned int iElementSize, int iAlignment, int iOffset);
-	SFreeListParams*	GetParamsForSize(unsigned int iElementSize);
-	void				InitFreeListParams(void);
-	void*				AllocateInFreeList(CFreeListBlock* pcFreeList, unsigned int uiElementSize);
-	void				DeallocateInFreeList(CFreeListBlock* pcFreeList, SMemoryAllocation* psAlloc);
-	void*				AllocateInLargeList(unsigned int uiSize, int iAlignment, int iOffset);
-	void				DeallocateInLargeList(SMemoryAllocation* psAlloc);
-	void				CopyAllocation(void* pvDest, void* pvSource, unsigned int uiDestSize, unsigned int uiSourceSize);
-
-public:
-	CLinkListFreeListBlock		mcFreeLists;  
-	CLinkListAligned			mcLargeList;
-	int							miDefaultAlignment;
-	CMemoryStats				mcStats;
+	CLinkListFreeList			mcFreeLists;  
+	CLinkedListBlockAligned		mcLargeList;
 	CArrayFreeListDesc			mcOrder;
+
 	CArrayFreeListParams		mcParams;
+	int							miDefaultAlignment;
+	unsigned int				muiFreeListSizeLimit;
+
 	unsigned int				muiAllocCount;
 	unsigned int				muiBreakAlloc;
-	unsigned int				muiFreeListSizeLimit;
 	BOOL						mbBreakOnAlloc;
 
+public:
 	void				Init(void);
 	void				Init(int iDefaultAlignment, BOOL bDefaultFreeListParams = TRUE);
 	void				Kill(void);
@@ -56,24 +59,43 @@ public:
 	void*				Add(unsigned int iSize, int iAlignment, int iOffset = 0);
 	void				Remove(void* pv);
 	BOOL				Remove(CArrayVoidPtr* pav);
-	CFreeListBlock*		GetFreeList(unsigned int iElementSize, int iAlignment, int iOffset);
-	CFreeListBlock*		GetFreeList(unsigned int iElementSize);
+	unsigned int		GetSize(void* pv);
+	CFreeList*			GetFreeList(unsigned int iElementSize, int iAlignment, int iOffset);
+	CFreeList*			GetFreeList(unsigned int iElementSize);
 	void*				Grow(void* pvInitial, unsigned int iSize);
 	void				SetDebugName(void* pv, char (*pszDebug)[4]);
 	void				BreakOnAdd(unsigned int uiAllocCount);
 	int					NumElements(void);
 	int					ByteSize(void);
 	void				AddParamBlock(unsigned int iFreeListSize, int iPrevSize, int iChunkSize);
+	void				AddParamBlock(SMemoryFreeListParams* psParam);
+	void				GetParams(SMemoryParams* psParams);
+	SMemoryFreeListParams*	GetFreeListParams(int iIndex);
+	void				SetFreeListSizeLimit(unsigned int uiFreeListSizeLimit);
 
 	void*				StartIteration(SMemoryIterator* psIterator);
 	void*				Iterate(SMemoryIterator* psIterator);
 
+	CFreeList*			TestGetFreeListsHead(void);
+	void*				TestGetLargeListsHead(void);
+
 protected:
-	int					RemoveNode(CArrayVoidPtr* pav, int i, SMemoryAllocation* psAlloc, int iChunkSize, SFNode* psNode, CFreeListBlock* pcList);
-	int					RemoveElements(CArrayVoidPtr* pav, int i, int iChunkSize, SFNode* psNode, CFreeListBlock* pcList);
+	int					RemoveNode(CArrayVoidPtr* pav, int i, SMemoryAllocation* psAlloc, int iChunkSize, SFNode* psNode, CFreeList* pcList);
+	int					RemoveElements(CArrayVoidPtr* pav, int i, int iChunkSize, SFNode* psNode, CFreeList* pcList);
+
+private:
+	CFreeList*			GetOrAddFreeList(unsigned int iElementSize, int iAlignment, int iOffset);
+	SMemoryFreeListParams*	GetFreeListParamsForSize(unsigned int iElementSize);
+	void				InitFreeListParams(void);
+	void*				AllocateInFreeList(CFreeList* pcFreeList, unsigned int uiElementSize);
+	void				DeallocateInFreeList(CFreeList* pcFreeList, SMemoryAllocation* psAlloc);
+	void*				AllocateInLargeList(unsigned int uiSize, int iAlignment, int iOffset);
+	void				DeallocateInLargeList(SMemoryAllocation* psAlloc);
+	void				CopyAllocation(void* pvDest, void* pvSource, unsigned int uiDestSize, unsigned int uiSourceSize);
 };
 
 
+//This should be a method.
 #define MEMORY_GET_ALLOCATION(p)	(SMemoryAllocation*)RemapSinglePointer(p, -(int)(sizeof(SMemoryAllocation)))
 
 

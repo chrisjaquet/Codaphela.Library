@@ -50,8 +50,6 @@ int CObjectRemapFrom::RemapEmbedded(CEmbeddedObject* pcNew, CEmbeddedObject* pcO
 	int				iCount;
 	CStackPointer*	pcStackPointer;
 	CStackPointer*	pcFirstStackPointer;
-	int				iOldDistToRoot;
-	BOOL			bDistChanged;;
 
 	iCount = 0;
 
@@ -59,8 +57,19 @@ int CObjectRemapFrom::RemapEmbedded(CEmbeddedObject* pcNew, CEmbeddedObject* pcO
 	for (i = 0; i < iNumHeapFroms; i++)
 	{
 		pvFrom = pcOld->CEmbeddedObject::GetHeapFrom(i);
-		iCount += pvFrom->RemapTos(pcOld, pcNew);
-		pcNew->AddHeapFrom(pvFrom, FALSE);
+		iCount += pvFrom->RemapPointerTos(pcOld, pcNew);
+
+		if (pcNew->IsInitialised())
+		{
+			pcNew->AddHeapFrom(pvFrom, FALSE);
+		}
+		else
+		{
+			//If the object is not initialised it cannot point to any other objects
+			//This means this dist to root calculation for tos can be skipped.
+			pcNew->UnsafeAddHeapFrom(pvFrom);
+			pcNew->SetDistToRoot(pcOld->GetDistToRoot());
+		}
 	}
 
 	pcFirstStackPointer = pcOld->GetFirstStackFrom();
@@ -73,13 +82,6 @@ int CObjectRemapFrom::RemapEmbedded(CEmbeddedObject* pcNew, CEmbeddedObject* pcO
 			pcStackPointer = pcStackPointer->GetNext();
 		}
 		pcNew->AddStackFroms(pcFirstStackPointer);
-	}
-
-	iOldDistToRoot = pcOld->GetDistToRoot();
-	bDistChanged = pcNew->SetDistToRoot(iOldDistToRoot);
-	if (bDistChanged)
-	{
-		pcNew->SetPointedTosExpectedDistToRoot(iOldDistToRoot);
 	}
 
 	pcOld->PostRemapFroms();

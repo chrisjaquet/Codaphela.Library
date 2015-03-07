@@ -31,5 +31,7 @@ BerkeleyLib/BerkeleyLib.sdf
 BerkeleyLib/BerkeleyLib.suo
 BerkeleyLib/Debug
 BerkeleyLib/ipch
+us.stackdump
+TestLib/TestLib.sdf
 *.bak
 *.*~

@@ -37,13 +37,15 @@ void CHeaderFileMap::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CHeaderFileMap::Kill(void)
 {
-	int				i;
-	CHeaderFile*	pcHeaderFile;
+	CHeaderFile*	pcHeader;
+	SMapIterator	sIter;
+	BOOL			bResult;
 
-	for (i = 0; i < mcFiles.NumElements(); i++)
+	bResult = mcFiles.StartIteration(&sIter, NULL, (void**)&pcHeader);
+	while (bResult)
 	{
-		mcFiles.GetAtIndex(i, NULL, &pcHeaderFile);
-		pcHeaderFile->Kill();
+		pcHeader->Kill();
+		bResult = mcFiles.Iterate(&sIter, NULL, (void**)&pcHeader);
 	}
 
 	mcFiles.Kill();
@@ -57,22 +59,22 @@ void CHeaderFileMap::Kill(void)
 CHeaderFile* CHeaderFileMap::AddFile(char* szAbsoluteFileName, BOOL bSystem)
 {
 	CHeaderFile*		pcHeader;
-	CChars*				pcName;
+	char*				szName;
 	CHeaderFile			cHeader;
 
 	pcHeader = mcFiles.Put(szAbsoluteFileName);
 	if (pcHeader)
 	{
-		pcName = mcFiles.PrivateGetKeyForData(pcHeader);
+		szName = mcFiles.GetKeyForData(pcHeader);
 		
-		cHeader.Init(pcName->Text(), bSystem);
+		cHeader.Init(szName, bSystem);
 		memcpy(pcHeader, &cHeader, sizeof(CHeaderFile));  //Initialise virtual function table.
 
 		pcHeader->macBlockSets.mpcFile = pcHeader;
 	}
 	else
 	{
-		pcHeader = mcFiles.GetWithKey(szAbsoluteFileName);
+		pcHeader = mcFiles.Get(szAbsoluteFileName);
 	}
 	return pcHeader;
 }
@@ -84,10 +86,7 @@ CHeaderFile* CHeaderFileMap::AddFile(char* szAbsoluteFileName, BOOL bSystem)
 //////////////////////////////////////////////////////////////////////////
 CHeaderFile* CHeaderFileMap::FindFile(char* szAbsoluteFileName)
 {
-	CChars		szFake;
-
-	szFake.Fake(szAbsoluteFileName);
-	return mcFiles.GetWithKey(&szFake);
+	return mcFiles.Get(szAbsoluteFileName);
 }
 
 
@@ -95,9 +94,20 @@ CHeaderFile* CHeaderFileMap::FindFile(char* szAbsoluteFileName)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-int CHeaderFileMap::NumFiles(void)
+CHeaderFile* CHeaderFileMap::StartIteration(SMapIterator* psIter)
 {
-	return mcFiles.mcArray.NumElements();
+	CHeaderFile*	pcHeader;
+	BOOL			bResult;
+
+	bResult = mcFiles.StartIteration(psIter, NULL, (void**)&pcHeader);
+	if (bResult)
+	{
+		return pcHeader;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 
@@ -105,13 +115,20 @@ int CHeaderFileMap::NumFiles(void)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-CHeaderFile* CHeaderFileMap::GetFile(int iIndex)
+CHeaderFile* CHeaderFileMap::Iterate(SMapIterator* psIter)
 {
-	CChars*			psz;
-	CHeaderFile*	pcHeaderFile;
+	CHeaderFile*	pcHeader;
+	BOOL			bResult;
 
-	mcFiles.GetAtIndex(iIndex, &psz, &pcHeaderFile);
-
-	return pcHeaderFile;
+	bResult = mcFiles.Iterate(psIter, NULL, (void**)&pcHeader);
+	if (bResult)
+	{
+		return pcHeader;
+	}
+	else
+	{
+		return NULL;
+	}
 }
+
 

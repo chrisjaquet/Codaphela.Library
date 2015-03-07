@@ -83,4 +83,3 @@ void* CEnumeratorBlock::Add(char* szName, int iDataSize, int iNum)
 	return psNode->pvData;
 }
 
-

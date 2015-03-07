@@ -24,7 +24,7 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #define __TRANSFORM_NODE_H_
 #include "BaseLib/ChunkFile.h"
 #include "BaseLib/ArrayTemplate.h"
-#include "BaseLib/ArrayPointer.h"
+#include "BaseLib/ArrayIntAndPointer.h"
 #include "CoreLib/ArrayVariable.h"
 #include "BaseLib/GeometricTypes.h"
 #include "StandardLib/StandardHeader.h"
@@ -53,7 +53,7 @@ class CTransformNode : public CUnknown
 {
 BASE_FUNCTIONS(CTransformNode);
 protected:
-	STypedPointer	msType;
+	SIntAndPointer	msType;
 
 public:
 	void 			Init(void);

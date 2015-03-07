@@ -44,7 +44,6 @@ void CMemory::Init(int iDefaultAlignment, BOOL bDefaultFreeListParams)
 	mcFreeLists.Init();
 	mcLargeList.Init();
 	miDefaultAlignment = iDefaultAlignment;
-	mcStats.Init();
  	mcOrder.Init(8);
 	muiAllocCount = 0;
 	muiBreakAlloc = 0;
@@ -69,7 +68,7 @@ void CMemory::Init(int iDefaultAlignment, BOOL bDefaultFreeListParams)
 //////////////////////////////////////////////////////////////////////////
 void CMemory::Kill(void)
 {
-	CFreeListBlock*	pcFreeList;
+	CFreeList*	pcFreeList;
 
 	pcFreeList = mcFreeLists.GetHead();
 	while (pcFreeList)
@@ -80,7 +79,6 @@ void CMemory::Kill(void)
 	mcFreeLists.Kill();
 
 	mcLargeList.Kill();
-	mcStats.Kill();
 }
 
 
@@ -90,7 +88,7 @@ void CMemory::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 void CMemory::InitFreeListParams(void)
 {
-	SFreeListParams		sParam;
+	SMemoryFreeListParams		sParam;
 
 	mcParams.Init(1);
 	mcParams.Add(sParam.Init(24  , 16  , 32*32));
@@ -133,16 +131,58 @@ void CMemory::InitFreeListParams(void)
 //////////////////////////////////////////////////////////////////////////
 void CMemory::AddParamBlock(unsigned int iFreeListSize, int iPrevSize, int iChunkSize)
 {
-	SFreeListParams		sParam;
+	SMemoryFreeListParams		sParam;
 
 	iFreeListSize += + sizeof(SMemoryAllocation);
 	iPrevSize += + sizeof(SMemoryAllocation);
 
-	mcParams.Add(sParam.Init(iFreeListSize, iPrevSize,    iChunkSize));
+	mcParams.Add(sParam.Init(iFreeListSize, iPrevSize, iChunkSize));
 	if (muiFreeListSizeLimit < iFreeListSize)
 	{
 		muiFreeListSizeLimit = iFreeListSize;
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CMemory::AddParamBlock(SMemoryFreeListParams* psParam)
+{
+	mcParams.Add(psParam);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CMemory::SetFreeListSizeLimit(unsigned int uiFreeListSizeLimit)
+{
+	muiFreeListSizeLimit = uiFreeListSizeLimit;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CMemory::GetParams(SMemoryParams* psParams)
+{
+	psParams->iDefaultAlignment = miDefaultAlignment;
+	psParams->uiFreeListSizeLimit = muiFreeListSizeLimit;
+	psParams->iFreeListParams = mcParams.NumElements();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+SMemoryFreeListParams* CMemory::GetFreeListParams(int iIndex)
+{
+	return mcParams.SafeGet(iIndex);
 }
 
 
@@ -163,12 +203,12 @@ void* CMemory::Add(unsigned int iSize)
 void CMemory::Remove(void* pv)
 {
 	SMemoryAllocation*	psAlloc;
-	CFreeListBlock*		pcList;
+	CFreeList*		pcList;
 
 	psAlloc = MEMORY_GET_ALLOCATION(pv);
 	if (psAlloc->uiSize <= (muiFreeListSizeLimit - sizeof(SMemoryAllocation)))
 	{
-		pcList = (CFreeListBlock*)psAlloc->psFreeListNode->pcList;
+		pcList = (CFreeList*)psAlloc->psFreeListNode->pcList;
 
 		DeallocateInFreeList(pcList, psAlloc);
 	}
@@ -183,12 +223,25 @@ void CMemory::Remove(void* pv)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+unsigned int CMemory::GetSize(void* pv)
+{
+	SMemoryAllocation*	psAlloc;
+
+	psAlloc = MEMORY_GET_ALLOCATION(pv);
+	return psAlloc->uiSize;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 BOOL CMemory::Remove(CArrayVoidPtr* pav)
 {
 	int					i;
 	void*				pv;
 	SMemoryAllocation*	psAlloc;
-	CFreeListBlock*		pcList;
+	CFreeList*		pcList;
 	SFNode*				psNode;
 	int					iNumElements;
 	int					iChunkSize;
@@ -205,7 +258,7 @@ BOOL CMemory::Remove(CArrayVoidPtr* pav)
 		if (psAlloc->uiSize <= (muiFreeListSizeLimit - sizeof(SMemoryAllocation)))
 		{
 			psNode = psAlloc->psFreeListNode;
-			pcList = (CFreeListBlock*)psAlloc->psFreeListNode->pcList;
+			pcList = (CFreeList*)psAlloc->psFreeListNode->pcList;
 			iChunkSize = pcList->GetChunkSize();
 
 			iRemoved = RemoveNode(pav, i, psAlloc, iChunkSize, psNode, pcList);
@@ -240,7 +293,7 @@ BOOL CMemory::Remove(CArrayVoidPtr* pav)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CMemory::RemoveNode(CArrayVoidPtr* pav, int i, SMemoryAllocation* psAlloc, int iChunkSize, SFNode* psNode, CFreeListBlock* pcList)
+int CMemory::RemoveNode(CArrayVoidPtr* pav, int i, SMemoryAllocation* psAlloc, int iChunkSize, SFNode* psNode, CFreeList* pcList)
 {
 	void*				pvLast;
 	SMemoryAllocation*	psPotentialLast;
@@ -285,7 +338,7 @@ int CMemory::RemoveNode(CArrayVoidPtr* pav, int i, SMemoryAllocation* psAlloc, i
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CMemory::RemoveElements(CArrayVoidPtr* pav, int i, int iChunkSize, SFNode* psNode, CFreeListBlock* pcList)
+int CMemory::RemoveElements(CArrayVoidPtr* pav, int i, int iChunkSize, SFNode* psNode, CFreeList* pcList)
 {
 	void*				pv;
 	SMemoryAllocation*	psFirst;
@@ -327,7 +380,7 @@ int CMemory::RemoveElements(CArrayVoidPtr* pav, int i, int iChunkSize, SFNode* p
 //////////////////////////////////////////////////////////////////////////
 void* CMemory::Add(unsigned int uiSize, int iAlignment, int iOffset)
 {
-	CFreeListBlock*	pcFreeList;
+	CFreeList*	pcFreeList;
 	void*				pv;
 
 	if ((mbBreakOnAlloc) && (muiAllocCount == muiBreakAlloc))
@@ -372,15 +425,15 @@ void* CMemory::Add(unsigned int uiSize, int iAlignment, int iOffset)
 void* CMemory::Grow(void* pvInitial, unsigned int uiSize)
 {
 	SMemoryAllocation*	psAlloc;
-	CFreeListBlock*	pcList;
-	SFreeListParams*	psParams;
+	CFreeList*	pcList;
+	SMemoryFreeListParams*	psParams;
 	void*				pvNew;
-	SDANode*			psNode;
+	SLLANode*			psNode;
 
 	psAlloc = MEMORY_GET_ALLOCATION(pvInitial);
 	if (psAlloc->uiSize <= (muiFreeListSizeLimit - sizeof(SMemoryAllocation)))
 	{
-		psParams = GetParamsForSize(psAlloc->uiSize);
+		psParams = GetFreeListParamsForSize(psAlloc->uiSize);
 		if ((uiSize <= psParams->iMaxElementSize) && (uiSize >= psParams->iMinElementSize))
 		{
 			psAlloc->uiSize = uiSize;
@@ -388,7 +441,7 @@ void* CMemory::Grow(void* pvInitial, unsigned int uiSize)
 		}
 		else
 		{
-			pcList = (CFreeListBlock*)psAlloc->psFreeListNode->pcList;
+			pcList = (CFreeList*)psAlloc->psFreeListNode->pcList;
 			pvNew = Add(uiSize, pcList->GetAlignment(), pcList->GetOffset());
 			CopyAllocation(pvNew, pvInitial, uiSize, psAlloc->uiSize);
 			DeallocateInFreeList(pcList, psAlloc);
@@ -397,7 +450,7 @@ void* CMemory::Grow(void* pvInitial, unsigned int uiSize)
 	}
 	else
 	{
-		psNode = (SDANode*)RemapSinglePointer(psAlloc, -((int)sizeof(SDANode)));
+		psNode = (SLLANode*)RemapSinglePointer(psAlloc, -((int)sizeof(SLLANode)));
 		if (uiSize <= (muiFreeListSizeLimit - sizeof(SMemoryAllocation)))
 		{
 			pvNew = Add(uiSize, psNode->sAligned.iAlignment, psNode->sAligned.iOffset);
@@ -435,7 +488,7 @@ void CMemory::CopyAllocation(void* pvDest, void* pvSource, unsigned int uiDestSi
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void* CMemory::AllocateInFreeList(CFreeListBlock* pcFreeList, unsigned int uiElementSize)
+void* CMemory::AllocateInFreeList(CFreeList* pcFreeList, unsigned int uiElementSize)
 {
 	SMemoryAllocation*	psMemoryAllocation;
 	SFNode*				psNode;
@@ -453,7 +506,7 @@ void* CMemory::AllocateInFreeList(CFreeListBlock* pcFreeList, unsigned int uiEle
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CMemory::DeallocateInFreeList(CFreeListBlock* pcFreeList, SMemoryAllocation* psAlloc)
+void CMemory::DeallocateInFreeList(CFreeList* pcFreeList, SMemoryAllocation* psAlloc)
 {
 	SFNode*			psFreeListNode;
 
@@ -503,18 +556,18 @@ void CMemory::DeallocateInLargeList(SMemoryAllocation* psAlloc)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CFreeListBlock* CMemory::GetFreeList(unsigned int iElementSize, int iAlignment, int iOffset)
+CFreeList* CMemory::GetFreeList(unsigned int iElementSize, int iAlignment, int iOffset)
 {
 	SFreeListDesc		sDesc;
 	BOOL				bResult;
 	int					iIndex;
 	SFreeListDesc*		psDesc;
-	SFreeListParams*	psParams;
+	SMemoryFreeListParams*	psParams;
 	int					iStride;
 	int					iFinalOffset;
 
 	iFinalOffset = CalculateOffset(iOffset - sizeof(SMemoryAllocation), iAlignment);
-	psParams = GetParamsForSize(iElementSize);
+	psParams = GetFreeListParamsForSize(iElementSize);
 	iStride = CalculateStride(psParams->iMaxElementSize, iAlignment);
 
 	sDesc.Init(iStride, iAlignment, iOffset);
@@ -532,7 +585,7 @@ CFreeListBlock* CMemory::GetFreeList(unsigned int iElementSize, int iAlignment, 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CFreeListBlock* CMemory::GetFreeList(unsigned int iElementSize)
+CFreeList* CMemory::GetFreeList(unsigned int iElementSize)
 {
 	return GetFreeList(iElementSize, miDefaultAlignment, 0);
 }
@@ -542,19 +595,19 @@ CFreeListBlock* CMemory::GetFreeList(unsigned int iElementSize)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CFreeListBlock* CMemory::GetOrAddFreeList(unsigned int iElementSize, int iAlignment, int iOffset)
+CFreeList* CMemory::GetOrAddFreeList(unsigned int iElementSize, int iAlignment, int iOffset)
 {
 	SFreeListDesc		sDesc;
 	BOOL				bResult;
 	int					iIndex;
 	SFreeListDesc*		psDesc;
-	CFreeListBlock*		pcList;
-	SFreeListParams*	psParams;
+	CFreeList*		pcList;
+	SMemoryFreeListParams*	psParams;
 	int					iFinalOffset;
 	int					iStride;
 
 	iFinalOffset = CalculateOffset(iOffset - sizeof(SMemoryAllocation), iAlignment);
-	psParams = GetParamsForSize(iElementSize);
+	psParams = GetFreeListParamsForSize(iElementSize);
 	iStride = CalculateStride(psParams->iMaxElementSize, iAlignment);
 
 	sDesc.Init(iStride, iAlignment, iOffset);
@@ -579,14 +632,14 @@ CFreeListBlock* CMemory::GetOrAddFreeList(unsigned int iElementSize, int iAlignm
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SFreeListParams* CMemory::GetParamsForSize(unsigned int iElementSize)
+SMemoryFreeListParams* CMemory::GetFreeListParamsForSize(unsigned int iElementSize)
 {
 	int					iIndex;
-	SFreeListParams*	psParams;
+	SMemoryFreeListParams*	psParams;
 
 	if ((iElementSize > 0) && (iElementSize <= muiFreeListSizeLimit))
 	{
-		mcParams.FindInSorted((SFreeListParams*)&iElementSize, CompareFreeListParam, &iIndex);
+		mcParams.FindInSorted((SMemoryFreeListParams*)&iElementSize, CompareFreeListParam, &iIndex);
 		psParams = mcParams.Get(iIndex);
 		return psParams;
 	}
@@ -627,7 +680,7 @@ void CMemory::BreakOnAdd(unsigned int uiAllocCount)
 //////////////////////////////////////////////////////////////////////////
 int CMemory::NumElements(void)
 {
-	CFreeListBlock*		pcBlock;
+	CFreeList*		pcBlock;
 	int					iCount;
 
 	iCount = 0;
@@ -650,19 +703,19 @@ int CMemory::NumElements(void)
 int CMemory::ByteSize(void)
 {
 	int					iSize;
-	CFreeListBlock*		pcFreeList;
+	CFreeList*		pcFreeList;
 
 	iSize = 0;
 	pcFreeList = mcFreeLists.GetHead();
 	while (pcFreeList)
 	{
 		iSize += pcFreeList->ByteSize();
-		iSize += sizeof(CFreeListBlock);
+		iSize += sizeof(CFreeList);
 		pcFreeList = mcFreeLists.GetNext(pcFreeList);
 	}
 
 	iSize += mcLargeList.ByteSize();
-	iSize += sizeof(CLinkListAligned);
+	iSize += sizeof(CLinkedListBlockAligned);
 
 	return iSize;
 }
@@ -727,5 +780,25 @@ void* CMemory::Iterate(SMemoryIterator* psIterator)
 }
 
 
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CFreeList* CMemory::TestGetFreeListsHead(void)
+{
+	return mcFreeLists.GetHead();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void* CMemory::TestGetLargeListsHead(void)
+{
+	return mcLargeList.GetHead();
+}
 
 

@@ -39,7 +39,9 @@ CHollowObject::CHollowObject(void)
 //////////////////////////////////////////////////////////////////////////
 void CHollowObject::Init(unsigned short iNumEmbedded)
 {
+	PreInit();
 	SetFlagNumEmbedded(iNumEmbedded);
+	PostInit();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -126,7 +128,7 @@ BOOL CHollowObject::IsObject(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::SetPointedTosExpectedDistToRoot(int iDistToRoot)
+void CHollowObject::SetPointerTosExpectedDistToRoot(int iDistToRoot)
 {
 }
 
@@ -135,7 +137,7 @@ void CHollowObject::SetPointedTosExpectedDistToRoot(int iDistToRoot)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::GetTos(CArrayEmbeddedObjectPtr* papcTos)
+void CHollowObject::GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos)
 {
 }
 
@@ -144,17 +146,7 @@ void CHollowObject::GetTos(CArrayEmbeddedObjectPtr* papcTos)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CHollowObject::NumTos(void)
-{
-	return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-int CHollowObject::RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew)
+int CHollowObject::NumPointerTos(void)
 {
 	return 0;
 }
@@ -164,7 +156,17 @@ int CHollowObject::RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::RemoveAllTos(void)
+int CHollowObject::RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew)
+{
+	return 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CHollowObject::RemoveAllPointerTosDontKill(void)
 {
 }
 
@@ -173,7 +175,7 @@ void CHollowObject::RemoveAllTos(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist)
+void CHollowObject::RemoveAllPointerTos(void)
 {
 }
 
@@ -182,7 +184,16 @@ void CHollowObject::UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorPar
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::RemoveEmbeddedObjectAllTos(void)
+void CHollowObject::UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist)
+{
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CHollowObject::BaseRemoveAllPointerTosDontKill(void)
 {
 }
 
@@ -210,7 +221,7 @@ void CHollowObject::KillData(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::RemoveTo(CEmbeddedObject* pcTo)
+void CHollowObject::RemovePointerTo(CEmbeddedObject* pcTo)
 {
 }
 
@@ -219,7 +230,7 @@ void CHollowObject::RemoveTo(CEmbeddedObject* pcTo)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CHollowObject::GetNumEmbedded(void)
+unsigned short int CHollowObject::GetNumEmbedded(void)
 {
 	return GetNumEmbeddedFromFlags();
 }
@@ -229,7 +240,7 @@ int CHollowObject::GetNumEmbedded(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CEmbeddedObject* CHollowObject::GetEmbeddedObject(int iIndex)
+CEmbeddedObject* CHollowObject::GetEmbeddedObject(unsigned short int iIndex)
 {
 	if (iIndex >= GetNumEmbeddedFromFlags())
 	{
@@ -333,7 +344,7 @@ int CHollowObject::NumStackFroms(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CHollowObject::ValidateEmbeddedObjectTos(void)
+void CHollowObject::BaseValidatePointerTos(void)
 {
 }
 

@@ -238,7 +238,7 @@ CInputSourceDesc* CInputDeviceDesc::GetSource(char* szFriendlyName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CInputDeviceDesc::GetSources(CArrayPointer* apcDest, CInputCategoryGeneric* pcGeneric)
+void CInputDeviceDesc::GetSources(CArrayIntAndPointer* apcDest, CInputCategoryGeneric* pcGeneric)
 {
 	SSetIterator		sIter;
 	CInputSourceDesc*	pcSourceDesc;
@@ -259,7 +259,7 @@ void CInputDeviceDesc::GetSources(CArrayPointer* apcDest, CInputCategoryGeneric*
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CInputDeviceDesc::GetSources(CArrayPointer* apcDest)
+void CInputDeviceDesc::GetSources(CArrayIntAndPointer* apcDest)
 {
 	SSetIterator		sIter;
 	CInputSourceDesc*	pcSourceDesc;
@@ -419,7 +419,7 @@ int CInputDeviceDesc::GetUnusedID(void)
 		return 0;
 	}
 
-	aiIDs.Init();
+	aiIDs.Init(1);
 	for (i = 0; i < mapcDevices.NumElements(); i++)
 	{
 		pcDevice = *mapcDevices.Get(i);

@@ -22,10 +22,11 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/PointerFunctions.h"
 #include "BaseLib/IntegerHelper.h"
-#include "BaseLib/AdditionalTypes.h"
+#include "BaseLib/ArrayIntMinimal.h"
 #include "BaseLib/Chars.h"
 #include "BaseLib/Define.h"
-#include "ClassStorage.h"
+#include "BaseLib/SystemAllocator.h"
+#include "CoreLib/TypeNames.h"
 #include "Channels.h"
 
 
@@ -35,12 +36,12 @@ Microsoft Windows is Copyright Microsoft Corporation
 //////////////////////////////////////////////////////////////////////////
 void CChannels::Init(void)
 {
-	masChannelOffsets.Init();
+	masChannelOffsets.Init(1);
 	miSize = 0;
 	miByteStride = 0;
 	miBitStride = 0;
 	mbOnlyBasicTypes = TRUE;
-	mabData.Init();
+	mabData.Init(1);
 	mpvUserData = NULL;
 
 	mpsChangingDesc = NULL;
@@ -515,7 +516,7 @@ void CChannels::Recalculate(void)
 	int			i;
 	CChannel*	pcChannel;
 	int			iBitSize;
-	int			iSize;
+	int			iByteSize;
 
 	miBitStride = 0;
 	mbOnlyBasicTypes = TRUE;
@@ -523,21 +524,17 @@ void CChannels::Recalculate(void)
 	{
 		pcChannel = masChannelOffsets.Get(i);
 
-		iSize = gcClassStorage.GetSize(pcChannel->eType);
-		if (iSize & BIT_SIZE)
+		iByteSize = gcTypeNames.GetByteSize(pcChannel->eType);
+		iBitSize = gcTypeNames.GetBitSize(pcChannel->eType);
+		if (iByteSize == 0)
 		{
-			iBitSize = iSize & ~BIT_SIZE;
 			mbOnlyBasicTypes = FALSE;
-		}
-		else
-		{
-			iBitSize = iSize*8;
 		}
 
 		pcChannel->miBitSize = iBitSize;
 		if (Is8BitAligned(miBitStride, iBitSize))
 		{
-			pcChannel->miByteSize = iSize;
+			pcChannel->miByteSize = iByteSize;
 			pcChannel->miByteOffset = miBitStride / 8;
 		}
 		else
@@ -700,7 +697,7 @@ void CChannels::AllocateData(void)
 
 	iSize = CalculateByteSize(miBitStride, miSize);
 	FreeData();
-	mabData.Allocate(iSize);
+	mabData.Allocate(&gcSystemAllocator, iSize);
 }
 
 
@@ -839,12 +836,12 @@ BOOL CChannels::Load(CFileReader* pcFile)
 {
 	mpsChangingDesc = NULL;
 	mpvUserData = NULL;
-	ReturnOnFalse(pcFile->ReadArrayTemplate(&masChannelOffsets));
+	ReturnOnFalse(masChannelOffsets.Read(pcFile));
 	ReturnOnFalse(pcFile->ReadInt(&miSize));
 	ReturnOnFalse(pcFile->ReadInt(&miByteStride));
 	ReturnOnFalse(pcFile->ReadInt(&miBitStride));
 	ReturnOnFalse(pcFile->ReadBool(&mbOnlyBasicTypes));
-	ReturnOnFalse(pcFile->ReadArrayTemplate(&mabData));
+	ReturnOnFalse(mabData.Read(pcFile));
 	mpvDataCache = mabData.GetData();
 	return TRUE;
 }
@@ -856,12 +853,12 @@ BOOL CChannels::Load(CFileReader* pcFile)
 //////////////////////////////////////////////////////////////////////////
 BOOL CChannels::Save(CFileWriter* pcFile)
 {
-	ReturnOnFalse(pcFile->WriteArrayTemplate(&masChannelOffsets));
+	ReturnOnFalse(masChannelOffsets.Write(pcFile));
 	ReturnOnFalse(pcFile->WriteInt(miSize));
 	ReturnOnFalse(pcFile->WriteInt(miByteStride));
 	ReturnOnFalse(pcFile->WriteInt(miBitStride));
 	ReturnOnFalse(pcFile->WriteBool(mbOnlyBasicTypes));
-	ReturnOnFalse(pcFile->WriteArrayTemplate(&mabData));
+	ReturnOnFalse(mabData.Write(pcFile));
 	return TRUE;
 }
 
@@ -928,15 +925,15 @@ void CChannels::Clear(void)
 //////////////////////////////////////////////////////////////////////////
 void CChannels::Copy(CChannels* pcData)
 {
-	//This assumes channels is not initiialised.
+	//This assumes channels is not initialised.
 
-	masChannelOffsets.Init();
+	masChannelOffsets.Init(1);
 	masChannelOffsets.Copy(&pcData->masChannelOffsets);
 	miSize = pcData->miSize;
 	miByteStride = pcData->miByteStride;
 	miBitStride = pcData->miBitStride;
 	mbOnlyBasicTypes = pcData->mbOnlyBasicTypes;
-	mabData.Init();
+	mabData.Init(1);
 	mabData.Copy(&pcData->mabData);
 	mpvUserData = pcData->mpvUserData;
 	if (IsUserAllocated())
@@ -1072,7 +1069,7 @@ void CChannels::GetAllChannels(CArrayChannel* pasChannels)
 	CChannel*			psChannelSource;
 	SChannel*			psChannelDest;
 
-	pasChannels->Allocate(masChannelOffsets.NumElements());
+	pasChannels->Allocate(&gcSystemAllocator, masChannelOffsets.NumElements());
 
 	for (j = 0; j < masChannelOffsets.NumElements(); j++)
 	{
@@ -1199,7 +1196,7 @@ void CChannels::Dump(int iLineLength)
 	for (i = 0; i < masChannelOffsets.NumElements(); i++)
 	{
 		psChannel = masChannelOffsets.Get(i);
-		szTypeName = gcClassStorage.GetName(psChannel->eType);
+		szTypeName = gcTypeNames.GetPrettyName(psChannel->eType);
 		c.Append("Channel[");
 		c.Append(psChannel->iChannel);
 		c.Append("]: Type[");

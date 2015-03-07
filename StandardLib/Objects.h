@@ -63,21 +63,20 @@ protected:
 	CIndexGenerator			mcIndexGenerator;
 	BOOL					mbDatabase;
 
-	CStackPointers			mcStackPointers;
+	CStackPointers*			mpcStackPointers;
 
 	CDistCalculator			mcDistCalculator;
 
 public:
 												CObjects();
-						void					Init(CUnknowns* pcUnknownsAllocatingFrom, char* szWorkingDirectory);
-						void					Init(CUnknowns* pcUnknownsAllocatingFrom, CIndexedConfig* pcConfig);
+						void					Init(CUnknowns* pcUnknownsAllocatingFrom, CStackPointers* pcStackPointers, char* szWorkingDirectory);
+						void					Init(CUnknowns* pcUnknownsAllocatingFrom, CStackPointers* pcStackPointers, CIndexedConfig* pcConfig);
 						void					Kill(void);
-						void					KillStackPointers(void);
 						void					DumpIndex(void);
 						void					DumpNames(void);
 						void					DumpGraph(void);
 						void					ValidateEmpty(void);
-						void					ValidateConsistency(void);
+						void					ValidateObjectsConsistency(void);
 
 	template<class M>	void					AddConstructor(void);
 	template<class M>	CObjectSource*			AddSource(CAbstractFile* pcFile, char* szFileName);
@@ -99,7 +98,7 @@ public:
 						Ptr<CRoot>				AddRoot(void);
 						Ptr<CRoot>				GetRoot(void);
 
-						BOOL					Remove(CArrayBaseObjectPtr* papcKilled);
+						BOOL					Remove(CArrayBlockObjectPtr* papcKilled);
 
 						CPointer				Null(void);
 	template<class M>	Ptr<M>					Null(void);
@@ -122,8 +121,6 @@ public:
 
 						CStackPointers*			GetStackPointers(void);
 
-						CDistCalculator*		GetDistCalculator(void);
-
 						OIndex					StartMemoryIteration(SIndexesIterator* psIter);
 						OIndex					IterateMemory(SIndexesIterator* psIter);
 						CPointer				TestGetFromMemory(OIndex oi);
@@ -142,8 +139,8 @@ protected:
 						CBaseObject*			GetFromDatabase(char* szObjectName);
 						CBaseObject*			GetFromSources(char* szObjectName);
 						BOOL					ClearMemory(void);
-						void					KillDontFreeObjects(CArrayBaseObjectPtr* papcObjectPts);
-						void					FreeObjects(CArrayBaseObjectPtr* papcObjectPts);
+						void					KillDontFreeObjects(CArrayBlockObjectPtr* papcObjectPts);
+						void					FreeObjects(CArrayBlockObjectPtr* papcObjectPts);
 						void					RecurseDumpGraph(CChars* psz, CEmbeddedObject* pcObject, int iLevel, BOOL bEmbedded);
 						void					ValidateSceneGraph(void);
 						void					ValidateIndexedObjects(void);
@@ -197,7 +194,7 @@ M* CObjects::Allocate(int iAdditionalBytes)
 	pcObject = mpcUnknownsAllocatingFrom->AddUnsafe<M>(iAdditionalBytes);
 	if (pcObject)
 	{
-		pcObject->PreInit(this);
+		pcObject->Allocate(this);
 	}
 	return pcObject;
 }
@@ -211,27 +208,26 @@ template<class M>
 //Called by Macro 'OMalloc'
 Ptr<M> CObjects::Add(void)
 {
-	M	m;
+	Ptr<M>	pObject;
+	M*		pvObject;
 
-	if (!m.IsNamed())
+	pvObject = Allocate<M>();
+	if (pvObject->IsNamed())
 	{
-		Ptr<M>	pObject;
-		M*		pvObject;
-
-		pvObject = Allocate<M>();
-
 		LOG_OBJECT_ALLOCATION(pvObject);
-
-		AddWithID(pvObject, mcIndexGenerator.PopIndex());
+		AddWithIDAndName(pvObject, "", mcIndexGenerator.PopIndex());
 
 		//No PointTo because we don't know the embedding object until assignment.
 		pObject.AssignObject(pvObject);
 		return pObject;
 	}
-	else
-	{
-		return Add<M>("");
-	}
+
+	LOG_OBJECT_ALLOCATION(pvObject);
+	AddWithID(pvObject, mcIndexGenerator.PopIndex());
+
+	//No PointTo because we don't know the embedding object until assignment.
+	pObject.AssignObject(pvObject);
+	return pObject;
 }
 
 
@@ -243,27 +239,23 @@ template<class M>
 //Called by Macro 'ONMalloc'.  Note the 'N'.
 Ptr<M> CObjects::Add(char* szObjectName)
 {
-	M	m;
+	Ptr<M>	pObject;
+	M*		pvObject;
 
-	if (m.IsNamed())
-	{
-		Ptr<M>	pObject;
-		M*		pvObject;
-
-		pvObject = Allocate<M>();
-
-		AddWithIDAndName(pvObject, szObjectName, mcIndexGenerator.PopIndex());
-		LOG_OBJECT_ALLOCATION(pvObject);
-
-		//No PointTo because we don't know the embedding object until assignment.
-		pObject.AssignObject(pvObject);
-		return pObject;
-	}
-	else
+	pvObject = Allocate<M>();
+	if (!pvObject->IsNamed())
 	{
 		//Can't add an unnamed object with a name.
+		mpcUnknownsAllocatingFrom->Remove(pvObject);
 		return Null<M>();
 	}
+
+	LOG_OBJECT_ALLOCATION(pvObject);
+	AddWithIDAndName(pvObject, szObjectName, mcIndexGenerator.PopIndex());
+
+	//No PointTo because we don't know the embedding object until assignment.
+	pObject.AssignObject(pvObject);
+	return pObject;
 }
 
 

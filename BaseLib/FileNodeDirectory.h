@@ -24,6 +24,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define __FILE_NODE_DIRECTORY_H__
 #include "ArrayBlock.h"
 
+
 template <class M> 
 class CFileNode;
 template <class M>

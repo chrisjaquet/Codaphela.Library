@@ -65,7 +65,7 @@ CInputChordDesc* CInputChordDescs::AddChordDesc(char* szActionName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CInputChordDescs::GetInputSourceDescs(CArrayPointer* apcDest, CInputDeviceDesc* pcDeviceDesc)
+void CInputChordDescs::GetInputSourceDescs(CArrayIntAndPointer* apcDest, CInputDeviceDesc* pcDeviceDesc)
 {
 	CInputChordDesc*		pcChordDesc;
 	SSetIterator			sIter;
@@ -177,7 +177,7 @@ void CInputChordDescs::CopyChordCriteriaDesc(CInputChordCriteriaDesc* pcDest, CI
 		pcSourceActive = (CInputChordActiveDesc*)pcSource;
 		pcDestActive = (CInputChordActiveDesc*)pcDest;
 
-		pcDestChord = (CInputChordDesc*)pcContext->mmppChords.GetWithKey(pcSourceActive->GetChordDesc());
+		pcDestChord = (CInputChordDesc*)pcContext->mmppChords.Get(pcSourceActive->GetChordDesc());
 		switch (pcSourceActive->meActiveType)
 		{
 		case ICCDAT_SpecificSource:

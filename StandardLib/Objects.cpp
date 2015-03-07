@@ -19,6 +19,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 
+#include "BaseLib/GlobalMemory.h"
 #include "BaseLib/DebugOutput.h"
 #include "BaseLib/Log.h"
 #include "BaseObject.h"
@@ -106,6 +107,7 @@ CObjects::CObjects()
 {
 	mbInitialised = FALSE;
 	mpcUnknownsAllocatingFrom = NULL;
+	mpcStackPointers = NULL;
 	mbDatabase = FALSE;
 }
 
@@ -114,13 +116,13 @@ CObjects::CObjects()
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, char* szWorkingDirectory)
+void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, CStackPointers* pcStackPointers, char* szWorkingDirectory)
 {
 	CIndexedConfig	cConfig;
 
 	cConfig.OptimiseForGameGraph(szWorkingDirectory);
 
-	Init(pcUnknownsAllocatingFrom, &cConfig);
+	Init(pcUnknownsAllocatingFrom, pcStackPointers, &cConfig);
 }
 
 
@@ -128,9 +130,10 @@ void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, char* szWorkingDirector
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, CIndexedConfig* pcConfig)
+void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, CStackPointers* pcStackPointers, CIndexedConfig* pcConfig)
 {
 	mpcUnknownsAllocatingFrom = pcUnknownsAllocatingFrom;
+	mpcStackPointers = pcStackPointers;
 	mcIndexGenerator.Init();
 
 	if (pcConfig->mszWorkingDirectory)
@@ -147,8 +150,6 @@ void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, CIndexedConfig* pcConfi
 
 	mcSource.Init();
 
-	mcStackPointers.Init(2048);
-
 	mbInitialised = TRUE;
 }
 
@@ -160,7 +161,6 @@ void CObjects::Init(CUnknowns* pcUnknownsAllocatingFrom, CIndexedConfig* pcConfi
 void CObjects::Kill(void)
 {
 	mbInitialised = FALSE;
-	KillStackPointers();
 	mcSource.Kill();
 	mcMemory.Kill();
 	if (mbDatabase)
@@ -169,17 +169,6 @@ void CObjects::Kill(void)
 	}
 	mcIndexGenerator.Kill();
 	mpcUnknownsAllocatingFrom = NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CObjects::KillStackPointers(void)
-{
-	mcStackPointers.ClearAllPointers();
-	mcStackPointers.Kill();
 }
 
 
@@ -255,7 +244,7 @@ void CObjects::DumpNames(void)
 	sz.Init("-------------------------- Names -------------------------- \n");
 	sz.Dump();
 	sz.Kill();
-	mcMemory.GetNames()->DumpTree();
+//	mcMemory.GetNames()->DumpTree();
 	sz.Init();
 	sz.Append("------------------------------------------------------------ \n");
 	sz.Dump();
@@ -317,7 +306,7 @@ void CObjects::DumpGraph(void)
 void CObjects::RecurseDumpGraph(CChars* psz, CEmbeddedObject* pcIncoming, int iLevel, BOOL bEmbedded)
 {
 	CObject*					pcObject;
-	CArrayEmbeddedObjectPtr		apcTos;
+	CArrayTemplateEmbeddedObjectPtr		apcTos;
 	int							i;
 	CEmbeddedObject*			pcToObject;
 	CBaseObject*				pcEmbeddedObject;
@@ -348,8 +337,8 @@ void CObjects::RecurseDumpGraph(CChars* psz, CEmbeddedObject* pcIncoming, int iL
 	pcBaseObject->miFlags |= OBJECT_FLAGS_DUMPED;
 
 
-	apcTos.Init();
-	pcBaseObject->UnsafeGetEmbeddedObjectTos(&apcTos);
+	apcTos.Init(1);
+	pcBaseObject->BaseGetPointerTos(&apcTos);
 	for (i = 0; i < apcTos.NumElements(); i++)
 	{
 		pcToObject = *apcTos.Get(i);
@@ -374,8 +363,11 @@ void CObjects::RecurseDumpGraph(CChars* psz, CEmbeddedObject* pcIncoming, int iL
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjects::ValidateConsistency(void)
+void CObjects::ValidateObjectsConsistency(void)
 {
+	//If this method is called from an Object - rather than a test file - the it should be wrapped with a #ifdef DEBUG
+	//This is because it is still useful to have ValidateObjectsConsistency called in RELEASE from tests.
+
 	ValidateSceneGraph();
 	ValidateIndexedObjects();
 	ClearValidationFlags();
@@ -453,7 +445,7 @@ void CObjects::ValidateSceneGraph(void)
 //////////////////////////////////////////////////////////////////////////
 void CObjects::RecurseValidateSceneGraph(CBaseObject* pcBaseObject)
 {
-	CArrayEmbeddedObjectPtr		apcTos;
+	CArrayTemplateEmbeddedObjectPtr		apcTos;
 	int							i;
 	CEmbeddedObject*			pcToObject;
 	CBaseObject*				pcToContainerObject;
@@ -466,8 +458,8 @@ void CObjects::RecurseValidateSceneGraph(CBaseObject* pcBaseObject)
 
 		pcBaseObject->ValidateConsistency();
 
-		apcTos.Init();
-		pcBaseObject->GetTos(&apcTos);
+		apcTos.Init(1);
+		pcBaseObject->GetPointerTos(&apcTos);
 		for (i = 0; i < apcTos.NumElements(); i++)
 		{
 			pcToObject = *apcTos.Get(i);
@@ -546,7 +538,7 @@ BOOL CObjects::ClearMemory(void)
 	SIndexesIterator		sIter;
 	OIndex					oi;
 	CBaseObject*			pcBaseObject;
-	CArrayBaseObjectPtr		apcBaseObjects;
+	CArrayBlockObjectPtr		apcBaseObjects;
 	int						iCount;
 
 	apcBaseObjects.Init(CLEAR_MEMORY_CHUNK_SIZE);
@@ -585,20 +577,17 @@ BOOL CObjects::ClearMemory(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjects::KillDontFreeObjects(CArrayBaseObjectPtr* papcObjectPts)
+void CObjects::KillDontFreeObjects(CArrayBlockObjectPtr* papcObjectPts)
 {
 	int				i;
 	CBaseObject*	pcBaseObject;
 	int				iNumElements;
 
-	if (papcObjectPts->IsNotEmpty())
+	iNumElements = papcObjectPts->NumElements();
+	for (i = 0; i < iNumElements; i++)
 	{
-		iNumElements = papcObjectPts->NumElements();
-		for (i = 0; i < iNumElements; i++)
-		{
-			pcBaseObject = (CBaseObject*)(*papcObjectPts->Get(i));
-			pcBaseObject->KillDontFree();
-		}
+		pcBaseObject = (CBaseObject*)(*papcObjectPts->Get(i));
+		pcBaseObject->KillDontFree();
 	}
 }
 
@@ -607,7 +596,7 @@ void CObjects::KillDontFreeObjects(CArrayBaseObjectPtr* papcObjectPts)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CObjects::FreeObjects(CArrayBaseObjectPtr* papcObjectPts)
+void CObjects::FreeObjects(CArrayBlockObjectPtr* papcObjectPts)
 {
 	int					i;
 	CBaseObject*		pcBaseObject;
@@ -743,11 +732,11 @@ Ptr<CRoot> CObjects::AddRoot(void)
 	pRoot = GetRoot();
 	if (!pRoot)
 	{
-		pRoot = Add<CRoot>(ROOT_NAME);
-		pRoot->Init();
+		pRoot = Add<CRoot>(ROOT_NAME)->Init();
 	}
 	return pRoot;
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1048,7 +1037,7 @@ BOOL CObjects::Contains(char* szObjectName)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CObjects::Remove(CArrayBaseObjectPtr* papcKilled)
+BOOL CObjects::Remove(CArrayBlockObjectPtr* papcKilled)
 {
 	int								i;
 	int								iNumElements;
@@ -1058,6 +1047,10 @@ BOOL CObjects::Remove(CArrayBaseObjectPtr* papcKilled)
 	//No embedded objects should be in the list papcKilled.
 
 	iNumElements = papcKilled->NumElements();
+	if (iNumElements == 0)
+	{
+		return TRUE;
+	}
 
 	for (i = 0; i < iNumElements; i++)
 	{
@@ -1068,12 +1061,17 @@ BOOL CObjects::Remove(CArrayBaseObjectPtr* papcKilled)
 			gcLogger.Error2(__METHOD__, " Object of class [", pcKilled->ClassName(), "] is marked for killing but is embedded in object with index [", IndexToString(pcContainer->GetOI()),"] of class [", pcContainer->ClassName(), "].", NULL);
 			return FALSE;
 		}
+		else if (!pcKilled->IsAllocatedInObjects())
+		{
+			gcLogger.Error2(__METHOD__, " Object of class [", pcKilled->ClassName(), "] is marked for killing but is not allocated in Objects [0x", PointerToString(this),"].", NULL);
+			return FALSE;
+		}
 	}
 
 	for (i = 0; i < iNumElements; i++)
 	{
 		pcKilled = *papcKilled->Get(i);
-		pcKilled->RemoveAllTos();
+		pcKilled->RemoveAllPointerTosDontKill();
 	}
 
 	KillDontFreeObjects(papcKilled);
@@ -1250,7 +1248,7 @@ CBaseObject* CObjects::Allocate(char* szClassName)
 	pvObject = (CBaseObject*)mpcUnknownsAllocatingFrom->Add(szClassName);
 	if (pvObject)
 	{
-		pvObject->CBaseObject::PreInit(this);
+		pvObject->CBaseObject::Allocate(this);
 	}
 	return pvObject;
 }
@@ -1264,6 +1262,7 @@ void CObjects::RemoveInKill(CBaseObject* pvObject)
 {
 	Deindex(pvObject);
 	Dename(pvObject);
+	pvObject->KillIdentifiers();
 }
 
 
@@ -1394,17 +1393,7 @@ void CObjects::AppenedHollowEmbeddedObjects(CBaseObject* pcHollow, unsigned shor
 //////////////////////////////////////////////////////////////////////////
 CStackPointers* CObjects::GetStackPointers(void)
 {
-	return &mcStackPointers;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-CDistCalculator* CObjects::GetDistCalculator(void)
-{
-	return &mcDistCalculator;
+	return mpcStackPointers;
 }
 
 
@@ -1415,7 +1404,8 @@ CDistCalculator* CObjects::GetDistCalculator(void)
 void ObjectsInit(void)
 {
 	UnknownsInit();
-	gcObjects.Init(&gcUnknowns, (char*)NULL);
+	gcStackPointers.Init(2048);
+	gcObjects.Init(&gcUnknowns, &gcStackPointers, (char*)NULL);
 }
 
 
@@ -1426,7 +1416,8 @@ void ObjectsInit(void)
 void ObjectsInit(char* szWorkingDirectory)
 {
 	UnknownsInit();
-	gcObjects.Init(&gcUnknowns, szWorkingDirectory);
+	gcStackPointers.Init(2048);
+	gcObjects.Init(&gcUnknowns, &gcStackPointers, szWorkingDirectory);
 }
 
 
@@ -1437,7 +1428,8 @@ void ObjectsInit(char* szWorkingDirectory)
 void ObjectsInit(CIndexedConfig* pcConfig)
 {
 	UnknownsInit();
-	gcObjects.Init(&gcUnknowns, pcConfig);
+	gcStackPointers.Init(2048);
+	gcObjects.Init(&gcUnknowns, &gcStackPointers, pcConfig);
 }
 
 
@@ -1448,6 +1440,8 @@ void ObjectsInit(CIndexedConfig* pcConfig)
 void ObjectsKill(void)
 {
 	gcObjects.Kill();
+	gcStackPointers.ClearAllPointers();
+	gcStackPointers.Kill();
 	UnknownsKill();
 }
 

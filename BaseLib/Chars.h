@@ -26,7 +26,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "ArrayChar.h"
 #include "DataTypes.h"
 #include "ArrayTemplate.h"
-#include "ArraySimple.h"
+#include "ArrayTemplateMinimal.h"
 #include "ArrayInt.h"
 
 
@@ -156,6 +156,10 @@ public:
 	void	LowerCase(void);
 	void	UpperCase(void);
 
+	BOOL	WriteString(CFileWriter* pcWriter);
+	BOOL	ReadString(CFileReader* pcReader);
+	BOOL	ReadChars(CFileReader* pcReader);  //Call this if the string was saved from a char*
+
 	//Suspicious... should probably be in a helper class or something.
 	void	PassifyNewlines(void);
 
@@ -182,5 +186,5 @@ int CompareChars(const void* arg1, const void* arg2);
 int CompareCharsIgnoreCase(const void* arg1, const void* arg2);
 
 
-#endif //__CHARS_H__
+#endif // __CHARS_H__
 

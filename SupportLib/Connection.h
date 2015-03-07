@@ -22,12 +22,12 @@ along with Codaphela MeshLib.  If not, see <http://www.gnu.org/licenses/>.
 #define __CONNECTION_H__
 #include "BaseLib/DataTypes.h"
 #include "BaseLib/ArrayTemplate.h"
-#include "BaseLib/LinkListTemplate.h"
 #include "BaseLib/ArrayInt.h"
 #include "BaseLib/ArrayBlock.h"
-#include "BaseLib/ArraySimple.h"
+#include "BaseLib/ArrayTemplateMinimal.h"
 #include "BaseLib/ChunkFile.h"
-#include "BaseLib/AdditionalTypes.h"
+#include "BaseLib/ArrayIntMinimal.h"
+#include "BaseLib/Float4x4.h"
 #include "StandardLib/NamedObject.h"
 
 

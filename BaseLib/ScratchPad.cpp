@@ -22,6 +22,8 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #include "ScratchPad.h"
 #include "MemoryStack.h"
+#include "DataMacro.h"
+#include "Numbers.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -30,8 +32,9 @@ Microsoft Windows is Copyright Microsoft Corporation
 //////////////////////////////////////////////////////////////////////////
 void CScratchPad::Init(void)
 {
-	Init(6000000);
+	Init(6 MB);
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -40,6 +43,7 @@ void CScratchPad::Init(void)
 void CScratchPad::Init(int iChunkSize)
 {
 	mcScratchPad.Init(iChunkSize);
+	miSourceChunkSize = iChunkSize;
 }
 
 
@@ -57,29 +61,16 @@ void CScratchPad::Kill(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void* CScratchPad::Add(int iBytes)
+void* CScratchPad::Add(size_t tSize)
 {
-	return mcScratchPad.Add(iBytes);
-}
+	SSPNode*	psNode;
+	void*		pvData;
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CScratchPad::Remove(void)
-{
-	mcScratchPad.Remove();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CScratchPad::Remove(int iNumToRemove)
-{
-	mcScratchPad.Remove(iNumToRemove);
+	psNode = (SSPNode*)mcScratchPad.Add(tSize + sizeof(SSPNode));
+	psNode->iSize = tSize;
+	psNode->bUsed = TRUE;
+	pvData = HeaderGetData<SSPNode, void>(psNode);
+	return pvData;
 }
 
 
@@ -99,7 +90,7 @@ void CScratchPad::Reset(void)
 //////////////////////////////////////////////////////////////////////////
 int CScratchPad::GetMemorySize(void)
 {
-	return mcScratchPad.GetMemorySize();
+	return mcScratchPad.GetTotalMemory();
 }
 
 
@@ -109,5 +100,16 @@ int CScratchPad::GetMemorySize(void)
 //////////////////////////////////////////////////////////////////////////
 int CScratchPad::GetUsedSize(void)
 {
-	return mcScratchPad.GetUsedSize();
+	return mcScratchPad.GetUsedMemory();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CScratchPad::GetParams(SScratchPadParams* psParams)
+{
+	psParams->iChunkSize = miSourceChunkSize;
+}
+

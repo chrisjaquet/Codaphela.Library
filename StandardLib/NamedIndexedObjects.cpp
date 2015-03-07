@@ -73,12 +73,12 @@ CBaseObject* CNamedIndexedObjects::Get(OIndex oi)
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CNamedIndexedObjects::Get(char* szName)
 {
-	OIndex	oi;
+	OIndex*	oi;
 
-	oi = mcNames.Get(szName);
-	if (oi != INVALID_O_INDEX)
+	oi = (OIndex*)mcNames.Get(szName);
+	if (oi)
 	{
-		return Get(oi);
+		return Get(*oi);
 	}
 	else
 	{
@@ -111,13 +111,10 @@ BOOL CNamedIndexedObjects::RemoveIndex(OIndex oi)
 //////////////////////////////////////////////////////////////////////////
 BOOL CNamedIndexedObjects::RemoveName(char* szName)
 {
-	BOOL	bResult;
-
 	if ((szName != NULL) && (szName[0] != 0))
 	{
 		//This only removes the name from the names, it does not free the object pointer to.
-		bResult = mcNames.Remove(szName);
-		return bResult;
+		return mcNames.Remove(szName);
 	}
 	return TRUE;
 }
@@ -154,17 +151,10 @@ BOOL CNamedIndexedObjects::AddWithIDAndName(CBaseObject* pvObject, OIndex oi, ch
 	CNamedObject*		pcNamed;
 	CNamedHollowObject*	pcNamedHollow;
 	BOOL				bResult;
-	int					iResult;
 
-	if (mcNames.Contains(szName))
+	if (mcNames.HasKey(szName))
 	{
 		gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "].  It already exists.", NULL);
-		return FALSE;
-	}
-
-	if (!mcNames.IsOnlyValidCharacters(szName))
-	{
-		gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "].  It's name contains invalid characters.", NULL);
 		return FALSE;
 	}
 
@@ -190,16 +180,8 @@ BOOL CNamedIndexedObjects::AddWithIDAndName(CBaseObject* pvObject, OIndex oi, ch
 
 	if ((szName != NULL) && (szName[0] != 0))
 	{
-		iResult = mcNames.Add(pvObject->GetOI(), szName);
-
-		//This should never happen.  The checks at the top cut it out.
-		if (iResult == -1)
-		{
-			char sz[32];
-
-			gcLogger.Error2(__METHOD__, " Cannot add object named [", szName, "] and index [", IToA(oi, sz, 10), "].  It broke unexpectedly", NULL);
-			bResult = FALSE;
-		}
+		oi = pvObject->GetOI();
+		bResult = mcNames.Put(szName, &oi, sizeof(OIndex));
 	}
 	return bResult;
 }
@@ -232,16 +214,6 @@ int CNamedIndexedObjects::NumNames(void)
 CIndexedObjects* CNamedIndexedObjects::GetObjects(void)
 {
 	return &mcIndexedObjects;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-CASCIITree* CNamedIndexedObjects::GetNames(void)
-{
-	return &mcNames;
 }
 
 

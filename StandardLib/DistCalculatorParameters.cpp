@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CDistCalculatorParameters::Init(void)
 {
-	macExpectedDists.Init();
+	macExpectedDists.Init(1);
 	mapcDetachedFromRoot.Init();
 	mapcCompletelyDetached.Init(32);
 	mapcTouched.Init();
@@ -271,7 +271,7 @@ void CDistCalculatorParameters::CopyRootDetachedToCompletelyDetached(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CArrayBaseObjectPtr* CDistCalculatorParameters::GetCompletelyDetachedArray(void)
+CArrayBlockObjectPtr* CDistCalculatorParameters::GetCompletelyDetachedArray(void)
 {
 	return &mapcCompletelyDetached;
 }
@@ -314,7 +314,7 @@ CBaseObject* CDistCalculatorParameters::GetTouched(int iIndex)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CDistCalculatorParameters::PrintArray(CChars* psz, CArrayEmbeddedBaseObjectPtr* pcArray)
+void CDistCalculatorParameters::PrintArray(CChars* psz, CArrayTemplateEmbeddedBaseObjectPtr* pcArray)
 {
 	int				i;
 	int				iNum;
@@ -338,7 +338,7 @@ void CDistCalculatorParameters::PrintArray(CChars* psz, CArrayEmbeddedBaseObject
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CDistCalculatorParameters::PrintArray(CChars* psz, CArrayBaseObjectPtr* pcArray)
+void CDistCalculatorParameters::PrintArray(CChars* psz, CArrayBlockObjectPtr* pcArray)
 {
 	int				i;
 	int				iNum;

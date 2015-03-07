@@ -5,7 +5,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////
-SFreeListParams* SFreeListParams::Init(unsigned int iFreeListSize, int iPrevSize, int iChunkSize)
+SMemoryFreeListParams* SMemoryFreeListParams::Init(unsigned int iFreeListSize, int iPrevSize, int iChunkSize)
 {
 	iMaxListSize = iFreeListSize;
 	iMinListSize = iPrevSize + 1;
@@ -41,7 +41,7 @@ void SFreeListDesc::Init(unsigned int iStride, int iAlignment, int iOffset)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void SFreeListDesc::Init(CFreeListBlock* pcFreeList, int iStride, int iAlignment, int iOffset)
+void SFreeListDesc::Init(CFreeList* pcFreeList, int iStride, int iAlignment, int iOffset)
 {
 	this->iStride = iStride;
 	this->iAlignment = iAlignment;
@@ -99,10 +99,10 @@ int CompareFreeListDesc(const void* arg1, const void* arg2)
 int CompareFreeListParam(const void* arg1, const void* arg2)
 {
 	unsigned int		uiElementSize;
-	SFreeListParams*	psParams;
+	SMemoryFreeListParams*	psParams;
 
 	uiElementSize = *((unsigned int*)arg1);
-	psParams = (SFreeListParams*)arg2;
+	psParams = (SMemoryFreeListParams*)arg2;
 
 	if (uiElementSize < psParams->iMinElementSize)
 	{

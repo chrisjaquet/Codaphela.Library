@@ -17,6 +17,19 @@ void CString::Class(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+Ptr<CString> CString::Init(char* sz)
+{
+	PreInit();
+	CChars::Init(sz);
+	PostInit();
+	return this;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CString::Kill(void)
 {
 	CObject::Kill();
@@ -39,7 +52,7 @@ void CString::KillData(void)
 //////////////////////////////////////////////////////////////////////////
 BOOL CString::Save(CObjectSerialiser* pcFile)
 {
-	return pcFile->WriteString(this);
+	return CChars::WriteString(pcFile);
 }
 
 
@@ -49,6 +62,6 @@ BOOL CString::Save(CObjectSerialiser* pcFile)
 //////////////////////////////////////////////////////////////////////////
 BOOL CString::Load(CObjectDeserialiser* pcFile)
 {
-	return pcFile->ReadString(this);
+	return CChars::ReadString(pcFile);
 }
 

@@ -1,5 +1,6 @@
 #ifndef __CHUNK_FILE_NAMES_H__
 #define __CHUNK_FILE_NAMES_H__
+#include "BaseLib/ArrayString.h"
 #include "BaseLib/ChunkFile.h"
 
 
@@ -45,7 +46,7 @@ protected:
 	BOOL	WriteUnmatchedChunkEnds(int iMatchingOpen);
 	BOOL	WriteNewUnmatchedChunks(int iMatchingOpen, CArrayString* paszChunkNames);
 
-	CChars*	PrivateGetChunkName(int iIndex);
+	char*	PrivateGetChunkName(int iIndex);
 };
 
 

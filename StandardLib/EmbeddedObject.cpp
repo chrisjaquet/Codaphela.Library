@@ -22,7 +22,7 @@ CEmbeddedObject::CEmbeddedObject()
 //////////////////////////////////////////////////////////////////////////
 CEmbeddedObject::~CEmbeddedObject()
 {
-	//This destructor will only be called if the object was allocated on the stack.
+	//Never put code here.  Use ~BaseObject instead.
 }
 
 
@@ -50,7 +50,7 @@ void CEmbeddedObject::Kill(BOOL bHeapFromChanged)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CEmbeddedObject::RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* mpcObject)
+int CEmbeddedObject::RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* mpcObject)
 {
 	return 0;
 }
@@ -162,7 +162,6 @@ BOOL CEmbeddedObject::IsEmbedded(void)
 }
 
 
-
 //////////////////////////////////////////////////////////////////////////
 //
 //
@@ -184,7 +183,7 @@ int CEmbeddedObject::GetEmbeddedIndex(CEmbeddedObject* pcEmbedded)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CEmbeddedObject::UnsafeNumEmbeddedObjectTos(void)
+int CEmbeddedObject::BaseNumPointerTos(void)
 {
 	return 0;
 }
@@ -194,7 +193,7 @@ int CEmbeddedObject::UnsafeNumEmbeddedObjectTos(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* papcTos)
+void CEmbeddedObject::BaseGetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos)
 {
 }
 
@@ -203,7 +202,7 @@ void CEmbeddedObject::UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* papcTo
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::CollectAndClearTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters)
+void CEmbeddedObject::CollectAndClearPointerTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters)
 {
 }
 
@@ -259,7 +258,7 @@ void CEmbeddedObject::RemoveAllHeapFroms(void)
 		for (i = 0; i < iNumFroms; i++)
 		{
 			pcPointedFrom = ppcPointedFrom[i];
-			pcPointedFrom->RemoveTo(this);
+			pcPointedFrom->RemovePointerTo(this);
 		}
 
 		mapHeapFroms.ReInit();
@@ -271,34 +270,28 @@ void CEmbeddedObject::RemoveAllHeapFroms(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::AddHeapFrom(CBaseObject* pcFromObject)
-{
-	if (pcFromObject != NULL)
-	{
-		mapHeapFroms.Add(&pcFromObject);
-		if (pcFromObject->miDistToRoot >= ROOT_DIST_TO_ROOT)
-		{
-			GetEmbeddingContainer()->SetExpectedDistToRoot(pcFromObject->miDistToRoot+1);
-		}
-
-		GetObjects()->ValidateConsistency();
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
 void CEmbeddedObject::AddHeapFrom(CBaseObject* pcFromObject, BOOL bValidate)
 {
+	CBaseObject*	pcEmbedding;
+
 	if (pcFromObject != NULL)
 	{
 		mapHeapFroms.Add(&pcFromObject);
 		if (pcFromObject->miDistToRoot >= ROOT_DIST_TO_ROOT)
 		{
-			GetEmbeddingContainer()->SetExpectedDistToRoot(pcFromObject->miDistToRoot+1);
+			pcEmbedding = GetEmbeddingContainer();
+			pcEmbedding->SetExpectedDistToRoot(pcFromObject->miDistToRoot+1);
 		}
+
+#ifdef DEBUG
+		if (bValidate)
+		{
+			if (IsAllocatedInObjects())
+			{
+				GetObjects()->ValidateObjectsConsistency();
+			}
+		}
+#endif
 	}
 }
 
@@ -307,17 +300,22 @@ void CEmbeddedObject::AddHeapFrom(CBaseObject* pcFromObject, BOOL bValidate)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::RemoveHeapFrom(CBaseObject* pcFromObject)
+void CEmbeddedObject::UnsafeAddHeapFrom(CBaseObject* pcFromObject)
 {
-	CBaseObject*	pcContainer;
+	mapHeapFroms.Add(&pcFromObject);
+}
 
-	//Removing a 'from' kicks off memory reclamation.  This is the entry point for memory management.
-	PrivateRemoveHeapFrom(pcFromObject);
 
-	pcContainer = GetEmbeddingContainer();
-	pcContainer->TryKill(TRUE, TRUE);
-
-	GetObjects()->ValidateConsistency();
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CEmbeddedObject::ValidateInitialised(char* szMethod)
+{
+	if (!IsInitialised())
+	{
+		LogExpectedToBeInitialised(szMethod);
+	}
 }
 
 
@@ -334,6 +332,16 @@ void CEmbeddedObject::RemoveHeapFrom(CBaseObject* pcFromObject, BOOL bValidate)
 
 	pcContainer = GetEmbeddingContainer();
 	pcContainer->TryKill(TRUE, TRUE);
+
+#ifdef DEBUG
+	if (bValidate)
+	{
+		if (IsAllocatedInObjects())
+		{
+			GetObjects()->ValidateObjectsConsistency();
+		}
+	}
+#endif
 }
 
 
@@ -371,9 +379,9 @@ CBaseObject* CEmbeddedObject::GetHeapFrom(int iFrom)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::GetHeapFroms(CArrayEmbeddedBaseObjectPtr* papcFroms)
+void CEmbeddedObject::GetHeapFroms(CArrayTemplateEmbeddedBaseObjectPtr* papcFroms)
 {
-	papcFroms->Copy((CArrayEmbeddedBaseObjectPtr*)&mapHeapFroms);
+	papcFroms->Copy((CArrayTemplateEmbeddedBaseObjectPtr*)&mapHeapFroms);
 }
 
 
@@ -609,6 +617,16 @@ void CEmbeddedObject::AddStackFroms(CStackPointer* pcStackPointer)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CEmbeddedObject::IsInStack(void)
+{
+	return GetDistToStack() == 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CEmbeddedObject::RemoveStackFromTryKill(CPointer* pcPointer, BOOL bKillIfNoRoot)
 {
 	CStackPointers*	pcStackPointers;
@@ -746,7 +764,7 @@ void CEmbeddedObject::ValidateFrom(CBaseObject* pcBaseObject)
 	CChars	szFromObject;
 	int		iThisDistToRoot;
 	int		iOtherDistToRoot;
-	BOOL	bFromPointsToTo;
+	BOOL	bFromPointsTo;
 
 	iThisDistToRoot = GetDistToRoot();
 	iOtherDistToRoot = pcBaseObject->GetDistToRoot();
@@ -761,8 +779,8 @@ void CEmbeddedObject::ValidateFrom(CBaseObject* pcBaseObject)
 		szObject.Kill();
 	}
 
-	bFromPointsToTo = pcBaseObject->ContainsTo(this);
-	if (!bFromPointsToTo)
+	bFromPointsTo = pcBaseObject->ContainsPointerTo(this);
+	if (!bFromPointsTo)
 	{
 		szObject.Init();
 		PrintObject(&szObject, IsEmbedded());
@@ -779,7 +797,7 @@ void CEmbeddedObject::ValidateFrom(CBaseObject* pcBaseObject)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::ValidateTo(CEmbeddedObject* pcPointedTo)
+void CEmbeddedObject::ValidatePointerTo(CEmbeddedObject* pcPointedTo)
 {
 	CChars	szObject;
 	CChars	szToObject;
@@ -821,7 +839,7 @@ void CEmbeddedObject::ValidateFroms(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::ValidateTos(void)
+void CEmbeddedObject::ValidatePointerTos(void)
 {
 }
 
@@ -840,7 +858,7 @@ CStackPointer* CEmbeddedObject::GetFirstStackFrom(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CEmbeddedObject::GetStackFroms(CArrayPointerPtr* papcFroms)
+void CEmbeddedObject::GetStackFroms(CArrayTypedPointerPtr* papcFroms)
 {
 	CStackPointer*	pcStackPointer;
 	CPointer*		pcPointer;
@@ -899,5 +917,20 @@ void CEmbeddedObject::LogNotExpectedToBeEmbedded(char* szMethod)
 
 	pcContainer = GetEmbeddingContainer();
 	gcLogger.Error2(szMethod, " Cannot be called on embedded object of class [", ClassName(), "] with embedding index [", IndexToString(pcContainer->GetOI()),"] and embedding class [", pcContainer->ClassName(), "].", NULL);
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CEmbeddedObject::LogExpectedToBeInitialised(char* szMethod)
+{
+	CBaseObject*					pcContainer;
+
+	pcContainer = GetEmbeddingContainer();
+	gcLogger.Error2(szMethod, " Cannot be called on un-initialised object of class [", ClassName(), "] with index [", IndexToString(GetOI()),"].", NULL);
 }
 

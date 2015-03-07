@@ -141,3 +141,4 @@ void CNumberControl::Remove(int iNumToRemove)
 {
 	mcScratchPad.Remove(iNumToRemove);
 }
+

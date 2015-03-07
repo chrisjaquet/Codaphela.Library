@@ -282,7 +282,7 @@ void CChars::Fake(char* sz)
 {
 	if (sz)
 	{
-		mcText.Fake(sz, (int)strlen(sz)+1);
+		mcText.Fake(sz, (int)strlen(sz) + 1);
 	}
 	else
 	{
@@ -546,7 +546,7 @@ void CChars::Append(double d)
 {
 	char sz[32];
 
-	sprintf(sz, "%.8d", d);
+	sprintf(sz, "%.8f", d);
 	Append(sz);
 }
 
@@ -2168,6 +2168,60 @@ void CChars::PassifyNewlines(void)
 	if (iNewLen != -1)
 	{
 		mcText.GrowToNumElements(iNewLen+1);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CChars::WriteString(CFileWriter* pcWriter)
+{
+	return mcText.Write(pcWriter);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CChars::ReadString(CFileReader* pcReader)
+{
+	return mcText.Read(pcReader);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CChars::ReadChars(CFileReader* pcReader)
+{
+	int	iLength;
+
+	if (!pcReader->ReadStringLength(&iLength))
+	{
+		return FALSE;
+	}
+
+	if (iLength == 0)
+	{
+		Init();
+		return TRUE;
+	}
+	else if (iLength > 0)
+	{
+		Init('@', iLength-1);
+		if (!pcReader->ReadData(Text(), iLength)) 
+		{ 
+			return FALSE; 
+		}
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
 	}
 }
 

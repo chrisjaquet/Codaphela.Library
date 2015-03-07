@@ -54,7 +54,6 @@ Microsoft Windows is Copyright Microsoft Corporation
 #endif
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <memory.h>
 #include "Bool.h"
 #define ENGINE_SIZE_T size_t
@@ -98,7 +97,6 @@ typedef int BOOL;
 #define TRUE 1
 #define engine_stricmp(p,q) strcmpi(p,q)
 #define ENGINE_SIZE_T size_t
-#define EngineOutput(p)	printf(p)
 //#define MAX_PATH 260
 //#define _IOREAD         0x0001
 //#define _IOWRT          0x0002

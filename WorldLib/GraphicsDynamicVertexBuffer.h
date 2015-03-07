@@ -24,7 +24,7 @@ Microsoft DirectX is Copyright Microsoft Corporation
 #define __GRAPHICS_DYNAMIC_VERTEX_BUFFER_H__
 #include "GraphicsVertexBuffer.h"
 #include "BaseLib/ArrayBlock.h"
-#include "BaseLib/ArraySimple.h"
+#include "BaseLib/ArrayTemplateMinimal.h"
 
 #define DYNAMIC_VERTEX_BUFFER_CHUNK_SIZE	1024
 
@@ -45,10 +45,7 @@ public:
 };
 
 
-typedef CArraySimple<CGraphicsDynamicVertexBuffer>		__CArrayGraphicsDynamicVertexBuffers;
-
-
-class CGraphicsDynamicVertexBufferArray : public __CArrayGraphicsDynamicVertexBuffers
+class CGraphicsDynamicVertexBufferArray : public CArrayTemplateMinimal<CGraphicsDynamicVertexBuffer>
 {
 public:
 	void Init(void);

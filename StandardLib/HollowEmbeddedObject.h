@@ -12,26 +12,27 @@ public:
 	void				KillDontFree(void);
 	BOOL				Save(CObjectSerialiser* pcFile);
 	BOOL				Load(CObjectDeserialiser* pcFile);
-	void				RemoveTo(CEmbeddedObject* pcTo);
+	void				RemovePointerTo(CEmbeddedObject* pcTo);
 	int					GetDistToStack(void);
 	int					GetDistToRoot(void);
 	BOOL				SetDistToRoot(int iDistToRoot);
-	void				SetPointedTosExpectedDistToRoot(int iDistToRoot);
-	int					GetNumEmbedded(void);
-	CEmbeddedObject*	GetEmbeddedObject(int iIndex);
+	void				SetPointerTosExpectedDistToRoot(int iDistToRoot);
+	unsigned short int	GetNumEmbedded(void);
+	CEmbeddedObject*	GetEmbeddedObject(unsigned short int iIndex);
 	BOOL				IsHollow(void);
 	CBaseObject*		Dehollow(void);
 	int					GetEmbeddedIndex(void);
 	CHollowObject*		GetHollowObject(void);
 	CObjects*			GetObjects(void);
 	CStackPointers*		GetStackPointers(void);
-	void				GetTos(CArrayEmbeddedObjectPtr* papcTos);
-	int					NumTos(void);
+	void				GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+	int					NumPointerTos(void);
 	void				ValidateConsistency(void);
+	BOOL				IsInitialised(void);
 
 protected:
-	void				UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
-	int					CollectEmbeddedObjectDetachedFroms(CDistCalculatorParameters* pcParameters);
+	void				UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
+	int					CollectDetachedFroms(CDistCalculatorParameters* pcParameters);
 };
 
 

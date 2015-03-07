@@ -38,26 +38,27 @@ public:
 			BOOL				Load(CObjectDeserialiser* pcFile);
 			BOOL				IsCollection(void);
 			BOOL				IsObject(void);
-			void				SetPointedTosExpectedDistToRoot(int iDistToRoot);
-			void				GetTos(CArrayEmbeddedObjectPtr* papcTos);
-			int					NumTos(void);
-			int					GetNumEmbedded(void);
-			CEmbeddedObject*	GetEmbeddedObject(int iIndex);
+			void				SetPointerTosExpectedDistToRoot(int iDistToRoot);
+			void				GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+			int					NumPointerTos(void);
+			unsigned short int	GetNumEmbedded(void);
+			CEmbeddedObject*	GetEmbeddedObject(unsigned short int iIndex);
 			int					GetEmbeddedIndex(CEmbeddedObject* pcEmbedded);
 			int					NumHeapFroms(void);
 			int					NumStackFroms(void);
-			void				RemoveAllTos(void);
-			void				ValidateEmbeddedObjectTos(void);
+			void				RemoveAllPointerTosDontKill(void);
+			void				RemoveAllPointerTos(void);
+			void				BaseValidatePointerTos(void);
 			void				ValidateConsistency(void);
 
 protected:
 			void				KillInternalData(void);
 			void				KillData(void);
-			int					RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
-			void				RemoveTo(CEmbeddedObject* pcTo);
-			void				RemoveEmbeddedObjectAllTos(void);
+			int					RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
+			void				RemovePointerTo(CEmbeddedObject* pcTo);
+			void				BaseRemoveAllPointerTosDontKill(void);
 	virtual	CEmbeddedObject*	GetRemappedEmbeddedObject(int iIndex);
-			void				UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
+			void				UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
 };
 
 

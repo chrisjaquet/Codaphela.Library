@@ -23,6 +23,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include <stdlib.h>
 #include "PointerFunctions.h"
 #include "IntegerHelper.h"
+#include "GlobalMemory.h"
 #include "ArrayBit.h"
 
 
@@ -32,6 +33,17 @@ Microsoft Windows is Copyright Microsoft Corporation
 //////////////////////////////////////////////////////////////////////////
 void CArrayBit::Init(void)
 {
+	Init(&gcSystemAllocator);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+void CArrayBit::Init(CMallocator* pcMalloc)
+{
+	mpcMalloc = pcMalloc;
 	miNumBits = 0;
 	aSmall.ui[0] = 0;
 	aSmall.ui[1] = 0;
@@ -45,9 +57,9 @@ void CArrayBit::Init(void)
 //////////////////////////////////////////////////////////////////////////
 void CArrayBit::Kill(void)
 {
-	if (Large())
+	if (IsLarge())
 	{
-		free(aLarge.mpvData);
+		Free(aLarge.mpvData);
 	}
 	Init();
 }
@@ -72,8 +84,12 @@ void CArrayBit::Zero(void)
 //////////////////////////////////////////////////////////////////////////
 void CArrayBit::ReInit(void)
 {
+	CMallocator* pcMalloc;
+
+	pcMalloc = mpcMalloc;
+
 	Kill();
-	Init();
+	Init(pcMalloc);
 }
 
 
@@ -100,7 +116,7 @@ void CArrayBit::GrowBy(int iNumBits)
 
 	if ((iOldByteSize <= iTransitionSize) && (iNewByteSize > iTransitionSize))
 	{
-		pvData = malloc(iNewByteSize);
+		pvData = Malloc(iNewByteSize);
 		memcpy_fast(pvData, GetData(), iNewByteSize);
 		aLarge.mpvData = pvData;
 		miNumBits += iNumBits;
@@ -108,7 +124,7 @@ void CArrayBit::GrowBy(int iNumBits)
 	}
 
 	miNumBits += iNumBits;
-	aLarge.mpvData = realloc(aLarge.mpvData, iNewByteSize);
+	aLarge.mpvData = Realloc(aLarge.mpvData, iNewByteSize);
 }
 
 
@@ -191,14 +207,27 @@ void CArrayBit::Remove(int iOffset, int iNumBits)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CArrayBit::Load(CFileReader* pcFile)
+BOOL CArrayBit::Read(CFileReader* pcFileReader)
 {
-	int		iNumBits;
+	int				iNumBits;
+	BOOL			bResult;
+	CMallocator*	pcMalloc;
 
-	Init();
-	ReturnOnFalse(pcFile->ReadInt(&iNumBits));
+	pcMalloc = gcMallocators.ReadMallocator(pcFileReader);
+	if (pcMalloc == NULL)
+	{
+		return FALSE;
+	}
+
+	Init(pcMalloc);
+	bResult = pcFileReader->ReadInt(&iNumBits);
+	if (!bResult)
+	{
+		return FALSE;
+	}
+
 	GrowBy(iNumBits);
-	return pcFile->ReadBits(GetData(), ByteSize(iNumBits));
+	return pcFileReader->ReadBits(GetData(), ByteSize(iNumBits));
 }
 
 
@@ -206,10 +235,23 @@ BOOL CArrayBit::Load(CFileReader* pcFile)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CArrayBit::Save(CFileWriter* pcFile)
+BOOL CArrayBit::Write(CFileWriter* pcFileWriter)
 {
-	ReturnOnFalse(pcFile->WriteInt(miNumBits));
-	return pcFile->WriteBits(GetData(), ByteSize(miNumBits));
+	BOOL	bResult;
+
+	bResult = gcMallocators.WriteMallocator(pcFileWriter, mpcMalloc);
+	if (!bResult)
+	{
+		return FALSE;
+	}
+
+	bResult = pcFileWriter->WriteInt(miNumBits);
+	if (!bResult)
+	{
+		return FALSE;
+	}
+
+	return pcFileWriter->WriteBits(GetData(), ByteSize(miNumBits));
 }
 
 
@@ -227,7 +269,7 @@ int CArrayBit::NumElements(void)
 //																		//
 //																		//
 //////////////////////////////////////////////////////////////////////////
-BOOL CArrayBit::Large(void)
+BOOL CArrayBit::IsLarge(void)
 {
 	return miNumBits > sizeof(unsigned int)*3*8;
 }
@@ -239,7 +281,7 @@ BOOL CArrayBit::Large(void)
 //////////////////////////////////////////////////////////////////////////
 void* CArrayBit::GetData(void)
 {
-	if (Large())
+	if (IsLarge())
 	{
 		return aLarge.mpvData;
 	}
@@ -259,3 +301,35 @@ int CArrayBit::ByteSize(int iNumBits)
 	return (iNumBits + 7) / 8;
 }
 
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+void* CArrayBit::Malloc(size_t tSize)
+{
+	return malloc(tSize);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+void CArrayBit::Free(void* pv)
+{
+	free(pv);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+void* CArrayBit::Realloc(void* pv, size_t tSize)
+{
+	pv = realloc(pv, tSize);
+	return pv;
+}

@@ -22,12 +22,12 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __ARRAY_DOUBLE_H__
 #define __ARRAY_DOUBLE_H__
-#include "ArrayPrimitiveTemplate.h"
+#include "ArrayTemplatePrimitive.h"
 
 
-typedef CArrayPrimitiveTemplate<double> CArrayDouble;
-template class CArrayPrimitiveTemplate<double>;
+typedef CArrayTemplatePrimitive<double> CArrayDouble;
+template class CArrayTemplatePrimitive<double>;
 
 
-#endif //__ARRAY_DOUBLE_H__
+#endif // __ARRAY_DOUBLE_H__
 

@@ -20,6 +20,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __NAMED_INDEX_OBJECTS_H__
 #define __NAMED_INDEX_OBJECTS_H__
+#include "BaseLib/IndexTreeBlock.h"
 #include "IndexedObjects.h"
 
 
@@ -29,7 +30,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 class CNamedIndexedObjects
 {
 protected:
-	CASCIITree			mcNames;
+	CIndexTreeBlock		mcNames;
 	CIndexedObjects		mcIndexedObjects;
 
 public:
@@ -46,7 +47,6 @@ public:
 	int					NumNames(void);
 
 	CIndexedObjects*	GetObjects(void);
-	CASCIITree*			GetNames(void);
 	CBaseObject*		StartIteration(SIndexesIterator* psIter);
 	CBaseObject*		Iterate(SIndexesIterator* psIter);
 };

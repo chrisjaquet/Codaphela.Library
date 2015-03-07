@@ -31,7 +31,7 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 CRoot::CRoot()
 {
 	SetDistToRoot(ROOT_DIST_TO_ROOT);
-	SetPointedTosExpectedDistToRoot(ROOT_DIST_TO_ROOT);
+	SetPointerTosExpectedDistToRoot(ROOT_DIST_TO_ROOT);
 }
 
 
@@ -41,8 +41,12 @@ CRoot::CRoot()
 //////////////////////////////////////////////////////////////////////////
 Ptr<CRoot> CRoot::Init(void)
 {
+	PreInit();
+
 	mpcObjectsAllocatingFrom = mpcObjectsThisIn;
 	CreateSet();
+
+	PostInit();
 	return Ptr<CRoot>(this);
 }
 
@@ -84,8 +88,7 @@ void CRoot::Class(void)
 //////////////////////////////////////////////////////////////////////////
 void CRoot::CreateSet(void)
 {
-	mpObjects = mpcObjectsAllocatingFrom->Add<CSetObject>();
-	mpObjects->Init(1024);
+	mpObjects = mpcObjectsAllocatingFrom->Add<CSetObject>()->Init(1024);
 	mpObjects->MakeSubRoot();
 }
 

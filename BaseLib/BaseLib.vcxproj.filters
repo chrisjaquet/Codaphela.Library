@@ -31,9 +31,6 @@
     <Filter Include="Source\Data\String">
       <UniqueIdentifier>{bea213cd-2a49-448f-ade4-5d1eb3293042}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Data\Additional">
-      <UniqueIdentifier>{a59765dd-1bb5-4269-8df6-6e7ec48f23a7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Data\Map">
       <UniqueIdentifier>{c19b3a97-f9e7-44b6-8a7e-d8947c2878bd}</UniqueIdentifier>
     </Filter>
@@ -45,9 +42,6 @@
     </Filter>
     <Filter Include="Source\Data\Markup">
       <UniqueIdentifier>{0ae28629-605d-41d5-9f31-20678a9efd52}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Data\ASCII">
-      <UniqueIdentifier>{5fa05940-5004-442d-987e-2facb4932830}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Data\Geometric">
       <UniqueIdentifier>{59e180ea-6000-48b4-a3b6-6783ceae53cd}</UniqueIdentifier>
@@ -142,55 +136,49 @@
     <Filter Include="Source\Validation">
       <UniqueIdentifier>{9578599c-0d13-4921-b43b-f8f2a6e0d99c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Data\Index">
+      <UniqueIdentifier>{8cd85cda-086a-48d1-b7b3-6392d190bd4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Bit">
+      <UniqueIdentifier>{4e1176d2-6d04-451d-a202-23cd72e4f390}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Minimal">
+      <UniqueIdentifier>{f65ab9ec-1d22-4e59-b3b1-09a1edc871fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Embedded">
+      <UniqueIdentifier>{53041b47-649b-4e72-a17d-51652e7ea39f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Primitive">
+      <UniqueIdentifier>{6445202a-5105-4aa1-b102-e6737a166fd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Basic">
+      <UniqueIdentifier>{c3884b9c-7a91-41df-adb9-7e7ec5507ca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Primitive\Specific">
+      <UniqueIdentifier>{8e62ab87-bd86-4e0a-b616-b1ccdd605d85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Basic\Specific">
+      <UniqueIdentifier>{83449a31-83b1-4279-b615-edc6e292db70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Minimal\Specific">
+      <UniqueIdentifier>{bcb3c77f-e340-4e34-ac4e-f45a13486256}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Memory\Allocator">
+      <UniqueIdentifier>{2a38947c-d69c-451b-b1ec-226c49cc404e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\File\Pack\Util">
+      <UniqueIdentifier>{c2e6673e-b725-44e7-9b03-c07175de8722}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Array\Sorted">
+      <UniqueIdentifier>{b62cf4e0-ad10-4860-86b3-7f1593b3df9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Data\Map\String">
+      <UniqueIdentifier>{2f70e5dc-7c62-4305-8fe9-1f0757f57293}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataMacro.h">
       <Filter>Source\Data</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayBit.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayBlock.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayChar.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayDouble.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayEmbedded.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayFloat.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayInt.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayInt2D.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayLong.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayPointer.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayPrimitiveTemplate.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArraySimple.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArraySimpleChar.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayString.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayTemplate.h">
-      <Filter>Source\Data\Array</Filter>
     </ClInclude>
     <ClInclude Include="ArrayDenseTemplate.h">
       <Filter>Source\Data\Array\Tree</Filter>
@@ -198,37 +186,10 @@
     <ClInclude Include="ArraySparseTemplate.h">
       <Filter>Source\Data\Array\Tree</Filter>
     </ClInclude>
-    <ClInclude Include="LinkListBlock.h">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkListBlockMemoryStack.h">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkListTemplate.h">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkListTemplateFreeList.h">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkListTemplateMemoryStack.h">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClInclude>
     <ClInclude Include="TreeBlock.h">
       <Filter>Source\Data\Tree</Filter>
     </ClInclude>
-    <ClInclude Include="TreeBlockMemoryStack.h">
-      <Filter>Source\Data\Tree</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeInt.h">
-      <Filter>Source\Data\Tree</Filter>
-    </ClInclude>
     <ClInclude Include="TreeTemplate.h">
-      <Filter>Source\Data\Tree</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeTemplateFreeList.h">
-      <Filter>Source\Data\Tree</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeTemplateMemoryStack.h">
       <Filter>Source\Data\Tree</Filter>
     </ClInclude>
     <ClInclude Include="EnumeratorBlock.h">
@@ -258,12 +219,6 @@
     <ClInclude Include="StringHelper.h">
       <Filter>Source\Data\String</Filter>
     </ClInclude>
-    <ClInclude Include="AdditionalTypes.h">
-      <Filter>Source\Data\Additional</Filter>
-    </ClInclude>
-    <ClInclude Include="MapIntArraySimpleInt.h">
-      <Filter>Source\Data\Map</Filter>
-    </ClInclude>
     <ClInclude Include="MapIntInt.h">
       <Filter>Source\Data\Map</Filter>
     </ClInclude>
@@ -271,18 +226,6 @@
       <Filter>Source\Data\Map</Filter>
     </ClInclude>
     <ClInclude Include="MapPtrPtr.h">
-      <Filter>Source\Data\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="MapPtrTemplate.h">
-      <Filter>Source\Data\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="MapStringInt.h">
-      <Filter>Source\Data\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="MapStringString.h">
-      <Filter>Source\Data\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="MapStringTemplate.h">
       <Filter>Source\Data\Map</Filter>
     </ClInclude>
     <ClInclude Include="MapTemplate.h">
@@ -317,18 +260,6 @@
     </ClInclude>
     <ClInclude Include="MarkupText.h">
       <Filter>Source\Data\Markup</Filter>
-    </ClInclude>
-    <ClInclude Include="ASCIINode.h">
-      <Filter>Source\Data\ASCII</Filter>
-    </ClInclude>
-    <ClInclude Include="ASCIITree.h">
-      <Filter>Source\Data\ASCII</Filter>
-    </ClInclude>
-    <ClInclude Include="CharsID.h">
-      <Filter>Source\Data\ASCII</Filter>
-    </ClInclude>
-    <ClInclude Include="CharsIDArray.h">
-      <Filter>Source\Data\ASCII</Filter>
     </ClInclude>
     <ClInclude Include="Float2.h">
       <Filter>Source\Data\Geometric</Filter>
@@ -489,9 +420,6 @@
     <ClInclude Include="Memory.h">
       <Filter>Source\Memory\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryStats.h">
-      <Filter>Source\Memory\Manager</Filter>
-    </ClInclude>
     <ClInclude Include="ScratchPad.h">
       <Filter>Source\Memory\ScratchPad</Filter>
     </ClInclude>
@@ -540,17 +468,11 @@
     <ClInclude Include="FreeList.h">
       <Filter>Source\Memory\Freelist</Filter>
     </ClInclude>
-    <ClInclude Include="FreeListBlock.h">
-      <Filter>Source\Memory\Freelist</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryCacheAllocation.h">
       <Filter>Source\Memory\Cache</Filter>
     </ClInclude>
     <ClInclude Include="MemoryCache.h">
       <Filter>Source\Memory\Cache</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkListAligned.h">
-      <Filter>Source\Data\LinkList</Filter>
     </ClInclude>
     <ClInclude Include="StackMark.h">
       <Filter>Source\Memory\Stack</Filter>
@@ -588,9 +510,6 @@
     <ClInclude Include="ChunkFileFile.h">
       <Filter>Source\File\Chunk\File</Filter>
     </ClInclude>
-    <ClInclude Include="ArrayVoidPtr.h">
-      <Filter>Source\Data\Array</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryHeader.h">
       <Filter>Source\Memory\Manager</Filter>
     </ClInclude>
@@ -603,42 +522,150 @@
     <ClInclude Include="Log.h">
       <Filter>Source\Error</Filter>
     </ClInclude>
+    <ClInclude Include="IndexTreeNode.h">
+      <Filter>Source\Data\Index</Filter>
+    </ClInclude>
+    <ClInclude Include="LogConfig.h">
+      <Filter>Source\Error</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexTreeTemplate.h">
+      <Filter>Source\Data\Index</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayBit.h">
+      <Filter>Source\Data\Array\Bit</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayTemplateMinimal.h">
+      <Filter>Source\Data\Array\Minimal</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayVoidPtr.h">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayString.h">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayIntAndPointer.h">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayInt2D.h">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayTemplate.h">
+      <Filter>Source\Data\Array\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayIntMinimal.h">
+      <Filter>Source\Data\Array\Minimal\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayCharMinimal.h">
+      <Filter>Source\Data\Array\Minimal\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayLong.h">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayChar.h">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayDouble.h">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayFloat.h">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayInt.h">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayBlock.h">
+      <Filter>Source\Data\Array\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkedListBlock.h">
+      <Filter>Source\Data\LinkList</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkedListTemplate.h">
+      <Filter>Source\Data\LinkList</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkedListBlockAligned.h">
+      <Filter>Source\Data\LinkList</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkedListTemplateFreeList.h">
+      <Filter>Source\Data\LinkList</Filter>
+    </ClInclude>
+    <ClInclude Include="Mallocator.h">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemAllocator.h">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="NullAllocator.h">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="FreeListAllocator.h">
+      <Filter>Source\Memory\Freelist</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryBlock.h">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryAllocator.h">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalMemory.h">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayTemplateEmbedded.h">
+      <Filter>Source\Data\Array\Embedded</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayTemplatePrimitive.h">
+      <Filter>Source\Data\Array\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Mallocators.h">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="PackFilePacker.h">
+      <Filter>Source\File\Pack\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrayBlockSorted.h">
+      <Filter>Source\Data\Array\Sorted</Filter>
+    </ClInclude>
+    <ClInclude Include="MapBlock.h">
+      <Filter>Source\Data\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="MapStringTemplate.h">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClInclude>
+    <ClInclude Include="MapStringInt.h">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClInclude>
+    <ClInclude Include="MapStringString.h">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClInclude>
+    <ClInclude Include="MapStringBlock.h">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClInclude>
+    <ClInclude Include="Constructors.h">
+      <Filter>Source\Constructor</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalMemoryAllocator.h">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalMallocator.h">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="ScratchPadAllocator.h">
+      <Filter>Source\Memory\ScratchPad</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexTreeBlock.h">
+      <Filter>Source\Data\Index</Filter>
+    </ClInclude>
+    <ClInclude Include="TrackingAllocator.h">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="MapPtrPrimitiveTemplate.h">
+      <Filter>Source\Data\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="FileIndexTreeNode.h">
+      <Filter>Source\Data\Index</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ArrayBit.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayBlock.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayInt.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayInt2D.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayLong.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayPointer.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArraySimpleChar.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayString.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
-    <ClCompile Include="LinkListBlock.cpp">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClCompile>
-    <ClCompile Include="LinkListBlockMemoryStack.cpp">
-      <Filter>Source\Data\LinkList</Filter>
-    </ClCompile>
     <ClCompile Include="TreeBlock.cpp">
-      <Filter>Source\Data\Tree</Filter>
-    </ClCompile>
-    <ClCompile Include="TreeBlockMemoryStack.cpp">
       <Filter>Source\Data\Tree</Filter>
     </ClCompile>
     <ClCompile Include="EnumeratorBlock.cpp">
@@ -668,19 +695,10 @@
     <ClCompile Include="StringHelper.cpp">
       <Filter>Source\Data\String</Filter>
     </ClCompile>
-    <ClCompile Include="AdditionalTypes.cpp">
-      <Filter>Source\Data\Additional</Filter>
-    </ClCompile>
     <ClCompile Include="MapIntInt.cpp">
       <Filter>Source\Data\Map</Filter>
     </ClCompile>
     <ClCompile Include="MapPtrPtr.cpp">
-      <Filter>Source\Data\Map</Filter>
-    </ClCompile>
-    <ClCompile Include="MapStringInt.cpp">
-      <Filter>Source\Data\Map</Filter>
-    </ClCompile>
-    <ClCompile Include="MapStringString.cpp">
       <Filter>Source\Data\Map</Filter>
     </ClCompile>
     <ClCompile Include="Date.cpp">
@@ -709,15 +727,6 @@
     </ClCompile>
     <ClCompile Include="MarkupText.cpp">
       <Filter>Source\Data\Markup</Filter>
-    </ClCompile>
-    <ClCompile Include="ASCIINode.cpp">
-      <Filter>Source\Data\ASCII</Filter>
-    </ClCompile>
-    <ClCompile Include="ASCIITree.cpp">
-      <Filter>Source\Data\ASCII</Filter>
-    </ClCompile>
-    <ClCompile Include="CharsIDArray.cpp">
-      <Filter>Source\Data\ASCII</Filter>
     </ClCompile>
     <ClCompile Include="Float2.cpp">
       <Filter>Source\Data\Geometric</Filter>
@@ -866,9 +875,6 @@
     <ClCompile Include="Memory.cpp">
       <Filter>Source\Memory\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryStats.cpp">
-      <Filter>Source\Memory\Manager</Filter>
-    </ClCompile>
     <ClCompile Include="ScratchPad.cpp">
       <Filter>Source\Memory\ScratchPad</Filter>
     </ClCompile>
@@ -893,12 +899,6 @@
     <ClCompile Include="Aardvark.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="FreeList.cpp">
-      <Filter>Source\Memory\Freelist</Filter>
-    </ClCompile>
-    <ClCompile Include="FreeListBlock.cpp">
-      <Filter>Source\Memory\Freelist</Filter>
-    </ClCompile>
     <ClCompile Include="FreeListMaybe.cpp">
       <Filter>Source\Memory\Freelist</Filter>
     </ClCompile>
@@ -907,9 +907,6 @@
     </ClCompile>
     <ClCompile Include="MemoryCacheAllocation.cpp">
       <Filter>Source\Memory\Cache</Filter>
-    </ClCompile>
-    <ClCompile Include="LinkListAligned.cpp">
-      <Filter>Source\Data\LinkList</Filter>
     </ClCompile>
     <ClCompile Include="MemoryStack.cpp">
       <Filter>Source\Memory\Stack</Filter>
@@ -935,9 +932,6 @@
     <ClCompile Include="ChunkFileFile.cpp">
       <Filter>Source\File\Chunk\File</Filter>
     </ClCompile>
-    <ClCompile Include="ArrayVoidPtr.cpp">
-      <Filter>Source\Data\Array</Filter>
-    </ClCompile>
     <ClCompile Include="MemoryHeader.cpp">
       <Filter>Source\Memory\Manager</Filter>
     </ClCompile>
@@ -946,6 +940,111 @@
     </ClCompile>
     <ClCompile Include="LogString.cpp">
       <Filter>Source\Error</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkStack.cpp">
+      <Filter>Source\File\Chunk\File</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexTreeNode.cpp">
+      <Filter>Source\Data\Index</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayBit.cpp">
+      <Filter>Source\Data\Array\Bit</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayVoidPtr.cpp">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayString.cpp">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayIntAndPointer.cpp">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayInt2D.cpp">
+      <Filter>Source\Data\Array\Basic\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayCharMinimal.cpp">
+      <Filter>Source\Data\Array\Minimal\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayIntMinimal.cpp">
+      <Filter>Source\Data\Array\Minimal\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayInt.cpp">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayLong.cpp">
+      <Filter>Source\Data\Array\Primitive\Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayBlock.cpp">
+      <Filter>Source\Data\Array\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkedListBlock.cpp">
+      <Filter>Source\Data\LinkList</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkedListBlockAligned.cpp">
+      <Filter>Source\Data\LinkList</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemAllocator.cpp">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="NullAllocator.cpp">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeListAllocator.cpp">
+      <Filter>Source\Memory\Freelist</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeList.cpp">
+      <Filter>Source\Memory\Freelist</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryBlock.cpp">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryAllocator.cpp">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalMemory.cpp">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Mallocators.cpp">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="PackFilePacker.cpp">
+      <Filter>Source\File\Pack\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayBlockSorted.cpp">
+      <Filter>Source\Data\Array\Sorted</Filter>
+    </ClCompile>
+    <ClCompile Include="MapStringInt.cpp">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClCompile>
+    <ClCompile Include="MapStringString.cpp">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClCompile>
+    <ClCompile Include="MapBlock.cpp">
+      <Filter>Source\Data\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="MapStringBlock.cpp">
+      <Filter>Source\Data\Map\String</Filter>
+    </ClCompile>
+    <ClCompile Include="Constructors.cpp">
+      <Filter>Source\Constructor</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalMemoryAllocator.cpp">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalMallocator.cpp">
+      <Filter>Source\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="ScratchPadAllocator.cpp">
+      <Filter>Source\Memory\ScratchPad</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexTreeBlock.cpp">
+      <Filter>Source\Data\Index</Filter>
+    </ClCompile>
+    <ClCompile Include="TrackingAllocator.cpp">
+      <Filter>Source\Memory\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIndexTreeNode.cpp">
+      <Filter>Source\Data\Index</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

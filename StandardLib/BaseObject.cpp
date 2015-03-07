@@ -34,9 +34,12 @@ CBaseObject::CBaseObject()
 {
 	mpcObjectsThisIn = NULL;
 	miDistToRoot = UNATTACHED_DIST_TO_ROOT;
-	miDistToStack = UNKNOWN_DIST_TO_STACK;
+	miDistToStack = MIN_STACK_DIST_TO_STACK;
 	moi = INVALID_O_INDEX;
-	miFlags = OBJECT_FLAGS_DIRTY;
+	miFlags = OBJECT_FLAGS_DIRTY | OBJECT_FLAGS_CALLED_CONSTRUCTOR;
+	miNumEmbedded = 0;
+	miPreInits = 0;
+	miPostInits = 0;
 }
 
 
@@ -44,21 +47,25 @@ CBaseObject::CBaseObject()
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::PreInit(CObjects* pcObjects)
+CBaseObject::~CBaseObject()
+{
+	if (mpcUnknownsThisIn == NULL)
+	{
+		//This destructor code will only be called if the object was allocated on the stack.
+		ValidateHasClass();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::Allocate(CObjects* pcObjects)
 {
 	mpcObjectsThisIn = pcObjects;
+	SetFlag(OBJECT_FLAGS_CALLED_ALLOCATE, TRUE);
 	Class();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::PreInit(void)
-{
-	//Call this if you need to allocate objects on the stack.
-	PreInit(NULL);
+	SetDistToStack(UNKNOWN_DIST_TO_STACK);
 }
 
 
@@ -68,6 +75,74 @@ void CBaseObject::PreInit(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::Class(void)
 {
+	SetFlag(OBJECT_FLAGS_CALLED_CLASS, TRUE);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::PreInit(void)
+{
+	CBaseObject*	pcContainer;
+
+#ifdef DEBUG
+	ValidateHasClass();
+#endif
+
+	pcContainer = GetEmbeddingContainer();
+	pcContainer->ContainerPreInit();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::PostInit(void)
+{
+	CBaseObject*	pcContainer;
+
+	pcContainer = GetEmbeddingContainer();
+	pcContainer->ContainerPostInit();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ContainerPreInit(void)
+{
+	ValidateNotEmbedded(__METHOD__);
+
+	miPreInits++;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ContainerPostInit(void)
+{
+	ValidateNotEmbedded(__METHOD__);
+
+	miPostInits++;
+	if (miPreInits == miPostInits)
+	{
+		Initialised();
+	}		
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::Initialised(void)
+{
+	SetFlag(OBJECT_FLAGS_CALLED_INIT, TRUE);
 }
 
 
@@ -77,12 +152,17 @@ void CBaseObject::Class(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::Kill(void)
 {
-	BOOL					bHeapFromChanged;
+	BOOL	bHeapFromChanged;
 
 	bHeapFromChanged = HasHeapFroms();
 	Kill(bHeapFromChanged);
 
-	mpcObjectsThisIn->ValidateConsistency();
+#ifdef DEBUG
+	if (mpcObjectsThisIn)
+	{
+		mpcObjectsThisIn->ValidateObjectsConsistency();
+	}
+#endif
 }
 
 
@@ -92,24 +172,34 @@ void CBaseObject::Kill(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::Kill(BOOL bHeapFromChanged)
 {
-	CDistCalculator*		pcDistCalculator;
-	CArrayBaseObjectPtr*	papcKilled;
+	ValidateNotEmbedded(__METHOD__);
+
+	CDistCalculator			cDistCalculator;
+	CArrayBlockObjectPtr*	papcKilled;
 
 	//This method is for the user to forcibly kill an object.
 	//It is not called internally.
 
-	ValidateNotEmbedded(__METHOD__);
+	if (IsAllocatedInObjects())
+	{
+		RemoveAllStackFroms();
+		RemoveAllHeapFroms();
 
-	RemoveAllStackFroms();
-	RemoveAllHeapFroms();
+		cDistCalculator.Init();
+		papcKilled = cDistCalculator.Calculate(this, bHeapFromChanged);
 
-	pcDistCalculator = mpcObjectsThisIn->GetDistCalculator();
+		mpcObjectsThisIn->Remove(papcKilled);
+		cDistCalculator.Kill();
+	}
+	else
+	{
+		RemoveAllPointerTos();
 
-	pcDistCalculator->Init();
-	papcKilled = pcDistCalculator->Calculate(this, bHeapFromChanged);
+		RemoveAllStackFroms();
+		RemoveAllHeapFroms();
 
-	mpcObjectsThisIn->Remove(papcKilled);
-	pcDistCalculator->Kill();
+		KillDontFree();
+	}
 }
 
 
@@ -132,17 +222,9 @@ void CBaseObject::KillDontFree(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::Free(void)
+void CBaseObject::KillInternalData(void)
 {
-	if (IsNotEmbedded())
-	{
-		if (mpcObjectsThisIn)
-		{
-			mpcObjectsThisIn->RemoveInKill(this);
-		}
-		moi = INVALID_O_INDEX;
-		CUnknown::Kill();
-	}
+	CEmbeddedObject::KillInternalData();
 }
 
 
@@ -150,9 +232,8 @@ void CBaseObject::Free(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::KillInternalData(void)
+void CBaseObject::KillIdentifiers(void)
 {
-	CEmbeddedObject::KillInternalData();
 }
 
 
@@ -168,7 +249,7 @@ void CBaseObject::CollectValidDistStartingObjectsAndSetClearedToRoot(CBaseObject
 	ValidateNotEmbedded(__METHOD__);
 
 	int								i;
-	CArrayEmbeddedBaseObjectPtr		apcFroms;
+	CArrayTemplateEmbeddedBaseObjectPtr		apcFroms;
 	CBaseObject*					pcFrom;
 	CBaseObject*					pcContainer;
 
@@ -232,7 +313,7 @@ void CBaseObject::CollectAndClearInvalidDistToRootObjects(CDistCalculatorParamet
 			SetFlag(OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED, TRUE);
 			SetDistToRoot(CLEARED_DIST_TO_ROOT);
 
-			CollectAndClearTosInvalidDistToRootObjects(pcParameters);
+			CollectAndClearPointerTosInvalidDistToRootObjects(pcParameters);
 		}
 	}
 }
@@ -242,11 +323,11 @@ void CBaseObject::CollectAndClearInvalidDistToRootObjects(CDistCalculatorParamet
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CBaseObject::CollectDetachedFroms(CDistCalculatorParameters* pcParameters)
+int CBaseObject::CollectDetachedAndSetDistToStackZero(CDistCalculatorParameters* pcParameters)
 {
 	ValidateNotEmbedded(__METHOD__);
 
-	int					iNumWithStackPointers;
+	int	iNumWithStackPointers;
 
 	iNumWithStackPointers = 0;
 
@@ -264,7 +345,10 @@ int CBaseObject::CollectDetachedFroms(CDistCalculatorParameters* pcParameters)
 
 	if (HasStackPointers())
 	{
-		SetDistToStack(0);
+		if (IsAllocatedInObjects())
+		{
+			SetDistToStack(MIN_HEAP_DIST_TO_STACK);
+		}
 		iNumWithStackPointers++;
 	}
 
@@ -276,7 +360,7 @@ int CBaseObject::CollectDetachedFroms(CDistCalculatorParameters* pcParameters)
 
 	SetFlag(OBJECT_FLAGS_DIST_FROM_WALKED, TRUE);
 
-	iNumWithStackPointers += CollectEmbeddedObjectDetachedFroms(pcParameters);
+	iNumWithStackPointers += CollectDetachedFroms(pcParameters);
 	return iNumWithStackPointers;
 }
 
@@ -286,7 +370,7 @@ int CBaseObject::CollectDetachedFroms(CDistCalculatorParameters* pcParameters)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CBaseObject::CollectEmbeddedObjectDetachedFroms(CDistCalculatorParameters* pcParameters)
+int CBaseObject::CollectDetachedFroms(CDistCalculatorParameters* pcParameters)
 {
 	int					i;
 	int					iNumFroms;
@@ -301,7 +385,7 @@ int CBaseObject::CollectEmbeddedObjectDetachedFroms(CDistCalculatorParameters* p
 		pcEmbedded = *mapHeapFroms.Get(i);
 		pcBaseObject = pcEmbedded->GetEmbeddingContainer();
 
-		iNumWithStackPointers += pcBaseObject->CollectDetachedFroms(pcParameters);
+		iNumWithStackPointers += pcBaseObject->CollectDetachedAndSetDistToStackZero(pcParameters);
 	}
 
 	return iNumWithStackPointers;
@@ -348,23 +432,21 @@ void CBaseObject::TryKill(BOOL bKillIfNoRoot, BOOL bHeapFromChanged)
 	BOOL					bHasStackPointers;
 	BOOL					bHasHeapPointers;
 	BOOL					bMustKill;
-	CDistCalculator*		pcDistCalculator;
-	CArrayBaseObjectPtr*	papcKilled;
-
+	CDistCalculator			cDistCalculator;
+	CArrayBlockObjectPtr*	papcKilled;
+	
 	if (IsRoot())
 	{
 		return;
 	}
 
-	pcDistCalculator = mpcObjectsThisIn->GetDistCalculator();
-	
 	if (bKillIfNoRoot)
 	{
-		pcDistCalculator->Init();
-		papcKilled = pcDistCalculator->Calculate(this, bHeapFromChanged);
+		cDistCalculator.Init();
+		papcKilled = cDistCalculator.Calculate(this, bHeapFromChanged);
 
 		mpcObjectsThisIn->Remove(papcKilled);
-		pcDistCalculator->Kill();
+		cDistCalculator.Kill();
 	}
 	else
 	{
@@ -372,13 +454,13 @@ void CBaseObject::TryKill(BOOL bKillIfNoRoot, BOOL bHeapFromChanged)
 		bHasStackPointers = HasStackPointers();
 
 		//If we removed a stack pointer and have no more stack pointers and have no heap pointers (regardless of whether or not they can find the root)
-		bMustKill = !bHasHeapPointers && !bHasStackPointers;
+		bMustKill = !bHasHeapPointers && !bHasStackPointers && (miDistToStack != 0);
 		if (bMustKill)
 		{
-			pcDistCalculator->Init();
-			papcKilled = pcDistCalculator->Calculate(this, bHeapFromChanged);
+			cDistCalculator.Init();
+			papcKilled = cDistCalculator.Calculate(this, bHeapFromChanged);
 			mpcObjectsThisIn->Remove(papcKilled);
-			pcDistCalculator->Kill();
+			cDistCalculator.Kill();
 		}
 	}
 }
@@ -493,7 +575,7 @@ void CBaseObject::SetExpectedDistToRoot(int iExpectedDistToRoot)
 	iBestDistToRoot = CalculateDistToRootFromPointedFroms(iExpectedDistToRoot);
 	if (SetDistToRoot(iBestDistToRoot))
 	{
-		SetPointedTosExpectedDistToRoot(iBestDistToRoot);
+		SetPointerTosExpectedDistToRoot(iBestDistToRoot);
 	}
 }
 
@@ -505,13 +587,14 @@ void CBaseObject::SetExpectedDistToRoot(int iExpectedDistToRoot)
 void CBaseObject::SetCalculatedDistToRoot(void)
 {
 	ValidateNotEmbedded(__METHOD__);
+	ValidateInitialised(__METHOD__);
 
 	int	iBestDistToRoot;
 
 	iBestDistToRoot = CalculateDistToRootFromPointedFroms();
 	if (SetDistToRoot(iBestDistToRoot))
 	{
-		SetPointedTosExpectedDistToRoot(iBestDistToRoot);
+		SetPointerTosExpectedDistToRoot(iBestDistToRoot);
 	}
 }
 
@@ -613,7 +696,7 @@ void CBaseObject::UpdateAttachedTosDistToRoot(CDistCalculatorParameters* pcParam
 	SetDistToRoot(iClosestToRoot);
 	SetFlag(OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT, TRUE);
 
-	UpdateAttachedEmbeddedObjectTosDistToRoot(pcParameters, iClosestToRoot);
+	UpdateAttachedEmbeddedObjectPointerTosDistToRoot(pcParameters, iClosestToRoot);
 }
 
 
@@ -628,7 +711,7 @@ void CBaseObject::AddExpectedDistToRoot(CEmbeddedObject* pcPointedTo, int iExpec
 	if (pcPointedTo)
 	{
 		pcPointedToContainer = pcPointedTo->GetEmbeddingContainer();
-		if (!pcPointedToContainer->IsUpdateAttachedTosDistToRoot())
+		if (!pcPointedToContainer->IsUpdateAttachedPointerTosDistToRoot())
 		{
 			pcPointedToContainer->SetDistToRoot(CLEARED_DIST_TO_ROOT);
 			pcParameters->AddExpectedDist(pcPointedToContainer, iExpectedDist);
@@ -854,14 +937,14 @@ BOOL CBaseObject::IsHollow(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CEmbeddedObject* CBaseObject::TestGetTo(int iToIndex)
+CEmbeddedObject* CBaseObject::TestGetPointerTo(int iToIndex)
 {
 	CEmbeddedObject**			ppTo;
 	CEmbeddedObject*			pTo;
-	CArrayEmbeddedObjectPtr		apcTos;
+	CArrayTemplateEmbeddedObjectPtr		apcTos;
 
 	apcTos.Init(32);
-	GetTos(&apcTos);
+	GetPointerTos(&apcTos);
 	ppTo = apcTos.SafeGet(iToIndex);
 	if (ppTo)
 	{
@@ -880,7 +963,7 @@ CEmbeddedObject* CBaseObject::TestGetTo(int iToIndex)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CBaseObject::ContainsTo(CEmbeddedObject* pcEmbedded)
+BOOL CBaseObject::ContainsPointerTo(CEmbeddedObject* pcEmbedded)
 {
 	return FALSE;
 }
@@ -919,7 +1002,7 @@ BOOL CBaseObject::IsBaseObject(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CBaseObject::GetNumEmbedded(void)
+unsigned short int CBaseObject::GetNumEmbedded(void)
 {
 	SetFlagNumEmbedded(1);
 	return 1;
@@ -930,12 +1013,9 @@ int CBaseObject::GetNumEmbedded(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CBaseObject::GetNumEmbeddedFromFlags(void)
+unsigned short int CBaseObject::GetNumEmbeddedFromFlags(void)
 {
-	int	iNumEmbedded;
-
-	iNumEmbedded = (miFlags & OBJECT_FLAGS_NUM_EMBEDDED) >> 8;
-	return iNumEmbedded;
+	return miNumEmbedded;
 }
 
 
@@ -945,9 +1025,17 @@ int CBaseObject::GetNumEmbeddedFromFlags(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::SetFlagNumEmbedded(int iNumEmbedded)
 {
-	iNumEmbedded = iNumEmbedded << 8;
-	miFlags &= ~OBJECT_FLAGS_NUM_EMBEDDED;
-	miFlags |= iNumEmbedded & OBJECT_FLAGS_NUM_EMBEDDED;
+	miNumEmbedded = (unsigned short int)iNumEmbedded;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ClearFlagNumEmbedded(void)
+{
+	miNumEmbedded = 0;
 }
 
 
@@ -980,17 +1068,7 @@ CObjects* CBaseObject::GetObjects(void)
 //////////////////////////////////////////////////////////////////////////
 CStackPointers* CBaseObject::GetStackPointers(void)
 {
-	CObjects*	pcObjects;
-
-	pcObjects = GetObjects();
-	if (pcObjects)
-	{
-		return pcObjects->GetStackPointers();
-	}
-	else
-	{
-		return NULL;
-	}
+	return &gcStackPointers;
 }
 
 
@@ -1008,9 +1086,52 @@ BOOL CBaseObject::IsMarkedUnreachable(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CBaseObject::IsUpdateAttachedTosDistToRoot(void)
+BOOL CBaseObject::IsUpdateAttachedPointerTosDistToRoot(void)
 {
 	return miFlags & OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CBaseObject::HasClass(void)
+{
+	return miFlags & OBJECT_FLAGS_CALLED_CLASS;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+BOOL CBaseObject::IsInitialised(void)
+{
+	return miFlags & OBJECT_FLAGS_CALLED_INIT;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ReplaceOneWithX(char* szDest, char* szMask)
+{
+	int i;
+
+	for (i = 0; ; i++)
+	{
+		if ((szMask[i] == '\0') || (szDest == '\0'))
+		{
+			return;
+		}
+
+		if (szMask[i] == '1')
+		{
+			szDest[i] ='X';
+		}
+	}
 }
 
 
@@ -1084,7 +1205,7 @@ void CBaseObject::DumpFroms(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::DumpTos(void)
+void CBaseObject::DumpPointerTos(void)
 {
 	CChars						sz;
 	int							i;
@@ -1095,7 +1216,7 @@ void CBaseObject::DumpTos(void)
 	CEmbeddedObject**			ppcToObject;
 	int							iLength;
 	CChars						szLine;
-	CArrayEmbeddedObjectPtr		acTos;
+	CArrayTemplateEmbeddedObjectPtr		acTos;
 	CBaseObject*				pcToObject;
 	int							iTotalTos;
 
@@ -1114,7 +1235,7 @@ void CBaseObject::DumpTos(void)
 	for (i = 0; i < iNumEmbedded; i++)
 	{
 		pcEmbedded = GetEmbeddedObject(i);
-		iTotalTos += pcEmbedded->NumTos();
+		iTotalTos += pcEmbedded->NumPointerTos();
 	}
 
 	sz.Insert(0, &szLine);
@@ -1125,8 +1246,8 @@ void CBaseObject::DumpTos(void)
 	for (i = 0; i < iNumEmbedded; i++)
 	{
 		pcEmbedded = GetEmbeddedObject(i);
-		acTos.Init();
-		pcEmbedded->UnsafeGetEmbeddedObjectTos(&acTos);
+		acTos.Init(1);
+		pcEmbedded->BaseGetPointerTos(&acTos);
 		iNumTos = acTos.NumElements();
 		sz.Append("Embedded ");
 		sz.Append(i);
@@ -1184,6 +1305,24 @@ void CBaseObject::ValidateFlagNotSet(int iFlag, char* szFlag)
 		sz.Init();
 		PrintObject(&sz, IsEmbedded());
 		gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should not have flag [", szFlag,"] set.", NULL);
+		sz.Kill();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ValidateFlagSet(int iFlag, char* szFlag)
+{
+	CChars	sz;
+
+	if (!(miFlags & iFlag))
+	{
+		sz.Init();
+		PrintObject(&sz, IsEmbedded());
+		gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should have flag [", szFlag,"] set.", NULL);
 		sz.Kill();
 	}
 }
@@ -1257,15 +1396,30 @@ void CBaseObject::ValidateCanFindRoot(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::ValidateContainerFlag(void)
 {
-	CChars			sz;
+	CChars	sz;
+	int		iEmbeddedFlags;
+	int		iThisFlags;
+	int		iIgnoredFlags;
+	char*	szEmbeddedFlags;
+	char*	szFlags;
+	char*	szIgnoredFlags;
 
 	if (IsEmbedded())
 	{
-		if ((mpcEmbedded->miFlags & ~OBJECT_FLAGS_NUM_EMBEDDED) != (miFlags & ~OBJECT_FLAGS_NUM_EMBEDDED))
+		iIgnoredFlags = OBJECT_FLAGS_CALLED_CLASS;
+		iEmbeddedFlags = mpcEmbedded->miFlags & ~iIgnoredFlags;
+		iThisFlags = miFlags & ~iIgnoredFlags;
+		if ((iEmbeddedFlags) != (iThisFlags))
 		{
 			sz.Init();
 			PrintObject(&sz, IsEmbedded());
-			gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should not have the same flags [", IntToString(miFlags) ,"] as it's embedding container's flags [", IntToString(mpcEmbedded->miFlags), "].", NULL);
+			szFlags = ShortToFlags(miFlags);
+			szEmbeddedFlags = ShortToFlags(mpcEmbedded->miFlags);
+			szIgnoredFlags = ShortToFlags(iIgnoredFlags);
+			ReplaceOneWithX(szFlags, szIgnoredFlags);
+			ReplaceOneWithX(szEmbeddedFlags, szIgnoredFlags);
+
+			gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should have the same flags [", szFlags ,"] as it's embedding container's flags [", szEmbeddedFlags, "].", NULL);
 			sz.Kill();
 		}
 	}
@@ -1285,8 +1439,38 @@ void CBaseObject::ValidateFlags(void)
 	ValidateFlagNotSet(OBJECT_FLAGS_CLEARED_DIST_TO_ROOT, "OBJECT_FLAGS_CLEARED_DIST_TO_ROOT");
 	ValidateFlagNotSet(OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT, "OBJECT_FLAGS_UPDATED_TOS_DIST_TO_ROOT");
 	ValidateFlagNotSet(OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED, "OBJECT_FLAGS_DIST_CALCULATOR_TOUCHED");
+	ValidateFlagSet(OBJECT_FLAGS_CALLED_CONSTRUCTOR, "OBJECT_FLAGS_CALLED_CONSTRUCTOR");
+	ValidateFlagSet(OBJECT_FLAGS_CALLED_ALLOCATE, "OBJECT_FLAGS_CALLED_ALLOCATE");
 
 	ValidateContainerFlag();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ValidateAllocation(void)
+{
+	BOOL	bDistToStackZero;
+	BOOL	bAllocateCalled;
+	BOOL	bInObjects;
+	BOOL	bAllSame;
+	CChars	sz;
+
+	bDistToStackZero = GetDistToStack() == 0;
+	bAllocateCalled = miFlags & OBJECT_FLAGS_CALLED_ALLOCATE;
+	bAllocateCalled = FixBool(bAllocateCalled);
+	bInObjects = IsAllocatedInObjects();
+	bAllSame = !bDistToStackZero == bAllocateCalled == bInObjects;
+
+	if (!bAllSame)
+	{
+		sz.Init();
+		PrintObject(&sz, IsEmbedded());
+		gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should not have a dist to stack of [", IntToString(GetDistToStack()), "] and flag OBJECT_FLAGS_CALLED_ALLOCATE [", IntToString(bAllocateCalled), "] and be allocated in Objects [0x", PointerToString(GetObjects()), "].", NULL);
+		sz.Kill();
+	}
 }
 
 
@@ -1390,6 +1574,7 @@ void CBaseObject::ValidateObjectsThisIn(void)
 void CBaseObject::ValidateBaseObjectDetail(void)
 {
 	ValidateFlags();
+	ValidateAllocation();
 	ValidateDistToRoot();
 	ValidateIndex();
 	ValidateObjectsThisIn();
@@ -1404,7 +1589,7 @@ void CBaseObject::ValidateEmbeddedConsistency(void)
 {
 	ValidateBaseObjectDetail();
 	ValidateFroms();
-	ValidateTos();
+	ValidatePointerTos();
 }
 
 
@@ -1414,7 +1599,8 @@ void CBaseObject::ValidateEmbeddedConsistency(void)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::ValidateObjectIdentifiers(void)
 {
-	CChars			sz;
+	CChars			szThis;
+	CChars			szOther;
 	CChars			szContainer;
 	CBaseObject*	pcContainer;
 	char*			szName;
@@ -1429,12 +1615,12 @@ void CBaseObject::ValidateObjectIdentifiers(void)
 			szContainer.Init();
 			pcContainer->PrintObject(&szContainer, FALSE);
 
-			sz.Init();
-			PrintObject(&sz, IsEmbedded());
+			szThis.Init();
+			PrintObject(&szThis, IsEmbedded());
 
-			gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} should have a name as it's embedded in object {", szContainer.Text(), "}.", NULL);
+			gcLogger.Error2(__METHOD__, " Object {", szThis.Text(), "} should have a name as it's embedded in object {", szContainer.Text(), "}.", NULL);
 
-			sz.Kill();
+			szThis.Kill();
 			szContainer.Kill();
 		}
 		else
@@ -1445,12 +1631,22 @@ void CBaseObject::ValidateObjectIdentifiers(void)
 				pcThis = mpcObjectsThisIn->GetFromMemory(szName);
 				if (pcThis != this)
 				{
-					sz.Init();
-					PrintObject(&sz, IsEmbedded());
+					szThis.Init();
+					PrintObject(&szThis, IsEmbedded());
+					szOther.Init();
+					if (pcThis != NULL)
+					{
+						pcThis->PrintObject(&szOther, IsEmbedded());
+					}
+					else
+					{
+						szOther.Append("NULL");
+					}
 
-					gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} does not match the Named Object in Objects.", NULL);
+					gcLogger.Error2(__METHOD__, " 'this' Object {", szThis.Text(), "} does not match the Named Object {", szOther.Text(), "} in Objects.", NULL);
 
-					sz.Kill();
+					szOther.Kill();
+					szThis.Kill();
 				}
 			}
 		}
@@ -1461,13 +1657,58 @@ void CBaseObject::ValidateObjectIdentifiers(void)
 		pcThis = mpcObjectsThisIn->GetFromMemory(GetOI());
 		if (pcThis != this)
 		{
-			sz.Init();
-			PrintObject(&sz, IsEmbedded());
+			szThis.Init();
+			PrintObject(&szThis, IsEmbedded());
 
-			gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} does not match the Object in Objects.", NULL);
+			gcLogger.Error2(__METHOD__, " Object {", szThis.Text(), "} does not match the Object in Objects.", NULL);
 
-			sz.Kill();
+			szThis.Kill();
 		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ValidateHasClass(void)
+{
+	CChars sz;
+
+	if (!HasClass())
+	{
+		sz.Init();
+		PrintObject(&sz, IsEmbedded());
+
+		gcLogger.Error2(__METHOD__, " Object {", sz.Text(), "} does not have Class initialised.", NULL);
+
+		sz.Kill();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CBaseObject::ValidateInitCalled(void)
+{
+	CChars	szObject;
+
+	if (miPreInits != miPostInits)
+	{
+		szObject.Init();
+		PrintObject(&szObject, IsEmbedded());
+		gcLogger.Error2(__METHOD__, " Object {", szObject.Text(), "} has pre-inits [", IntToString(miPreInits), "] not equal to post inits [", IntToString(miPostInits), "].", NULL);
+		szObject.Kill();
+	}
+	else if (miPreInits == 0)
+	{
+		szObject.Init();
+		PrintObject(&szObject, IsEmbedded());
+		gcLogger.Error2(__METHOD__, " Object {", szObject.Text(), "} has a pre-init of zero.", NULL);
+		szObject.Kill();
 	}
 }
 

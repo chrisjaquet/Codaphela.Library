@@ -33,60 +33,69 @@ friend class CObjectGraphDeserialiser;
 
 BASE_FUNCTIONS(CObject);
 protected:
-	CArrayEmbedded<CPointer*, 5>		mapPointers;  //Pointers in this object.  
-	CArrayEmbedded<CBaseObject*, 3>		mapEmbedded;  //Objects embedded in this object
+	CArrayTemplateEmbedded<CPointer*, 5>		mapPointers;  //Pointers in this object.  
+	CArrayTemplateEmbedded<CBaseObject*, 3>		mapEmbedded;  //Objects embedded in this object
 
 public:
 						CObject();
-	void				PreInit(CObjects* pcObjects);
-	void				PreInit(void);
+	void				Allocate(CObjects* pcObjects);
 	void				Kill(void);
 	BOOL				IsCollection(void);
 	BOOL				IsObject(void);
-	void				SetPointedTosExpectedDistToRoot(int iDistToRoot);
+	void				SetPointerTosExpectedDistToRoot(int iDistToRoot);
 	CPointer*			Pointer(CPointer* pcPointer);
 	void				Embedded(CBaseObject* pcObject);
 	BOOL				IsDirty(void);
 	int					GetEmbeddedIndex(CEmbeddedObject* pcEmbedded);
-	int					GetNumEmbedded(void);
-	CEmbeddedObject*	GetEmbeddedObject(int iIndex);
+	unsigned short int	GetNumEmbedded(void);
+	CEmbeddedObject*	GetEmbeddedObject(unsigned short int iIndex);
 	CBaseObject*		Dehollow(void);
 	int					NumHeapFroms(void);
 	int					NumStackFroms(void);
 	void				SetFlag(int iFlag, int iFlagValue);
-	void				GetHeapFroms(CArrayEmbeddedBaseObjectPtr* papcFroms);
-	void				GetStackFroms(CArrayPointerPtr* papcFroms);
+	void				GetHeapFroms(CArrayTemplateEmbeddedBaseObjectPtr* papcFroms);
+	void				GetStackFroms(CArrayTypedPointerPtr* papcFroms);
 	CBaseObject*		GetClosestFromToRoot(void);
 	CBaseObject*		GetClosestFromToStack(void);
-	int					NumTos(void);
-	int					UnsafeNumEmbeddedObjectTos(void);
-	void				GetTos(CArrayEmbeddedObjectPtr* papcTos);
-	BOOL				ContainsTo(CEmbeddedObject* pcEmbedded);
-	void				CollectAndClearTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
-	int					CollectEmbeddedObjectDetachedFroms(CDistCalculatorParameters* pcParameters);
-	void				UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* papcTos);
-	void				ValidateTos(void);
+	int					NumPointerTos(void);
+	int					BaseNumPointerTos(void);
+	void				GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+	void				BaseGetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+	BOOL				ContainsPointerTo(CEmbeddedObject* pcEmbedded);
+	void				CollectAndClearPointerTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
+	void				BaseCollectAndClearPointerTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
+	int					CollectDetachedFroms(CDistCalculatorParameters* pcParameters);
+
+	int					GetFieldPointerToIndex(CPointer* pcFieldPointer);
+	int					GetNumFieldPointerTos(void);
+	CPointer*			GetFieldPointerTo(int iIndex);
+
+	void				ValidatePointerTos(void);
 	void				ValidateConsistency(void);
 
 protected:
 	void				KillDontFree(void);
 	void				KillInternalData(void);
-	void				RemoveTo(CEmbeddedObject* pcTo);
-	void				RemoveAllTos(void);
-	void				RemoveEmbeddedObjectAllTos(void);
+	void				RemovePointerTo(CEmbeddedObject* pcTo);
+	void				RemoveAllPointerTosDontKill(void);
+	void				RemoveAllPointerTos(void);
+	void				BaseRemoveAllPointerTosDontKill(void);
+	void				BaseRemoveAllPointerTos(void);
 	void				RemoveAllHeapFroms(void);
 	void				RemoveAllStackFroms(void);
 	CBaseObject*		GetClosestFromForCanFindRoot(void);
-	int					RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
-	void				UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
+	int					RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
+	void				UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
+	void				BaseUpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
 	int					CalculateDistToRootFromPointedFroms(int iDistToRoot);
-	void				Free(void);
 	void				SetPointedTosDistToRoot(int iDistToRoot);
 	BOOL				SetDistToRoot(int iDistToRoot);
 	void				SetDistToStack(int iDistToStack);
 	BOOL				RecurseGetEmbeddedIndex(CEmbeddedObject* pcTest, int* piIndex);
 	CEmbeddedObject*	RecurseGetEmbeddedObject(int iIndex, int* iCount);
-	void				ValidateEmbeddedObjectTos(void);
+	BOOL				RecurseGetFieldPointerToIndex(CPointer* pcTest, int* piIndex);
+	CPointer*			RecurseGetFieldPointerTo(int iIndex, int* piCount);
+	void				BaseValidatePointerTos(void);
 	void				ValidateEmbeddedConsistency(void);
 	BOOL				IsDistToRootValid(void);
 };

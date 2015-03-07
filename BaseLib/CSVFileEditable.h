@@ -24,7 +24,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 #define __CSV_FILE_EDITABLE_H__
 #include "Chars.h"
 #include "FileIO.h"
-#include "ArraySimple.h"
+#include "ArrayTemplateMinimal.h"
 #include "CSVFile.h"
 #include "ArrayString.h"
 
@@ -68,5 +68,5 @@ protected:
 };
 
 
-#endif //__CSV_FILE_EDITABLE_H__
+#endif // __CSV_FILE_EDITABLE_H__
 

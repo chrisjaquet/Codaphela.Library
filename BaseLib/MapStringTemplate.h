@@ -22,36 +22,17 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __MAP_STRING_TEMPLATE_H__
 #define __MAP_STRING_TEMPLATE_H__
-#include "MapTemplate.h"
-#include "Chars.h"
+#include "MapStringBlock.h"
+
 
 template<class D>
-class CMapStringTemplate : public CMapTemplate<CChars, D>
+class CMapStringTemplate : public CMapStringBlock
 {
 public:
-	CChars*		PrivateAllocateNode(char* szText);
-	void		PrivateFreeNode(CChars* psKey);
+	D*		Get(char* szKey);
 
-	void	Init(int iChunkSize, BOOL bCaseSensitive = TRUE);
-	void	Kill(void);
-	D*		GetWithKey(CChars* psKey);
-	D*		GetWithKey(char* szKey);
-	D*		GetWithKey(char* psKey, int iLength);
-	D*		GetWithKeyAssumeDuplicates(CChars* psKey);
-	BOOL	GetWithKeyNextDuplicate(CChars* psLastKey, int iLastIndex, D** ppsData);
-	BOOL	GetAtIndex(int iIndex, CChars** ppsKey, D** ppsData);
-	D*		Put(CChars* psKey);
 	D*		Put(char* szKey);
-	void	Put(CChars* psKey, D* psData);
-	void	Put(char* szKey, D* psData);
-	D*		PutAllowDuplicates(char* szKey);
-	D*		PutAllowDuplicates(CChars* psKey);
-	void	PutAllowDuplicates(char* szKey, D* pvData);
-	void	PutAllowDuplicates(CChars* psKey, D* pvData);
-	void	Remove(CChars* szKey);
-	void	Remove(char* szKey);
-	BOOL	IsCaseSensitive(void);
-	void	SetCaseSensitive(BOOL bCaseSensitive);
+	BOOL	Put(char* szKey, D* psData);
 };
 
 
@@ -60,153 +41,9 @@ public:
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class D>
-void CMapStringTemplate<D>::Init(int iChunkSize, BOOL bCaseSensitive)
+D* CMapStringTemplate<D>::Get(char* szKey)
 {
-	if (bCaseSensitive)
-	{
-		CMapTemplate<CChars, D>::Init(iChunkSize, CompareChars);
-	}
-	else
-	{
-		CMapTemplate<CChars, D>::Init(iChunkSize, CompareCharsIgnoreCase);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::Kill(void)
-{
-	int			i;
-	CChars*		psData;
-
-	for (i = 0; i < this->mcArray.NumElements(); i++)
-	{
-		psData = (CChars*)this->mcArray.GetPtr(i);
-		PrivateFreeNode(psData);
-	}
-
-	this->mcArray.Kill();
-	this->Func = NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-CChars* CMapStringTemplate<D>::PrivateAllocateNode(char* szText)
-{
-	CChars*	sz;
-
-	sz = (CChars*)malloc(sizeof(CChars) + sizeof(D));
-	sz->Init(szText);
-	return sz;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::PrivateFreeNode(CChars* psKey)
-{
-	psKey->Kill();
-	free(psKey);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::GetWithKey(char* psKey)
-{
-	CChars	sz;
-
-	sz.Fake(psKey);
-	return CMapTemplate<CChars, D>::GetWithKey(&sz);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::GetWithKey(char* psKey, int iLength)
-{
-	CChars	sz;
-	char	c;
-	D*		pD;
-
-	c = psKey[iLength];
-	psKey[iLength] = '\0';
-	sz.Fake(psKey);
-	pD = CMapTemplate<CChars, D>::GetWithKey(&sz);
-	psKey[iLength] = c;
-	return pD;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::GetWithKey(CChars* psSearch)
-{
-	return CMapTemplate<CChars, D>::GetWithKey(psSearch);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-BOOL CMapStringTemplate<D>::GetAtIndex(int iIndex, CChars** ppsKey, D** ppsData)
-{
-	return CMapTemplate<CChars, D>::GetAtIndex(iIndex, ppsKey, ppsData);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-BOOL CMapStringTemplate<D>::GetWithKeyNextDuplicate(CChars* psLastKey, int iLastIndex, D** ppsData)
-{
-	return CMapTemplate<CChars, D>::GetWithKeyNextDuplicate(psLastKey, iLastIndex, ppsData);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::GetWithKeyAssumeDuplicates(CChars* psSearch)
-{
-	return CMapTemplate<CChars, D>::GetWithKeyAssumeDuplicates(psSearch);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::Put(CChars* psKey)
-{
-	return Put(psKey->Text());
+	return (D*)CMapStringBlock::Get(szKey);
 }
 
 
@@ -217,24 +54,7 @@ D* CMapStringTemplate<D>::Put(CChars* psKey)
 template<class D>
 D* CMapStringTemplate<D>::Put(char* szKey)
 {
-	CChars*		ps;
-	D*			psData;
-	int			iIndex;
-	CChars		szFake;
-
-	szFake.Fake(szKey);
-	iIndex = this->GetIndex(&szFake);
-	if (iIndex != -1)
-	{
-		return NULL;
-	}
-	else
-	{
-		ps = PrivateAllocateNode(szKey);
-		this->mcArray.InsertIntoSorted(this->Func, ps, -1);
-		psData = this->PrivateGetDataForKey(ps);
-		return psData;
-	}
+	return (D*)CMapStringBlock::Put(szKey, sizeof(D));
 }
 
 
@@ -243,150 +63,11 @@ D* CMapStringTemplate<D>::Put(char* szKey)
 //																		//
 //////////////////////////////////////////////////////////////////////////
 template<class D>
-void CMapStringTemplate<D>::Put(CChars* psKey, D* psData)
+BOOL CMapStringTemplate<D>::Put(char* szKey, D* psData)
 {
-	D*	ps;
-
-	ps = Put(psKey);
-	if (ps)
-	{
-		memcpy(ps, psData, sizeof(D));
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::Put(char* psKey, D* psData)
-{
-	D*	ps;
-
-	ps = Put(psKey);
-	if (ps)
-	{
-		memcpy(ps, psData, sizeof(D));
-	}
+	return CMapStringBlock::Put(szKey, psData, sizeof(D));
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::PutAllowDuplicates(CChars* psKey)
-{
-	return PutAllowDuplicates(psKey->Text());
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-D* CMapStringTemplate<D>::PutAllowDuplicates(char* szKey)
-{
-	CChars*		ps;
-	D*			psData;
-
-	ps = PrivateAllocateNode(szKey);
-	this->mcArray.InsertIntoSorted(this->Func, ps, -1);
-	psData = this->PrivateGetDataForKey(ps);
-	return psData;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::PutAllowDuplicates(char* szKey, D* psData)
-{
-	D*	ps;
-
-	ps = PutAllowDuplicates(szKey);
-	memcpy(ps, psData, sizeof(D));
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::PutAllowDuplicates(CChars* psKey, D* psData)
-{
-	D*	ps;
-
-	ps = PutAllowDuplicates(psKey);
-	memcpy(ps, psData, sizeof(D));
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::Remove(CChars* szKey)
-{
-	Remove(szKey->Text());
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::Remove(char* szKey)
-{
-	CChars	szFake;
-	CChars*	ps;
-	int		iIndex;
-
-	szFake.Fake(szKey);
-	iIndex = this->GetIndex(&szFake);
-	if (iIndex != -1)
-	{
-		ps = (CChars*)this->mcArray.GetPtr(iIndex);
-		PrivateFreeNode(ps);
-		this->mcArray.RemoveAt(iIndex, 1);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-BOOL CMapStringTemplate<D>::IsCaseSensitive(void)
-{
-	return Func == CompareChars;
-}
-
-//////////////////////////////////////////////////////////////////////////
-//																		//
-//																		//
-//////////////////////////////////////////////////////////////////////////
-template<class D>
-void CMapStringTemplate<D>::SetCaseSensitive(BOOL bCaseSensitive)
-{
-	if (bCaseSensitive)
-	{
-		Func = CompareChars;
-	}
-	else
-	{
-		Func = CompareCharsIgnoreCase;
-	}
-}
-
-
-#endif //__MAP_STRING_TEMPLATE_H__
+#endif // __MAP_STRING_TEMPLATE_H__
 

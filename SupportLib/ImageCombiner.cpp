@@ -22,6 +22,7 @@ zlib is Copyright Jean-loup Gailly and Mark Adler
 
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/Logger.h"
+#include "CoreLib/TypeNames.h"
 #include "StandardLib/Objects.h"
 #include "ImageCombiner.h"
 #include "ImageReader.h"
@@ -51,7 +52,7 @@ void CImageCombiner::Init(EImageCombineLayout eLayout, int iWidth, int iHeight, 
 	mcDestCels.KillElements(bKillDestCels);
 	miOutsideEdgeWidth = iOutsideEdgeWidth;
 	miInnerEdgeWidth = iInnerEdgeWidth;
-	masChannels.Init();
+	masChannels.Init(1);
 }
 
 
@@ -110,7 +111,7 @@ Ptr<CImage> CImageCombiner::Combine(void)
 		acPackedRects.Kill();
 		return mpcDestImage;
 	}
-	return FALSE;
+	return NULL;
 }
 
 
@@ -263,8 +264,8 @@ void CImageCombiner::UpdateChannels(CArrayChannel* pasSource)
 		if (iIndex != -1)
 		{
 			psDest = masChannels.Get(iIndex);
-			iSourceSize = gcClassStorage.GetSize(psSource->eType);
-			iDestSize = gcClassStorage.GetSize(psDest->eType);
+			iSourceSize = gcTypeNames.GetByteSize(psSource->eType);
+			iDestSize = gcTypeNames.GetByteSize(psDest->eType);
 
 			if (iSourceSize > iDestSize)
 			{

@@ -20,11 +20,12 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 ** ------------------------------------------------------------------------ **/
 #ifndef __UNKNOWNS_H__
 #define __UNKNOWNS_H__
-#include "BaseLib/Memory.h"
+#include "BaseLib/MemoryAllocator.h"
 #include "BaseLib/ConstructorCall.h"
+#include "BaseLib/Constructors.h"
+#include "BaseLib/Log.h"
 #include "ArrayUnknownPtr.h"
 #include "Iterables.h"
-#include "ConstructorUnknown.h"
 
 
 #define UMalloc(classtype)	((classtype*)gcUnknowns.Add<classtype>());
@@ -32,24 +33,28 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 class CUnknowns
 {
-friend class CConstructorUnknown;
-friend class CMapStringUnknown;
-
 protected:
-	CMemory					mcMemory;
+	CMemoryAllocator		mcAlloc;
+	CMemory*				mpcMemory;
 	CIterables				mcIterables;
 	CChars					mszName;
-	CConstructorUnknown		mcConstructors;
+	CConstructors*			mpcConstructors;
 
 public:
-						void			Init(char* szName);
+						void			Init(char* szName, CConstructors* pcConstructors);
 						void			Kill(void);
+
 						void			Remove(CUnknown* pcUnknown);
+
 	template<class M>	M*				Add(void);
 	template<class M>	M*				AddUnsafe(void);
 	template<class M>	M*				AddUnsafe(int iAdditionalSize);
 						CUnknown*		Add(char* szClassName);
 						CUnknown*		AddFromHeader(CFileReader* pcFile);
+
+
+	template<class M>	void			AddConstructor(void);
+
 						BOOL			LoadUnknown(CFileReader* pcFile, CUnknown** ppcUnknown);
 						BOOL			SaveUnknown(CFileWriter* pcFile, CUnknown* pcUnknown);
 
@@ -64,9 +69,9 @@ public:
 						int				NumElements(void);
 						void			DumpAddDetail(CUnknown* pcUnknown);
 
-	template<class M>	void			AddConstructor(void);
 						int				GetIterableListsHeadNumElements(void);
-						CFreeListBlock*	GetFreeList(unsigned int iElementSize);
+						CFreeList*		GetFreeList(unsigned int iElementSize);
+						CMemory*		GetMemory(void);
 
 						void			RemoveInKill(CUnknown* pcUnknown);
 						void			RemoveInKill(CArrayUnknownPtr* papcObjectPts);
@@ -103,6 +108,7 @@ M* CUnknowns::Add(void)
 	}
 	else
 	{
+		RemoveInKill(pv);
 		return NULL;
 	}
 }
@@ -131,15 +137,16 @@ M* CUnknowns::AddUnsafe(int iAdditionalSize)
 	int		iSize;
 
 	iSize = sizeof(M);
-	pv = (M*)mcMemory.Add(iSize + iAdditionalSize);
+	pv = (M*)mcAlloc.Malloc(iSize + iAdditionalSize);
 	if (pv)
 	{
-		CONSTRUCT(pv, M);
+		memset(pv, 0, iSize + iAdditionalSize);
+		new(pv) M();
 
 		DebugName(pv, &szDebug);
-		mcMemory.SetDebugName(pv, &szDebug);
+		mpcMemory->SetDebugName(pv, &szDebug);
 
-		pv->CUnknown::PreInit(this);
+		pv->CUnknown::SetUnknowns(this);
 		if (pv->Iterable())
 		{
 			mcIterables.Add(pv);
@@ -193,7 +200,27 @@ void CUnknowns::RemoveDuringIteration(SIteratorTemplate<M>* psIter)
 template<class M>
 void CUnknowns::AddConstructor(void)
 {
-	mcConstructors.Add<M>();
+	char*	szClassName;
+	M* pvM;
+
+	pvM = NewMalloc<M>();
+	if (pvM)
+	{
+		szClassName = pvM->ClassName();
+		if (mpcConstructors)
+		{
+			mpcConstructors->Add<M>(szClassName);
+		}
+		else
+		{
+			gcLogger.Error2(__METHOD__, " Constructors for Unknowns is NULL.", NULL);
+		}
+		free (pvM);
+	}
+	else
+	{
+		gcLogger.Error2(__METHOD__, " Couldn't get class name whilst adding constructor for class.", NULL);
+	}
 }
 
 

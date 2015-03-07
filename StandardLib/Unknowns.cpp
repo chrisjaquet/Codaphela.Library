@@ -19,7 +19,8 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 
 ** ------------------------------------------------------------------------ **/
 #include "BaseLib/ArrayVoidPtr.h"
-#include "BaseLib/Log.h"
+#include "BaseLib/MemoryAllocator.h"
+#include "BaseLib/GlobalMemory.h"
 #include "Unknown.h"
 #include "Unknowns.h"
 
@@ -31,12 +32,14 @@ CUnknowns gcUnknowns;
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CUnknowns::Init(char* szName)
+void CUnknowns::Init(char* szName, CConstructors* pcConstructors)
 {
-	mcMemory.Init();
+	mpcConstructors = pcConstructors;
+
+	mcAlloc.Init();
+	mpcMemory = mcAlloc.GetMemory();
 	mcIterables.Init();
 	mszName.Init(szName);
-	mcConstructors.Init();
 }
 
 
@@ -46,10 +49,10 @@ void CUnknowns::Init(char* szName)
 //////////////////////////////////////////////////////////////////////////
 void CUnknowns::Kill(void)
 {
-	mcConstructors.Kill();
 	mszName.Kill();
 	mcIterables.Kill();
-	mcMemory.Kill();
+	mcAlloc.Kill();
+	mpcMemory = NULL;
 }
 
 
@@ -60,29 +63,16 @@ void CUnknowns::Kill(void)
 CUnknown* CUnknowns::AddExisting(CUnknown* pcExisting)
 {
 	char		szDebug[4];
-	int			iSize;
-	CUnknown*	pcNew;
 	
-	iSize = pcExisting->ClassSize();
-	pcNew = (CUnknown*)mcMemory.Add(iSize);
-	if (pcNew)
-	{
-		memcpy(pcNew, pcExisting, iSize);
+	DebugName(pcExisting, &szDebug);
+	mpcMemory->SetDebugName(pcExisting, &szDebug);
 
-		DebugName(pcNew, &szDebug);
-		mcMemory.SetDebugName(pcNew, &szDebug);
-
-		pcNew->PreInit(this);
-		if (pcNew->Iterable())
-		{
-			mcIterables.Add(pcNew);
-		}
-		return pcNew;
-	}
-	else
+	pcExisting->SetUnknowns(this);
+	if (pcExisting->Iterable())
 	{
-		return NULL;
+		mcIterables.Add(pcExisting);
 	}
+	return pcExisting;
 }
 
 
@@ -92,7 +82,7 @@ CUnknown* CUnknowns::AddExisting(CUnknown* pcExisting)
 //////////////////////////////////////////////////////////////////////////
 CUnknown* CUnknowns::Add(char* szClassName)
 {
-	CUnknown*	pcUnknown;
+	CUnknown*			pcUnknown;
 
 	if ((szClassName == NULL) || (szClassName[0] == 0))
 	{
@@ -100,7 +90,7 @@ CUnknown* CUnknowns::Add(char* szClassName)
 		return NULL;
 	}
 
-	pcUnknown = mcConstructors.GetUnknown(szClassName);
+	pcUnknown = (CUnknown*)mpcConstructors->Construct(szClassName, &mcAlloc);
 	if (pcUnknown)
 	{
 		pcUnknown = AddExisting(pcUnknown);
@@ -219,7 +209,7 @@ void CUnknowns::RemoveInKill(CUnknown* pcUnknown)
 	{
 		mcIterables.Remove(pcUnknown);
 	}
-	mcMemory.Remove(pcUnknown);
+	mpcMemory->Remove(pcUnknown);
 }
 
 
@@ -247,7 +237,7 @@ void CUnknowns::RemoveInKill(CArrayUnknownPtr* papcObjectPts)
 	pvData = (void**)papcObjectPts->GetData();
 	cArray.Fake(pvData, papcObjectPts->NumElements());
 
-	mcMemory.Remove(&cArray);
+	mpcMemory->Remove(&cArray);
 }
 
 
@@ -378,7 +368,7 @@ BOOL CUnknowns::IsFreed(CUnknown* pcUnknown)
 //////////////////////////////////////////////////////////////////////////
 void CUnknowns::BreakOnAdd(unsigned int uiAllocCount)
 {
-	mcMemory.BreakOnAdd(uiAllocCount);
+	mpcMemory->BreakOnAdd(uiAllocCount);
 }
 
 
@@ -388,7 +378,7 @@ void CUnknowns::BreakOnAdd(unsigned int uiAllocCount)
 //////////////////////////////////////////////////////////////////////////
 int CUnknowns::NumElements(void)
 {
-	return mcMemory.NumElements();
+	return mpcMemory->NumElements();
 }
 
 
@@ -396,9 +386,19 @@ int CUnknowns::NumElements(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CFreeListBlock* CUnknowns::GetFreeList(unsigned int iElementSize)
+CFreeList* CUnknowns::GetFreeList(unsigned int iElementSize)
 {
-	return mcMemory.GetFreeList(iElementSize);
+	return mpcMemory->GetFreeList(iElementSize);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+CMemory* CUnknowns::GetMemory(void)
+{
+	return mpcMemory;
 }
 
 
@@ -418,7 +418,7 @@ int CUnknowns::GetIterableListsHeadNumElements(void)
 //////////////////////////////////////////////////////////////////////////
 void UnknownsInit(void)
 {
-	 gcUnknowns.Init("Global");
+	gcUnknowns.Init("Global", &gcConstructors);
 }
 
 
@@ -430,5 +430,4 @@ void UnknownsKill(void)
 {
 	gcUnknowns.Kill();
 }
-
 

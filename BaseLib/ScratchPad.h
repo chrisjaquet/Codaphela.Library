@@ -25,22 +25,38 @@ Microsoft Windows is Copyright Microsoft Corporation
 #include "MemoryStackExtended.h"
 
 
-class CScratchPad
+struct SSPNode
 {
 public:
-	CMemoryStackExtended	mcScratchPad;
+	unsigned int	iSize;
+	BOOL			bUsed;
+};
 
+
+struct SScratchPadParams
+{
+	int	iChunkSize;
+};
+
+
+class CScratchPad
+{
+protected:
+	CMemoryStackExtended	mcScratchPad;
+	int						miSourceChunkSize;
+
+public:
 	void	Init(void);
 	void	Init(int iChunkSize);
 	void	Kill(void);
 
-	void*	Add(int iBytes);
-	void	Remove(void);
-	void	Remove(int iNumToRemove);
+	void*	Add(size_t tSize);
 	void	Reset(void);
 
 	int		GetMemorySize(void);
 	int		GetUsedSize(void);
+
+	void	GetParams(SScratchPadParams* psParams);
 };
 
 

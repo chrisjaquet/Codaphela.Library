@@ -33,50 +33,54 @@ protected:
 	BOOL					mbSubRoot;
 
 public:
-	void				Init(BOOL bUnique, BOOL bIgnoreNull, BOOL bPreserveOrder, int iChunkSize);
-	void				Class(void);
-	void				Kill(void);
+	Ptr<CArrayCommonObject>	Init(BOOL bUnique, BOOL bIgnoreNull, BOOL bPreserveOrder, int iChunkSize);
+	void					Class(void);
+	void					Kill(void);
 
-	void				Add(CPointer& pObject);
-	void				AddAll(CArrayCommonObject* pcArray);
-	void				Set(int iIndex, CPointer& pObject);
-	BOOL				Remove(CPointer& pObject);
-	BOOL				Remove(CBaseObject* pcObject);
-	void				RemoveAll(void);
+	void					Add(CPointer& pObject);
+	void					AddAll(CArrayCommonObject* pcArray);
+	void					Set(int iIndex, CPointer& pObject);
+	BOOL					Remove(CPointer& pObject);
+	BOOL					Remove(CBaseObject* pcObject);
+	void					RemoveAll(void);
 
-	int					NumElements(void);
-	int					NonNullElements(void);
+	int						NumElements(void);
+	int						NonNullElements(void);
 
-	void				MakeSubRoot(void);
-	BOOL				IsSubRoot(void);
-	void				SetDistToRootAndSetPointedTosExpectedDistToRoot(int iDistToRoot);
+	void					MakeSubRoot(void);
+	BOOL					IsSubRoot(void);
+	void					SetPointerTosExpectedDistToRoot(int iDistToRoot);
 
-	int					NumTos(void);
-	int					UnsafeNumEmbeddedObjectTos(void);
-	void				GetTos(CArrayEmbeddedObjectPtr* papcTos);
-	void				UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* papcTos);
-	BOOL				ContainsTo(CEmbeddedObject* pcEmbedded);
-	void				RemoveAllTos(void);
+	int						NumPointerTos(void);
+	int						BaseNumPointerTos(void);
+	void					GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+	void					BaseGetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos);
+	BOOL					ContainsPointerTo(CEmbeddedObject* pcEmbedded);
+	void					RemoveAllPointerTosDontKill(void);
+	void					RemoveAllPointerTos(void);
+	void					CollectAndClearPointerTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters);
 
-	BOOL				Save(CObjectSerialiser* pcFile);
-	BOOL				Load(CObjectDeserialiser* pcFile);
+	BOOL					Save(CObjectSerialiser* pcFile);
+	BOOL					Load(CObjectDeserialiser* pcFile);
 
-	CBaseObject*		UnsafeGet(int iIndex);
-	CEmbeddedObject*	GetEmbeddedObject(int iIndex);
+	CBaseObject*			UnsafeGet(int iIndex);
+	BOOL					UnsafeRemove(CBaseObject* pcObject);
+	CEmbeddedObject*		GetEmbeddedObject(unsigned short int iIndex);
 
-	void				ValidateEmbeddedObjectTos(void);
-	void				ValidateTos(void);
-	void				ValidateConsistency(void);
+	void					BaseValidatePointerTos(void);
+	void					ValidatePointerTos(void);
+	void					ValidateConsistency(void);
 
 protected:
 	void	KillInternalData(void);
 	void	KillData(void);
-	void	RemoveTo(CEmbeddedObject* pcTo);
-	void	RemoveEmbeddedObjectAllTos(void);
-	int		RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
-	void	CollectPointedToToBeKilled(CArrayBaseObjectPtr* papcKilled);
+	void	RemovePointerTo(CEmbeddedObject* pcTo);
+	void	BaseRemoveAllPointerTosDontKill(void);
+	void	BaseRemoveAllPointerTos(void);
+	int		RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew);
 	void	SetPointedTosDistToRoot(int iDistToRoot);
 	void	UpdateEmbeddedObjectTosDistToRoot(CDistToRootEffectedFroms* pcEffectedFroms, int iExpectedDist);
+	void	UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist);
 	void	ClearEmbeddedObjectTosUpdatedTosFlags(void);
 	void	UpdateEmbeddedObjectTosDetached(CDistDetachedFroms* pcDetached, CDistToRootEffectedFroms* pcEffectedFroms);
 	void	UpdateEmbeddedObjectTosUnattached(CDistToRootEffectedFroms* pcEffectedFroms);

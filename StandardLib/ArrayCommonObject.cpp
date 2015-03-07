@@ -28,10 +28,12 @@ along with Codaphela StandardLib.  If not, see <http://www.gnu.org/licenses/>.
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::Init(BOOL bUnique, BOOL bIgnoreNull, BOOL bPreserveOrder, int iChunkSize)
+Ptr<CArrayCommonObject> CArrayCommonObject::Init(BOOL bUnique, BOOL bIgnoreNull, BOOL bPreserveOrder, int iChunkSize)
 {
 	mcArray.Init(FALSE, FALSE, bUnique, bIgnoreNull, bPreserveOrder, iChunkSize);
 	mbSubRoot = FALSE;
+	CCollection::Init();
+	return this;
 }
 
 
@@ -86,7 +88,9 @@ void CArrayCommonObject::RemoveAll(void)
 
 	mcArray.ReInit();
 
-	mpcObjectsThisIn->ValidateConsistency();
+#ifdef DEBUG
+	mpcObjectsThisIn->ValidateObjectsConsistency();
+#endif
 }
 
 
@@ -101,7 +105,7 @@ BOOL CArrayCommonObject::Remove(CBaseObject* pcObject)
 	{
 		if (mcArray.Remove(pcObject))
 		{
-			pcObject->RemoveHeapFrom(this);
+			pcObject->RemoveHeapFrom(this, TRUE);
 			return TRUE;
 		}
 	}
@@ -215,7 +219,7 @@ void CArrayCommonObject::AddAll(CArrayCommonObject* pcArray)
 		mcArray.Add(pcObject);
 		if (pcObject != NULL)
 		{
-			pcObject->AddHeapFrom(this);
+			pcObject->AddHeapFrom(this, TRUE);
 		}
 	}
 }
@@ -238,7 +242,7 @@ void CArrayCommonObject::Set(int iIndex, CPointer& pObject)
 	mcArray.Set(iIndex, pObject.Object());
 	if (pcPointedTo)
 	{
-		pcPointedTo->RemoveHeapFrom(this);
+		pcPointedTo->RemoveHeapFrom(this, TRUE);
 	}
 
 	pObject.AddHeapFrom(this);
@@ -255,7 +259,7 @@ BOOL CArrayCommonObject::Remove(CPointer& pObject)
 	{
 		if (mcArray.Remove(pObject.Object()))
 		{
-			pObject->RemoveHeapFrom(this);
+			pObject->RemoveHeapFrom(this, TRUE);
 			return TRUE;
 		}
 	}
@@ -287,7 +291,17 @@ int CArrayCommonObject::NonNullElements(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CArrayCommonObject::NumTos(void)
+int CArrayCommonObject::NumPointerTos(void)
+{
+	return BaseNumPointerTos();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+int CArrayCommonObject::BaseNumPointerTos(void)
 {
 	CBaseObject*	pcPointedTo;
 	int				i;
@@ -310,9 +324,9 @@ int CArrayCommonObject::NumTos(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CArrayCommonObject::UnsafeNumEmbeddedObjectTos(void)
+void CArrayCommonObject::RemoveAllPointerTosDontKill(void)
 {
-	return NumTos();
+	BaseRemoveAllPointerTosDontKill();
 }
 
 
@@ -320,7 +334,36 @@ int CArrayCommonObject::UnsafeNumEmbeddedObjectTos(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::RemoveAllTos(void)
+void CArrayCommonObject::RemoveAllPointerTos(void)
+{
+	BaseRemoveAllPointerTos();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CArrayCommonObject::UpdateAttachedEmbeddedObjectPointerTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist)
+{
+	int					i;
+	CEmbeddedObject*	pcPointedTo;
+	int					iNumElements;
+
+	iNumElements = mcArray.UnsafeNumElements();
+	for (i = 0; i < iNumElements; i++)
+	{
+		pcPointedTo = (CBaseObject*)mcArray.UnsafeGet(i);
+		AddExpectedDistToRoot(pcPointedTo, iExpectedDist+1, pcParameters);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void CArrayCommonObject::BaseRemoveAllPointerTosDontKill(void)
 {
 	CBaseObject*			pcPointedTo;
 	int						i;
@@ -341,18 +384,21 @@ void CArrayCommonObject::RemoveAllTos(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculatorParameters* pcParameters, int iExpectedDist)
+void CArrayCommonObject::BaseRemoveAllPointerTos(void)
 {
-	int					i;
-	CEmbeddedObject*	pcPointedTo;
-	int					iNumElements;
+	CBaseObject*			pcPointedTo;
+	int						i;
 
-	iNumElements = mcArray.UnsafeNumElements();
-	for (i = 0; i < iNumElements; i++)
+	for (i = 0; i < mcArray.UnsafeNumElements(); i++)
 	{
 		pcPointedTo = (CBaseObject*)mcArray.UnsafeGet(i);
-		AddExpectedDistToRoot(pcPointedTo, iExpectedDist+1, pcParameters);
+		if (pcPointedTo)
+		{
+			pcPointedTo->RemoveHeapFrom(this, TRUE);
+			mcArray.UnsafeSet(i, NULL);
+		}
 	}
+	mcArray.ReInit();
 }
 
 
@@ -360,17 +406,7 @@ void CArrayCommonObject::UpdateAttachedEmbeddedObjectTosDistToRoot(CDistCalculat
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::RemoveEmbeddedObjectAllTos(void)
-{
-	RemoveAllTos();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-//
-//////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::RemoveTo(CEmbeddedObject* pcTo)
+void CArrayCommonObject::RemovePointerTo(CEmbeddedObject* pcTo)
 {
 	mcArray.Remove((CUnknown*)pcTo);
 }
@@ -400,7 +436,7 @@ BOOL CArrayCommonObject::IsSubRoot(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::SetPointedTosExpectedDistToRoot(int iDistToRoot)
+void CArrayCommonObject::SetPointerTosExpectedDistToRoot(int iDistToRoot)
 {
 	SetPointedTosDistToRoot(iDistToRoot);
 }
@@ -417,6 +453,10 @@ void CArrayCommonObject::SetPointedTosDistToRoot(int iDistToRoot)
 	int						iNumElements;
 
 	iNumElements = mcArray.UnsafeNumElements();
+
+#ifdef DEBUG
+	Validate((iNumElements != 0xCCCCCCCC));
+#endif // DEBUG
 
 	if (iDistToRoot >= ROOT_DIST_TO_ROOT)
 	{
@@ -453,7 +493,7 @@ void CArrayCommonObject::SetPointedTosDistToRoot(int iDistToRoot)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::GetTos(CArrayEmbeddedObjectPtr* papcTos)
+void CArrayCommonObject::GetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos)
 {
 	CEmbeddedObject*	pcPointedTo;
 	int					i;
@@ -475,9 +515,9 @@ void CArrayCommonObject::GetTos(CArrayEmbeddedObjectPtr* papcTos)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* papcTos)
+void CArrayCommonObject::BaseGetPointerTos(CArrayTemplateEmbeddedObjectPtr* papcTos)
 {
-	GetTos(papcTos);
+	GetPointerTos(papcTos);
 }
 
 
@@ -485,7 +525,7 @@ void CArrayCommonObject::UnsafeGetEmbeddedObjectTos(CArrayEmbeddedObjectPtr* pap
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::CollectAndClearTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters)
+void CArrayCommonObject::CollectAndClearPointerTosInvalidDistToRootObjects(CDistCalculatorParameters* pcParameters)
 {
 	CEmbeddedObject*	pcPointedTo;
 	int					i;
@@ -509,7 +549,7 @@ void CArrayCommonObject::CollectAndClearTosInvalidDistToRootObjects(CDistCalcula
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CArrayCommonObject::ContainsTo(CEmbeddedObject* pcEmbedded)
+BOOL CArrayCommonObject::ContainsPointerTo(CEmbeddedObject* pcEmbedded)
 {
 	CEmbeddedObject*	pcPointedTo;
 	int					i;
@@ -543,7 +583,7 @@ CBaseObject* CArrayCommonObject::UnsafeGet(int iIndex)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-int CArrayCommonObject::RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew)
+int CArrayCommonObject::RemapPointerTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew)
 {
 	int					iCount;
 	CEmbeddedObject**	ppcPointedTo;
@@ -572,7 +612,7 @@ int CArrayCommonObject::RemapTos(CEmbeddedObject* pcOld, CEmbeddedObject* pcNew)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CEmbeddedObject* CArrayCommonObject::GetEmbeddedObject(int iIndex)
+CEmbeddedObject* CArrayCommonObject::GetEmbeddedObject(unsigned short int iIndex)
 {
 	if (iIndex == 0)
 	{
@@ -587,9 +627,9 @@ CEmbeddedObject* CArrayCommonObject::GetEmbeddedObject(int iIndex)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::ValidateEmbeddedObjectTos(void)
+void CArrayCommonObject::BaseValidatePointerTos(void)
 {
-	ValidateTos();
+	ValidatePointerTos();
 }
 
 
@@ -597,7 +637,7 @@ void CArrayCommonObject::ValidateEmbeddedObjectTos(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CArrayCommonObject::ValidateTos(void)
+void CArrayCommonObject::ValidatePointerTos(void)
 {
 	int					iCount;
 	CEmbeddedObject**	ppcPointedTo;
@@ -609,7 +649,7 @@ void CArrayCommonObject::ValidateTos(void)
 		ppcPointedTo = (CEmbeddedObject**)mcArray.UnsafeGetPointer(i);
 		if (*ppcPointedTo)
 		{
-			ValidateTo(*ppcPointedTo);
+			ValidatePointerTo(*ppcPointedTo);
 		}
 	}
 }

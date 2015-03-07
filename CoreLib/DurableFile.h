@@ -22,7 +22,7 @@ Microsoft Windows is Copyright Microsoft Corporation
 ** ------------------------------------------------------------------------ **/
 #ifndef __DURABLE_FILE_H__
 #define __DURABLE_FILE_H__
-#include "BaseLib/ArrayPointer.h"
+#include "BaseLib/ArrayIntAndPointer.h"
 #include "BaseLib/FileMode.h"
 #include "BaseLib/FileIO.h"
 #include "BaseLib/AbstractFile.h"
@@ -94,10 +94,10 @@ public:
 protected:
 	BOOL		CopyBackupToPrimary(void);
 	BOOL		CopyPrimaryToBackup(void);
-	BOOL		FindTouchingWriteCommands(CArrayPointer* papvOverlapping, filePos iPosition, filePos iLength, BOOL bMustOverlap);
+	BOOL		FindTouchingWriteCommands(CArrayIntAndPointer* papvOverlapping, filePos iPosition, filePos iLength, BOOL bMustOverlap);
 	BOOL		Overlaps(filePos iPosition, filePos iLength, SDurableFileCommandWrite* psWrite);
-	BOOL		AmalgamateOverlappingWrites(CArrayPointer* papvOverlapping, const void* pvSource, filePos iPosition, filePos iLength);
-	BOOL		FindHoles(CArrayPointer* papvOverlapping, filePos iPosition, filePos iLength);
+	BOOL		AmalgamateOverlappingWrites(CArrayIntAndPointer* papvOverlapping, const void* pvSource, filePos iPosition, filePos iLength);
+	BOOL		FindHoles(CArrayIntAndPointer* papvOverlapping, filePos iPosition, filePos iLength);
 	void		UpdateLength(void);
 	void		OpenFilesForBegin(void);
 	BOOL		OpenFilesForEnd(CFileBasic* pcFile);

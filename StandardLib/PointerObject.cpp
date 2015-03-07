@@ -113,12 +113,9 @@ CPointer::~CPointer()
 {
 	LOG_POINTER_DEBUG();
 
-	if (!mpcEmbedding)
+	if (mpcObject)
 	{
-		if (mpcObject)
-		{
-			mpcObject->RemoveStackFromTryKill(this, FALSE);
-		}
+		mpcObject->RemoveStackFromTryKill(this, FALSE);
 	}
 }
 
@@ -226,7 +223,7 @@ void CPointer::PointTo(CEmbeddedObject* pcNewObject, BOOL bKillIfNoRoot)
 		pcOldObject = mpcObject;
 		mpcObject = pcNewObject;
 
-		if (mpcEmbedding)
+		if (IsEmbeddingAllocatedInObjects())
 		{			
 			if (pcOldObject)
 			{
@@ -234,11 +231,11 @@ void CPointer::PointTo(CEmbeddedObject* pcNewObject, BOOL bKillIfNoRoot)
 				{
 					mpcObject->AddHeapFrom(mpcEmbedding, FALSE);
 				}
-				pcOldObject->RemoveHeapFrom(mpcEmbedding);
+				pcOldObject->RemoveHeapFrom(mpcEmbedding, TRUE);
 			}
 			else if (mpcObject)
 			{
-				mpcObject->AddHeapFrom(mpcEmbedding);
+				mpcObject->AddHeapFrom(mpcEmbedding, TRUE);
 			}
 		}
 		else
@@ -531,6 +528,23 @@ BOOL CPointer::IsDirty(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+BOOL CPointer::IsEmbeddingAllocatedInObjects(void)
+{
+	if (mpcEmbedding)
+	{
+		return mpcEmbedding->IsAllocatedInObjects();
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void CPointer::Kill(void)
 {
 	//This method exists so that it's object can be killed without invoking -> and potentially loading it first.
@@ -576,7 +590,7 @@ void CPointer::AddHeapFrom(CBaseObject* pcFrom)
 {
 	if (mpcObject)
 	{
-		mpcObject->AddHeapFrom(pcFrom);
+		mpcObject->AddHeapFrom(pcFrom, TRUE);
 	}
 }
 
@@ -600,13 +614,13 @@ void CPointer::DumpFroms(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CPointer::DumpTos(void)
+void CPointer::DumpPointerTos(void)
 {
 	CBaseObject* pvBaseObject = BaseObject();
 
 	if (pvBaseObject)
 	{
-		pvBaseObject->DumpTos();
+		pvBaseObject->DumpPointerTos();
 	}
 }
 

@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////
 void CMemoryCacheAllocation::Init(int iDataSize)
 {
-	mapEvictedCacheDescriptors.Init(32768);
+	mapEvictedCacheDescriptors.Init(256);
 	miDataSize = iDataSize;
 	
 	mpsCacheDesc = NULL;
@@ -60,7 +60,8 @@ int CMemoryCacheAllocation::NumElements(void)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-CArrayPointer* CMemoryCacheAllocation::GetEvictedArray(void)
+CArrayIntAndPointer* CMemoryCacheAllocation::GetEvictedArray(void)
 {
 	return &mapEvictedCacheDescriptors;
 }
+

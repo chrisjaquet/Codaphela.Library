@@ -474,6 +474,44 @@ void SetFlag(unsigned int* piDest, int iFlag, int iFlagValue)
 //
 //
 //////////////////////////////////////////////////////////////////////////
+void SetFlag(short int* psiDest, int iFlag, int iFlagValue)
+{
+	//If the value is true then or it with dest.
+	if (iFlagValue)
+	{
+		*psiDest |= iFlag;
+	}
+	//If the value is false then negate and and it with dest.
+	else
+	{
+		*psiDest &= (~iFlag);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
+void SetFlag(unsigned short int* psiDest, int iFlag, int iFlagValue)
+{
+	//If the value is true then or it with dest.
+	if (iFlagValue)
+	{
+		*psiDest |= iFlag;
+	}
+	//If the value is false then negate and and it with dest.
+	else
+	{
+		*psiDest &= (~iFlag);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+//
+//////////////////////////////////////////////////////////////////////////
 void Swap(int* pi1, int* pi2)
 {
 	int i3;
@@ -741,6 +779,23 @@ void ReverseEndianness(void* pv, int iSize)
 	if (iSize == 8)
 	{
 		*(long long int*)pv = ReverseLongEndianness(*(long long int*)pv);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//																		//
+//																		//
+//////////////////////////////////////////////////////////////////////////
+void ReverseBytes(void* pv, int iSize)
+{
+	int		i;
+	int		iHalf;
+	
+	iHalf = iSize / 2;
+	for (i = 0; i < iHalf; i++)
+	{
+		Swap(&(((char*)pv)[i]), &(((char*)pv)[iSize - i - 1]));
 	}
 }
 

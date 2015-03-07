@@ -30,17 +30,15 @@ class CRoot : public CNamedObject
 {
 friend class CObjects;
 friend class CUnknowns;
-friend class CConstructorUnknown;
 BASE_FUNCTIONS(CRoot);
 protected:
-	Ptr<CSetObject>	mpObjects;
-	CObjects*		mpcObjectsAllocatingFrom;
-
-protected:
-						CRoot();
-						Ptr<CRoot>		Init(void);
+	Ptr<CSetObject>		mpObjects;
+	CObjects*			mpcObjectsAllocatingFrom;
 
 public:
+						CRoot();
+
+						Ptr<CRoot>		Init(void);
 						void			Kill(void);
 						void			Class(void);
 						void			KillData(void);

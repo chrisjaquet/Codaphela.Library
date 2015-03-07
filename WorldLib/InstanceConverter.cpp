@@ -64,7 +64,7 @@ BOOL CInstanceConverter::Convert(CInstance* pcInstance)
 		{
 			return FALSE;
 		}
-		mpcSceneConverter->GetMapper()->AddGraphicsInstance(pcInstance->GetID(), pcGraphicsInstance, pcMeshInstance);
+		mpcSceneConverter->GetMapper()->AddGraphicsInstance(pcInstance->GetOI(), pcGraphicsInstance, pcMeshInstance);
 	}
 	else if (pcInstance->meType == TT_Camera)
 	{
@@ -88,7 +88,7 @@ BOOL CInstanceConverter::Convert(CInstance* pcInstance)
 //
 //
 //////////////////////////////////////////////////////////////////////////
-void CInstanceConverter::ConvertConnectionsAndIndices(CArrayPointer* pcConnectionAndIndex, CArraySimpleInt* pcConnectionIndices)
+void CInstanceConverter::ConvertConnectionsAndIndices(CArrayIntAndPointer* pcConnectionAndIndex, CArrayIntMinimal* pcConnectionIndices)
 {
 	int				i;
 	int				iConnectionIndex;
@@ -100,7 +100,7 @@ void CInstanceConverter::ConvertConnectionsAndIndices(CArrayPointer* pcConnectio
 	for (i = 0; i < pcConnectionIndices->NumElements(); i++)
 	{
 		iConnectionIndex = *pcConnectionIndices->Get(i);
-		pcConnection = mpcSceneConverter->GetScene()->mcConnectionTracker.GetWithID(iConnectionIndex);
+		pcConnection = (CConnection*)mpcSceneConverter->GetScene()->mcConnectionTracker.GetWithID(iConnectionIndex);
 		pcConnectionAndIndex->Add(pcConnection, iConnectionIndex);
 	}
 }
@@ -110,18 +110,18 @@ void CInstanceConverter::ConvertConnectionsAndIndices(CArrayPointer* pcConnectio
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CInstanceConverter::ConvertMeshAndLinks(CGraphicsInstance** ppcGraphicsInstance, CMeshInstance** ppcMeshInstance, int iMeshIndex, CArraySimpleInt* pcConnectionIndices)
+BOOL CInstanceConverter::ConvertMeshAndLinks(CGraphicsInstance** ppcGraphicsInstance, CMeshInstance** ppcMeshInstance, int iMeshIndex, CArrayIntMinimal* pcConnectionIndices)
 {
 	CGraphicsObject*		pcGraphicsObject;
 	CMeshObject*			pcMeshObject;
 	CMesh*					pcMesh;
 	CGraphicsInstance*		pcGraphicsInstance;
 	CMeshInstance*			pcMeshInstance;
-	CArrayPointer			cConnectionAndIndex;
+	CArrayIntAndPointer			cConnectionAndIndex;
 	
 	*ppcGraphicsInstance = NULL;
 	*ppcMeshInstance = NULL;
-	pcMesh = mpcSceneConverter->GetScene()->mcMeshTracker.GetWithID(iMeshIndex);
+	pcMesh = (CMesh*)mpcSceneConverter->GetScene()->mcMeshTracker.GetWithID(iMeshIndex);
 
 	ConvertConnectionsAndIndices(&cConnectionAndIndex, pcConnectionIndices);
 
@@ -149,11 +149,11 @@ BOOL CInstanceConverter::ConvertMeshAndLinks(CGraphicsInstance** ppcGraphicsInst
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CInstanceConverter::ConvertCamera(CCameraInstance** ppcCameraInstance, int iCameraIndex, CArraySimpleInt* pcConnectionIndices)
+BOOL CInstanceConverter::ConvertCamera(CCameraInstance** ppcCameraInstance, int iCameraIndex, CArrayIntMinimal* pcConnectionIndices)
 {
 	CCamera*			pcCamera;
 	CCameraInstance*	pcCameraInstance;
-	CArrayPointer		cConnectionAndIndex;
+	CArrayIntAndPointer		cConnectionAndIndex;
 	CConnection*		pcConnection;
 	int					iConnectionIndex;
 	SFloat4x4*			psWorldMatrix;
@@ -168,7 +168,7 @@ BOOL CInstanceConverter::ConvertCamera(CCameraInstance** ppcCameraInstance, int 
 		return TRUE;
 	}
 
-	pcCamera = mpcSceneConverter->GetScene()->mcCameraTracker.GetWithID(iCameraIndex);
+	pcCamera = (CCamera*)mpcSceneConverter->GetScene()->mcCameraTracker.GetWithID(iCameraIndex);
 
 	pcCameraInstance = mpcSceneConverter->GetWorld()->CreateCamera();
 
@@ -189,11 +189,11 @@ BOOL CInstanceConverter::ConvertCamera(CCameraInstance** ppcCameraInstance, int 
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CInstanceConverter::ConvertLight(CLightInstance** ppcLightInstance, int iLightIndex, CArraySimpleInt* pcConnectionIndices)
+BOOL CInstanceConverter::ConvertLight(CLightInstance** ppcLightInstance, int iLightIndex, CArrayIntMinimal* pcConnectionIndices)
 {
 	CLight*				pcLight;
 	CLightInstance*		pcLightInstance;
-	CArrayPointer		cConnectionAndIndex;
+	CArrayIntAndPointer		cConnectionAndIndex;
 	CConnection*		pcConnection;
 	int					iConnectionIndex;
 	SFloat4x4*			psWorldMatrix;
@@ -208,7 +208,7 @@ BOOL CInstanceConverter::ConvertLight(CLightInstance** ppcLightInstance, int iLi
 		return TRUE;
 	}
 
-	pcLight = mpcSceneConverter->GetScene()->mcLightTracker.GetWithID(iLightIndex);
+	pcLight = (CLight*)mpcSceneConverter->GetScene()->mcLightTracker.GetWithID(iLightIndex);
 
 	pcLightInstance = mpcSceneConverter->GetWorld()->CreateLight();
 
@@ -247,7 +247,7 @@ BOOL CInstanceConverter::ConvertLight(CLightInstance** ppcLightInstance, int iLi
 //
 //
 //////////////////////////////////////////////////////////////////////////
-BOOL CInstanceConverter::ConvertLinkInstance(CMeshInstance* pcMeshInstance, CMeshObject* pcMeshObject, CGraphicsInstance* pcGraphicsInstance, CArrayPointer* pcConnectionsAndIndices)
+BOOL CInstanceConverter::ConvertLinkInstance(CMeshInstance* pcMeshInstance, CMeshObject* pcMeshObject, CGraphicsInstance* pcGraphicsInstance, CArrayIntAndPointer* pcConnectionsAndIndices)
 {
 	int					i;
 	CConnection*		pcConnection;
@@ -329,7 +329,7 @@ BOOL CInstanceConverter::ConvertSequence(int iConnectionIndex, SMatrix* psMatrix
 	CSequence*	pcSequence;
 	CMovement*	pcMovement;
 
-	pcSequence = mpcSceneConverter->GetScene()->mcSequenceTracker.GetWithID(iConnectionIndex);
+	pcSequence = (CSequence*)mpcSceneConverter->GetScene()->mcSequenceTracker.GetWithID(iConnectionIndex);
 	if (pcSequence)
 	{
 		return mpcSceneConverter->ConvertSequenceToMovement(&pcMovement, pcSequence, psMatrix);
